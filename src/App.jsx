@@ -295,6 +295,7 @@ function App() {
   const [selectedSpecialty, setSelectedSpecialty] = React.useState('all');
   const [selectedRate, setSelectedRate] = React.useState('all');
   const [selectedTravel, setSelectedTravel] = React.useState('all');
+  const [selectedStylistId, setSelectedStylistId] = React.useState(null);
 
   // Get unique values for filters
   const specialties = [...new Set(stylists.map(s => s.specialty))];
@@ -338,6 +339,122 @@ function App() {
     return matchesSearch && matchesSpecialty && matchesRate && matchesTravel;
   });
 
+  const selectedStylist = stylists.find(s => s.id === selectedStylistId);
+  
+  // Find similar stylists based on shared services
+  const getSimilarStylists = (stylist) => {
+    if (!stylist) return [];
+    return stylists.filter(otherStylist => {
+      if (otherStylist.id === stylist.id) return false;
+      const stylistServiceNames = stylist.services.map(s => s.name.toLowerCase());
+      const otherServiceNames = otherStylist.services.map(s => s.name.toLowerCase());
+      return stylistServiceNames.some(service => otherServiceNames.includes(service));
+    }).slice(0, 6);
+  };
+
+  // If a stylist is selected, show detail page
+  if (selectedStylist) {
+    const similarStylists = getSimilarStylists(selectedStylist);
+    
+    return (
+      <div className="app">
+        <header className="header">
+          <button 
+            className="back-button"
+            onClick={() => setSelectedStylistId(null)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Stylists
+          </button>
+          <h1>{selectedStylist.name}</h1>
+          <p className="subtitle">{selectedStylist.specialty}</p>
+        </header>
+        
+        <main className="main-content detail-page">
+          <div className="detail-container">
+            <div className="detail-main">
+              <div className="detail-image-section">
+                <img 
+                  src={selectedStylist.profilePicture} 
+                  alt={selectedStylist.name}
+                  className="detail-profile-picture"
+                />
+              </div>
+              
+              <div className="detail-info-section">
+                <div className="detail-info-card">
+                  <h2 className="detail-section-title">Contact Information</h2>
+                  <div className="detail-contact-info">
+                    <p><span className="label">Address:</span> {selectedStylist.address}</p>
+                    <p><span className="label">Email:</span> <a href={`mailto:${selectedStylist.email}`}>{selectedStylist.email}</a></p>
+                    <p><span className="label">Phone:</span> <a href={`tel:${selectedStylist.phone}`}>{selectedStylist.phone}</a></p>
+                  </div>
+                  
+                  <h2 className="detail-section-title">Pricing & Availability</h2>
+                  <div className="detail-pricing-info">
+                    <p><span className="label">Rate:</span> {selectedStylist.rate}</p>
+                    <p><span className="label">Hours:</span> {selectedStylist.hours}</p>
+                    <p><span className="label">Current Availability:</span> {selectedStylist.currentAvailability}</p>
+                    <p><span className="label">Willing to Travel:</span> {selectedStylist.willingToTravel}</p>
+                  </div>
+                  
+                  <h2 className="detail-section-title">Experience</h2>
+                  <p><span className="label">Years of Experience:</span> {selectedStylist.yearsOfExperience}</p>
+                </div>
+                
+                <div className="detail-info-card">
+                  <h2 className="detail-section-title">Services Offered</h2>
+                  <div className="detail-services-list">
+                    {selectedStylist.services.map((service, index) => (
+                      <div key={index} className="detail-service-item">
+                        <span className="service-name">{service.name}</span>
+                        <span className="service-duration">{service.duration}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="detail-info-card">
+                  <h2 className="detail-section-title">About</h2>
+                  <p className="detail-about-text">{selectedStylist.about}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {similarStylists.length > 0 && (
+            <div className="similar-stylists-section">
+              <h2 className="similar-section-title">Similar Stylists</h2>
+              <div className="similar-stylists-carousel">
+                {similarStylists.map((similarStylist) => (
+                  <div 
+                    key={similarStylist.id} 
+                    className="similar-stylist-item"
+                    onClick={() => setSelectedStylistId(similarStylist.id)}
+                  >
+                    <img 
+                      src={similarStylist.profilePicture} 
+                      alt={similarStylist.name}
+                      className="similar-item-picture"
+                    />
+                    <div className="similar-item-info">
+                      <h3 className="similar-item-name">{similarStylist.name}</h3>
+                      <p className="similar-item-specialty">{similarStylist.specialty}</p>
+                      <p className="similar-item-rate">{similarStylist.rate}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </main>
+      </div>
+    );
+  }
+
+  // Show list view
   return (
     <div className="app">
       <header className="header">
@@ -454,7 +571,11 @@ function App() {
             </div>
           ) : (
             filteredStylists.map((stylist) => (
-            <div key={stylist.id} className="stylist-card">
+            <div 
+              key={stylist.id}
+              className="stylist-card"
+              onClick={() => setSelectedStylistId(stylist.id)}
+            >
               <div className="stylist-header">
                 <img 
                   src={stylist.profilePicture} 
@@ -471,10 +592,10 @@ function App() {
                   <span className="label">Contact:</span>
                   <div className="contact-info">
                     <p className="stylist-email">
-                      <span className="contact-label">Email:</span> <a href={`mailto:${stylist.email}`}>{stylist.email}</a>
+                      <span className="contact-label">Email:</span> <a href={`mailto:${stylist.email}`} onClick={(e) => e.stopPropagation()}>{stylist.email}</a>
                     </p>
                     <p className="stylist-phone">
-                      <span className="contact-label">Phone:</span> <a href={`tel:${stylist.phone}`}>{stylist.phone}</a>
+                      <span className="contact-label">Phone:</span> <a href={`tel:${stylist.phone}`} onClick={(e) => e.stopPropagation()}>{stylist.phone}</a>
                     </p>
                   </div>
                 </div>
