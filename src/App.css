@@ -93,6 +93,50 @@
   align-items: flex-start;
 }
 
+.stylist-contact {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.contact-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.stylist-email,
+.stylist-phone {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #000000;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.contact-label {
+  font-weight: 500;
+  color: #000000;
+  min-width: 50px;
+}
+
+.stylist-email a,
+.stylist-phone a {
+  color: #000000;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+.stylist-email a:hover,
+.stylist-phone a:hover {
+  border-bottom-color: #000000;
+}
+
 .stylist-services {
   display: flex;
   flex-direction: column;

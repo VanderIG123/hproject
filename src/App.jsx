@@ -6,6 +6,8 @@ const stylists = [
     id: 1,
     name: "Sarah Johnson",
     address: "123 Main Street, Downtown, NY 10001",
+    email: "sarah.johnson@hairstudio.com",
+    phone: "(212) 555-0123",
     rate: "$85/hour",
     hours: "Mon-Fri: 9:00 AM - 6:00 PM, Sat: 10:00 AM - 4:00 PM",
     willingToTravel: "Yes, within 15 miles",
@@ -24,6 +26,8 @@ const stylists = [
     id: 2,
     name: "Michael Chen",
     address: "456 Oak Avenue, Midtown, NY 10018",
+    email: "michael.chen@hairstudio.com",
+    phone: "(212) 555-0456",
     rate: "$95/hour",
     hours: "Tue-Sat: 10:00 AM - 7:00 PM, Sun: 11:00 AM - 5:00 PM",
     willingToTravel: "Yes, within 25 miles",
@@ -42,6 +46,8 @@ const stylists = [
     id: 3,
     name: "Emily Rodriguez",
     address: "789 Park Boulevard, Uptown, NY 10025",
+    email: "emily.rodriguez@hairstudio.com",
+    phone: "(212) 555-0789",
     rate: "$75/hour",
     hours: "Mon-Thu: 8:00 AM - 5:00 PM, Fri-Sat: 9:00 AM - 6:00 PM",
     willingToTravel: "No, salon only",
@@ -75,6 +81,17 @@ function App() {
                 <p className="stylist-address">
                   <span className="label">Address:</span> {stylist.address}
                 </p>
+                <div className="stylist-contact">
+                  <span className="label">Contact:</span>
+                  <div className="contact-info">
+                    <p className="stylist-email">
+                      <span className="contact-label">Email:</span> <a href={`mailto:${stylist.email}`}>{stylist.email}</a>
+                    </p>
+                    <p className="stylist-phone">
+                      <span className="contact-label">Phone:</span> <a href={`tel:${stylist.phone}`}>{stylist.phone}</a>
+                    </p>
+                  </div>
+                </div>
                 <p className="stylist-rate">
                   <span className="label">Rate:</span> {stylist.rate}
                 </p>
