@@ -5,6 +5,7 @@ const stylists = [
   {
     id: 1,
     name: "Sarah Johnson",
+    profilePicture: "https://i.pravatar.cc/200?img=1",
     address: "123 Main Street, Downtown, NY 10001",
     email: "sarah.johnson@hairstudio.com",
     phone: "(212) 555-0123",
@@ -26,6 +27,7 @@ const stylists = [
   {
     id: 2,
     name: "Michael Chen",
+    profilePicture: "https://i.pravatar.cc/200?img=2",
     address: "456 Oak Avenue, Midtown, NY 10018",
     email: "michael.chen@hairstudio.com",
     phone: "(212) 555-0456",
@@ -47,6 +49,7 @@ const stylists = [
   {
     id: 3,
     name: "Emily Rodriguez",
+    profilePicture: "https://i.pravatar.cc/200?img=3",
     address: "789 Park Boulevard, Uptown, NY 10025",
     email: "emily.rodriguez@hairstudio.com",
     phone: "(212) 555-0789",
@@ -68,6 +71,7 @@ const stylists = [
   {
     id: 4,
     name: "Jessica Martinez",
+    profilePicture: "https://i.pravatar.cc/200?img=4",
     address: "321 Broadway, SoHo, NY 10013",
     email: "jessica.martinez@hairstudio.com",
     phone: "(212) 555-0234",
@@ -89,6 +93,7 @@ const stylists = [
   {
     id: 5,
     name: "David Kim",
+    profilePicture: "https://i.pravatar.cc/200?img=5",
     address: "567 Lexington Avenue, Upper East Side, NY 10022",
     email: "david.kim@hairstudio.com",
     phone: "(212) 555-0345",
@@ -110,6 +115,7 @@ const stylists = [
   {
     id: 6,
     name: "Amanda Thompson",
+    profilePicture: "https://i.pravatar.cc/200?img=6",
     address: "890 5th Avenue, Upper West Side, NY 10021",
     email: "amanda.thompson@hairstudio.com",
     phone: "(212) 555-0457",
@@ -131,6 +137,7 @@ const stylists = [
   {
     id: 7,
     name: "Robert Williams",
+    profilePicture: "https://i.pravatar.cc/200?img=7",
     address: "234 Park Avenue, Midtown East, NY 10017",
     email: "robert.williams@hairstudio.com",
     phone: "(212) 555-0568",
@@ -152,6 +159,7 @@ const stylists = [
   {
     id: 8,
     name: "Lisa Anderson",
+    profilePicture: "https://i.pravatar.cc/200?img=8",
     address: "678 Madison Avenue, Upper East Side, NY 10065",
     email: "lisa.anderson@hairstudio.com",
     phone: "(212) 555-0679",
@@ -173,6 +181,7 @@ const stylists = [
   {
     id: 9,
     name: "James Taylor",
+    profilePicture: "https://i.pravatar.cc/200?img=9",
     address: "145 West 57th Street, Midtown, NY 10019",
     email: "james.taylor@hairstudio.com",
     phone: "(212) 555-0780",
@@ -194,6 +203,7 @@ const stylists = [
   {
     id: 10,
     name: "Maria Garcia",
+    profilePicture: "https://i.pravatar.cc/200?img=10",
     address: "432 Columbus Avenue, Upper West Side, NY 10024",
     email: "maria.garcia@hairstudio.com",
     phone: "(212) 555-0891",
@@ -215,6 +225,7 @@ const stylists = [
   {
     id: 11,
     name: "Christopher Brown",
+    profilePicture: "https://i.pravatar.cc/200?img=11",
     address: "789 Greenwich Street, West Village, NY 10014",
     email: "christopher.brown@hairstudio.com",
     phone: "(212) 555-0902",
@@ -236,6 +247,7 @@ const stylists = [
   {
     id: 12,
     name: "Patricia Lee",
+    profilePicture: "https://i.pravatar.cc/200?img=12",
     address: "321 Bleecker Street, Greenwich Village, NY 10012",
     email: "patricia.lee@hairstudio.com",
     phone: "(212) 555-1013",
@@ -257,6 +269,7 @@ const stylists = [
   {
     id: 13,
     name: "Daniel White",
+    profilePicture: "https://i.pravatar.cc/200?img=13",
     address: "654 Spring Street, SoHo, NY 10012",
     email: "daniel.white@hairstudio.com",
     phone: "(212) 555-1124",
@@ -278,6 +291,28 @@ const stylists = [
 ]
 
 function App() {
+  const [searchQuery, setSearchQuery] = React.useState('');
+
+  const filteredStylists = stylists.filter((stylist) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      stylist.name.toLowerCase().includes(query) ||
+      stylist.address.toLowerCase().includes(query) ||
+      stylist.email.toLowerCase().includes(query) ||
+      stylist.phone.toLowerCase().includes(query) ||
+      stylist.specialty.toLowerCase().includes(query) ||
+      stylist.rate.toLowerCase().includes(query) ||
+      stylist.hours.toLowerCase().includes(query) ||
+      stylist.currentAvailability.toLowerCase().includes(query) ||
+      stylist.willingToTravel.toLowerCase().includes(query) ||
+      stylist.yearsOfExperience.toLowerCase().includes(query) ||
+      stylist.about.toLowerCase().includes(query) ||
+      stylist.services.some(service => 
+        service.name.toLowerCase().includes(query)
+      )
+    );
+  });
+
   return (
     <div className="app">
       <header className="header">
@@ -286,10 +321,64 @@ function App() {
       </header>
       
       <main className="main-content">
+        <div className="search-container">
+          <div className="search-wrapper">
+            <button 
+              type="button" 
+              className="search-button"
+              aria-label="Search"
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </button>
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search by name, specialty, services, location..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+            {searchQuery && (
+              <button
+                type="button"
+                className="clear-button"
+                onClick={() => setSearchQuery('')}
+                aria-label="Clear search"
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+        
         <div className="stylists-container">
-          {stylists.map((stylist) => (
+          {filteredStylists.length === 0 ? (
+            <div className="no-results">
+              <div className="no-results-icon">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <path d="m21 21-4.35-4.35"></path>
+                </svg>
+              </div>
+              <h3 className="no-results-title">No stylists found</h3>
+              <p className="no-results-message">Try adjusting your search terms or browse all stylists</p>
+            </div>
+          ) : (
+            filteredStylists.map((stylist) => (
             <div key={stylist.id} className="stylist-card">
-              <h2 className="stylist-name">{stylist.name}</h2>
+              <div className="stylist-header">
+                <img 
+                  src={stylist.profilePicture} 
+                  alt={stylist.name}
+                  className="stylist-profile-picture"
+                />
+                <h2 className="stylist-name">{stylist.name}</h2>
+              </div>
               <div className="stylist-info">
                 <p className="stylist-address">
                   <span className="label">Address:</span> {stylist.address}
@@ -340,7 +429,8 @@ function App() {
                 </div>
               </div>
             </div>
-          ))}
+            ))
+          )}
         </div>
       </main>
     </div>
