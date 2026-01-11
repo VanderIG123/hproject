@@ -292,10 +292,22 @@ const stylists = [
 
 function App() {
   const [searchQuery, setSearchQuery] = React.useState('');
+  const [selectedSpecialty, setSelectedSpecialty] = React.useState('all');
+  const [selectedRate, setSelectedRate] = React.useState('all');
+  const [selectedTravel, setSelectedTravel] = React.useState('all');
+
+  // Get unique values for filters
+  const specialties = [...new Set(stylists.map(s => s.specialty))];
+  const rates = [...new Set(stylists.map(s => s.rate))].sort((a, b) => {
+    const numA = parseInt(a.replace(/[^0-9]/g, ''));
+    const numB = parseInt(b.replace(/[^0-9]/g, ''));
+    return numA - numB;
+  });
 
   const filteredStylists = stylists.filter((stylist) => {
+    // Search filter
     const query = searchQuery.toLowerCase();
-    return (
+    const matchesSearch = !searchQuery || (
       stylist.name.toLowerCase().includes(query) ||
       stylist.address.toLowerCase().includes(query) ||
       stylist.email.toLowerCase().includes(query) ||
@@ -311,6 +323,19 @@ function App() {
         service.name.toLowerCase().includes(query)
       )
     );
+
+    // Specialty filter
+    const matchesSpecialty = selectedSpecialty === 'all' || stylist.specialty === selectedSpecialty;
+
+    // Rate filter
+    const matchesRate = selectedRate === 'all' || stylist.rate === selectedRate;
+
+    // Travel filter
+    const matchesTravel = selectedTravel === 'all' || 
+      (selectedTravel === 'yes' && stylist.willingToTravel.toLowerCase().includes('yes')) ||
+      (selectedTravel === 'no' && stylist.willingToTravel.toLowerCase().includes('no'));
+
+    return matchesSearch && matchesSpecialty && matchesRate && matchesTravel;
   });
 
   return (
@@ -354,6 +379,65 @@ function App() {
               </button>
             )}
           </div>
+        </div>
+
+        <div className="filters-container">
+          <div className="filter-group">
+            <label htmlFor="specialty-filter" className="filter-label">Specialty</label>
+            <select
+              id="specialty-filter"
+              className="filter-select"
+              value={selectedSpecialty}
+              onChange={(e) => setSelectedSpecialty(e.target.value)}
+            >
+              <option value="all">All Specialties</option>
+              {specialties.map((specialty) => (
+                <option key={specialty} value={specialty}>{specialty}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="rate-filter" className="filter-label">Rate</label>
+            <select
+              id="rate-filter"
+              className="filter-select"
+              value={selectedRate}
+              onChange={(e) => setSelectedRate(e.target.value)}
+            >
+              <option value="all">All Rates</option>
+              {rates.map((rate) => (
+                <option key={rate} value={rate}>{rate}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="travel-filter" className="filter-label">Travel</label>
+            <select
+              id="travel-filter"
+              className="filter-select"
+              value={selectedTravel}
+              onChange={(e) => setSelectedTravel(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="yes">Willing to Travel</option>
+              <option value="no">Salon Only</option>
+            </select>
+          </div>
+
+          {(selectedSpecialty !== 'all' || selectedRate !== 'all' || selectedTravel !== 'all') && (
+            <button
+              className="clear-filters-button"
+              onClick={() => {
+                setSelectedSpecialty('all');
+                setSelectedRate('all');
+                setSelectedTravel('all');
+              }}
+            >
+              Clear Filters
+            </button>
+          )}
         </div>
         
         <div className="stylists-container">
