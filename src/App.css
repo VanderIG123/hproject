@@ -1,0 +1,162 @@
+.app {
+  min-height: 100vh;
+  background: #ffffff;
+  padding: 20px;
+}
+
+.header {
+  text-align: center;
+  color: #000000;
+  margin-bottom: 40px;
+  padding: 30px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.header h1 {
+  font-size: 3rem;
+  margin: 0;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: -0.5px;
+}
+
+.subtitle {
+  font-size: 1.2rem;
+  margin-top: 10px;
+  color: #333333;
+  font-weight: 300;
+}
+
+.main-content {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.stylists-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  padding: 20px;
+}
+
+.stylist-card {
+  background: #ffffff;
+  border-radius: 8px;
+  padding: 30px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+}
+
+.stylist-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border-color: #000000;
+}
+
+.stylist-name {
+  color: #000000;
+  font-size: 1.8rem;
+  margin: 0 0 20px 0;
+  font-weight: 600;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 15px;
+  letter-spacing: -0.3px;
+}
+
+.stylist-info {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.stylist-info p {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #000000;
+}
+
+.label {
+  font-weight: 600;
+  color: #000000;
+  margin-right: 8px;
+}
+
+.stylist-address,
+.stylist-rate,
+.stylist-hours,
+.stylist-travel,
+.stylist-experience,
+.stylist-specialty {
+  display: flex;
+  align-items: flex-start;
+}
+
+.stylist-services {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.services-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.service-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.service-item:last-child {
+  border-bottom: none;
+}
+
+.service-name {
+  font-size: 1rem;
+  color: #000000;
+  font-weight: 400;
+}
+
+.service-duration {
+  font-size: 0.9rem;
+  color: #666666;
+  font-weight: 400;
+}
+
+.stylist-about {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+.about-text {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #000000;
+  font-weight: 400;
+}
+
+@media (max-width: 768px) {
+  .header h1 {
+    font-size: 2rem;
+  }
+  
+  .stylists-container {
+    grid-template-columns: 1fr;
+    padding: 10px;
+  }
+  
+  .stylist-card {
+    padding: 20px;
+  }
+}
