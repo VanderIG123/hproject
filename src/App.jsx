@@ -374,6 +374,8 @@ function App() {
   const [selectedRate, setSelectedRate] = React.useState('all');
   const [selectedTravel, setSelectedTravel] = React.useState('all');
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
+  const [showRegistration, setShowRegistration] = React.useState(false);
+  const [registrationServices, setRegistrationServices] = React.useState([{ name: '', duration: '' }]);
 
   // Get unique values for filters
   const specialties = [...new Set(stylists.map(s => s.specialty))];
@@ -550,10 +552,183 @@ function App() {
     );
   }
 
+  // Show registration page
+  if (showRegistration) {
+    return (
+      <div className="app">
+        <header className="header">
+          <button 
+            className="back-button"
+            onClick={() => setShowRegistration(false)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          <h1>Become a Stylist</h1>
+          <p className="subtitle">Join our community of talented hair stylists</p>
+        </header>
+        
+        <main className="main-content">
+          <div className="registration-container">
+            <form className="registration-form" onSubmit={(e) => {
+              e.preventDefault();
+              alert('Registration submitted! (This is a demo - no data is saved)');
+              setShowRegistration(false);
+            }}>
+              <div className="form-section">
+                <h2 className="form-section-title">Account Information</h2>
+                <div className="form-group">
+                  <label htmlFor="email">Email *</label>
+                  <input type="email" id="email" name="email" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="password">Password *</label>
+                  <input type="password" id="password" name="password" required minLength="6" />
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2 className="form-section-title">Personal Information</h2>
+                <div className="form-group">
+                  <label htmlFor="name">Full Name *</label>
+                  <input type="text" id="name" name="name" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="profilePicture">Profile Picture URL</label>
+                  <input type="url" id="profilePicture" name="profilePicture" placeholder="https://example.com/image.jpg" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="address">Address *</label>
+                  <input type="text" id="address" name="address" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="phone">Phone Number *</label>
+                  <input type="tel" id="phone" name="phone" required />
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2 className="form-section-title">Professional Details</h2>
+                <div className="form-group">
+                  <label htmlFor="specialty">Specialty *</label>
+                  <input type="text" id="specialty" name="specialty" required placeholder="e.g., Modern cuts and color techniques" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="yearsOfExperience">Years of Experience *</label>
+                  <input type="text" id="yearsOfExperience" name="yearsOfExperience" required placeholder="e.g., 5 years" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="rate">Rate per Hour *</label>
+                  <input type="text" id="rate" name="rate" required placeholder="e.g., $75/hour" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="hours">Business Hours *</label>
+                  <input type="text" id="hours" name="hours" required placeholder="e.g., Mon-Fri: 9:00 AM - 6:00 PM" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="currentAvailability">Current Availability *</label>
+                  <input type="text" id="currentAvailability" name="currentAvailability" required placeholder="e.g., Available this week" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="willingToTravel">Willing to Travel *</label>
+                  <select id="willingToTravel" name="willingToTravel" required>
+                    <option value="">Select an option</option>
+                    <option value="Yes, within 10 miles">Yes, within 10 miles</option>
+                    <option value="Yes, within 15 miles">Yes, within 15 miles</option>
+                    <option value="Yes, within 20 miles">Yes, within 20 miles</option>
+                    <option value="Yes, within 25 miles">Yes, within 25 miles</option>
+                    <option value="Yes, within 30 miles">Yes, within 30 miles</option>
+                    <option value="No, salon only">No, salon only</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2 className="form-section-title">About</h2>
+                <div className="form-group">
+                  <label htmlFor="about">About Yourself *</label>
+                  <textarea id="about" name="about" rows="5" required placeholder="Tell us about your experience and style..."></textarea>
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2 className="form-section-title">Services</h2>
+                <div className="form-group">
+                  <label>Services Offered (Add at least one service)</label>
+                  <div className="services-input-container">
+                    {registrationServices.map((service, index) => (
+                      <div key={index} className="service-input-row">
+                        <input 
+                          type="text" 
+                          className="service-name-input" 
+                          placeholder="Service name (e.g., Haircut)" 
+                          value={service.name}
+                          onChange={(e) => {
+                            const newServices = [...registrationServices];
+                            newServices[index].name = e.target.value;
+                            setRegistrationServices(newServices);
+                          }}
+                        />
+                        <input 
+                          type="text" 
+                          className="service-duration-input" 
+                          placeholder="Duration (e.g., 45 minutes)" 
+                          value={service.duration}
+                          onChange={(e) => {
+                            const newServices = [...registrationServices];
+                            newServices[index].duration = e.target.value;
+                            setRegistrationServices(newServices);
+                          }}
+                        />
+                        {registrationServices.length > 1 && (
+                          <button 
+                            type="button" 
+                            className="remove-service-button"
+                            onClick={() => {
+                              setRegistrationServices(registrationServices.filter((_, i) => i !== index));
+                            }}
+                          >
+                            Remove
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button 
+                      type="button" 
+                      className="add-service-button"
+                      onClick={() => {
+                        setRegistrationServices([...registrationServices, { name: '', duration: '' }]);
+                      }}
+                    >
+                      Add Service
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="submit-button">Register as Stylist</button>
+                <button type="button" className="cancel-button" onClick={() => setShowRegistration(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // Show list view
   return (
     <div className="app">
       <header className="header">
+        <button 
+          className="register-stylist-button"
+          onClick={() => setShowRegistration(true)}
+        >
+          I am a stylist
+        </button>
         <h1>Hair Stylists</h1>
         <p className="subtitle">Find your perfect stylist</p>
       </header>
