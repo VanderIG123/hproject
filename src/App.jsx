@@ -22,7 +22,13 @@ const stylists = [
       { name: "Blowout", duration: "30 minutes" },
       { name: "Haircut & Color", duration: "2.5 hours" }
     ],
-    about: "With over 10 years of experience in the industry, Sarah specializes in modern cuts and color techniques. She is known for her attention to detail and personalized approach to each client's unique style."
+    about: "With over 10 years of experience in the industry, Sarah specializes in modern cuts and color techniques. She is known for her attention to detail and personalized approach to each client's unique style.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1560869713-7d0a8b9b0a0a?w=400",
+      "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400",
+      "https://images.unsplash.com/photo-1559599101-f09722fb4948?w=400",
+      "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=400"
+    ]
   },
   {
     id: 2,
@@ -44,7 +50,13 @@ const stylists = [
       { name: "Color Correction", duration: "4 hours" },
       { name: "Styling", duration: "45 minutes" }
     ],
-    about: "Michael is a master stylist with expertise in precision cuts and balayage. His creative vision and technical skills have earned him recognition in top fashion magazines. He believes in enhancing natural beauty."
+    about: "Michael is a master stylist with expertise in precision cuts and balayage. His creative vision and technical skills have earned him recognition in top fashion magazines. He believes in enhancing natural beauty.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1585747860715-2ba37e788b70?w=400",
+      "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400",
+      "https://images.unsplash.com/photo-1560869713-7d0a8b9b0a0a?w=400",
+      "https://images.unsplash.com/photo-1515191107209-c28698631303?w=400"
+    ]
   },
   {
     id: 3,
@@ -66,7 +78,13 @@ const stylists = [
       { name: "Deep Conditioning", duration: "20 minutes" },
       { name: "Updo", duration: "1 hour" }
     ],
-    about: "Emily brings a fresh perspective to hair styling with her background in both classic and contemporary techniques. She is passionate about helping clients find their perfect look and creating styles that boost confidence."
+    about: "Emily brings a fresh perspective to hair styling with her background in both classic and contemporary techniques. She is passionate about helping clients find their perfect look and creating styles that boost confidence.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400",
+      "https://images.unsplash.com/photo-1580618672591-eb180b1a973f?w=400",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+      "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=400"
+    ]
   },
   {
     id: 4,
@@ -88,7 +106,13 @@ const stylists = [
       { name: "Vintage Updo", duration: "1.5 hours" },
       { name: "Color & Style", duration: "3 hours" }
     ],
-    about: "Jessica specializes in vintage and retro hair styling, bringing classic Hollywood glamour to modern clients. Her attention to period-accurate techniques has made her a favorite for themed events and period productions."
+    about: "Jessica specializes in vintage and retro hair styling, bringing classic Hollywood glamour to modern clients. Her attention to period-accurate techniques has made her a favorite for themed events and period productions.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400",
+      "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400",
+      "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400",
+      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400"
+    ]
   },
   {
     id: 5,
@@ -110,7 +134,13 @@ const stylists = [
       { name: "Texturizing", duration: "1 hour" },
       { name: "Consultation & Cut", duration: "1.5 hours" }
     ],
-    about: "David is renowned for his expertise in Asian hair types and advanced keratin treatments. With nearly two decades of experience, he combines traditional techniques with modern innovations to achieve stunning results."
+    about: "David is renowned for his expertise in Asian hair types and advanced keratin treatments. With nearly two decades of experience, he combines traditional techniques with modern innovations to achieve stunning results.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400",
+      "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400",
+      "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400"
+    ]
   },
   {
     id: 6,
@@ -132,7 +162,13 @@ const stylists = [
       { name: "Twists", duration: "2.5 hours" },
       { name: "Deep Treatment", duration: "1 hour" }
     ],
-    about: "Amanda specializes in natural hair care and protective styling. She is passionate about healthy hair practices and helping clients embrace their natural texture while maintaining beautiful, manageable styles."
+    about: "Amanda specializes in natural hair care and protective styling. She is passionate about healthy hair practices and helping clients embrace their natural texture while maintaining beautiful, manageable styles.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?w=400",
+      "https://images.unsplash.com/photo-1582095133178-3f714427a5b9?w=400",
+      "https://images.unsplash.com/photo-1614289371518-722f2615943d?w=400",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400"
+    ]
   },
   {
     id: 7,
@@ -154,7 +190,13 @@ const stylists = [
       { name: "Hot Towel Shave", duration: "30 minutes" },
       { name: "Cut & Style", duration: "1 hour" }
     ],
-    about: "Robert is a specialist in men's grooming with expertise in modern fades and classic cuts. His precision and attention to detail have made him a go-to stylist for professional men seeking a polished look."
+    about: "Robert is a specialist in men's grooming with expertise in modern fades and classic cuts. His precision and attention to detail have made him a go-to stylist for professional men seeking a polished look.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400",
+      "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=400",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400"
+    ]
   },
   {
     id: 8,
@@ -176,7 +218,13 @@ const stylists = [
       { name: "Trial Run", duration: "2.5 hours" },
       { name: "Hair & Makeup", duration: "3 hours" }
     ],
-    about: "Lisa is a master of bridal and special event hair styling with two decades of experience. Her elegant and timeless designs have graced countless weddings and red carpet events throughout New York."
+    about: "Lisa is a master of bridal and special event hair styling with two decades of experience. Her elegant and timeless designs have graced countless weddings and red carpet events throughout New York.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400",
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400",
+      "https://images.unsplash.com/photo-1519741497674-611481863552?w=400",
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400"
+    ]
   },
   {
     id: 9,
@@ -198,7 +246,13 @@ const stylists = [
       { name: "Trim", duration: "15 minutes" },
       { name: "Blow Dry", duration: "25 minutes" }
     ],
-    about: "James specializes in efficient, high-quality cuts for busy professionals. His express services are perfect for those who need a great look without spending hours in the salon."
+    about: "James specializes in efficient, high-quality cuts for busy professionals. His express services are perfect for those who need a great look without spending hours in the salon.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400",
+      "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=400",
+      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=400",
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=400"
+    ]
   },
   {
     id: 10,
@@ -220,7 +274,13 @@ const stylists = [
       { name: "Texture Treatment", duration: "2 hours" },
       { name: "Curly Consultation", duration: "1 hour" }
     ],
-    about: "Maria is an expert in curly and textured hair, specializing in the Deva Cut method. She helps clients embrace and enhance their natural curl pattern with personalized care and styling techniques."
+    about: "Maria is an expert in curly and textured hair, specializing in the Deva Cut method. She helps clients embrace and enhance their natural curl pattern with personalized care and styling techniques.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400",
+      "https://images.unsplash.com/photo-1582095133178-3f714427a5b9?w=400",
+      "https://images.unsplash.com/photo-1614289371518-722f2615943d?w=400"
+    ]
   },
   {
     id: 11,
@@ -242,7 +302,13 @@ const stylists = [
       { name: "Fashion Color", duration: "4 hours" },
       { name: "Creative Styling", duration: "1.5 hours" }
     ],
-    about: "Christopher is known for his bold, edgy styles and creative color work. He specializes in alternative and fashion-forward looks, helping clients express their unique personality through their hair."
+    about: "Christopher is known for his bold, edgy styles and creative color work. He specializes in alternative and fashion-forward looks, helping clients express their unique personality through their hair.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1582095133178-3f714427a5b9?w=400",
+      "https://images.unsplash.com/photo-1614289371518-722f2615943d?w=400",
+      "https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=400",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400"
+    ]
   },
   {
     id: 12,
@@ -264,7 +330,13 @@ const stylists = [
       { name: "Classic Color", duration: "2.5 hours" },
       { name: "Full Service", duration: "4 hours" }
     ],
-    about: "Patricia brings over two decades of experience in classic, elegant styling. Her timeless approach and meticulous attention to detail have made her a favorite among clients seeking sophisticated, refined looks."
+    about: "Patricia brings over two decades of experience in classic, elegant styling. Her timeless approach and meticulous attention to detail have made her a favorite among clients seeking sophisticated, refined looks.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=400",
+      "https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=400",
+      "https://images.unsplash.com/photo-1515934751635-c81c6bc9a2d8?w=400",
+      "https://images.unsplash.com/photo-1519741497674-611481863552?w=400"
+    ]
   },
   {
     id: 13,
@@ -286,7 +358,13 @@ const stylists = [
       { name: "Volumizing Treatment", duration: "1.5 hours" },
       { name: "Extension Maintenance", duration: "1.5 hours" }
     ],
-    about: "Daniel specializes in hair extensions and volumizing techniques. He helps clients achieve their desired length and volume through expertly applied extension methods and volumizing treatments."
+    about: "Daniel specializes in hair extensions and volumizing techniques. He helps clients achieve their desired length and volume through expertly applied extension methods and volumizing treatments.",
+    portfolio: [
+      "https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=400",
+      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400",
+      "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=400",
+      "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?w=400"
+    ]
   }
 ]
 
@@ -422,6 +500,24 @@ function App() {
                 </div>
               </div>
             </div>
+            
+            {selectedStylist.portfolio && selectedStylist.portfolio.length > 0 && (
+              <div className="portfolio-section">
+                <h2 className="detail-section-title portfolio-title">Previous Work</h2>
+                <div className="portfolio-gallery">
+                  {selectedStylist.portfolio.map((imageUrl, index) => (
+                    <div key={index} className="portfolio-item">
+                      <img 
+                        src={imageUrl} 
+                        alt={`Previous work ${index + 1}`}
+                        className="portfolio-image"
+                        loading="lazy"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           
           {similarStylists.length > 0 && (
