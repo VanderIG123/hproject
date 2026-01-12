@@ -394,9 +394,13 @@ function App() {
   const [showStylistDropdown, setShowStylistDropdown] = React.useState(false);
   const [showUserDropdown, setShowUserDropdown] = React.useState(false);
   const [loggedInStylist, setLoggedInStylist] = React.useState(null);
+  const [loggedInUser, setLoggedInUser] = React.useState(null);
   const [showProfile, setShowProfile] = React.useState(false);
+  const [showUserProfile, setShowUserProfile] = React.useState(false);
   const [isEditingProfile, setIsEditingProfile] = React.useState(false);
+  const [isEditingUserProfile, setIsEditingUserProfile] = React.useState(false);
   const [editedProfile, setEditedProfile] = React.useState(null);
+  const [editedUserProfile, setEditedUserProfile] = React.useState(null);
   const [registrationServices, setRegistrationServices] = React.useState([{ name: '', duration: '' }]);
   const [profilePhoto, setProfilePhoto] = React.useState(null);
   const [portfolioPhotos, setPortfolioPhotos] = React.useState([]);
@@ -430,6 +434,33 @@ function App() {
       });
     }
   }, [isEditingProfile, loggedInStylist, editedProfile]);
+
+  // Initialize editedUserProfile when entering edit mode
+  React.useEffect(() => {
+    if (isEditingUserProfile && loggedInUser && !editedUserProfile) {
+      setEditedUserProfile({ 
+        ...loggedInUser,
+        favorites: [...(loggedInUser.favorites || [])] // Preserve favorites array
+      });
+    }
+  }, [isEditingUserProfile, loggedInUser, editedUserProfile]);
+
+  // Helper function to toggle favorite
+  const toggleFavorite = (stylistId) => {
+    if (!loggedInUser) return;
+    
+    const currentFavorites = loggedInUser.favorites || [];
+    const isFavorited = currentFavorites.includes(stylistId);
+    
+    const updatedFavorites = isFavorited
+      ? currentFavorites.filter(id => id !== stylistId)
+      : [...currentFavorites, stylistId];
+    
+    setLoggedInUser({
+      ...loggedInUser,
+      favorites: updatedFavorites
+    });
+  };
 
   // Get unique values for filters
   const specialties = [...new Set(stylists.map(s => s.specialty))];
@@ -631,8 +662,26 @@ function App() {
           <div className="registration-container">
             <form className="registration-form" onSubmit={(e) => {
               e.preventDefault();
-              alert('Login submitted! (This is a demo - no authentication is implemented)');
-              setShowUserLogin(false);
+              const formData = new FormData(e.target);
+              const email = formData.get('email');
+              const password = formData.get('password');
+              
+              // Test account: test@gmail.com / 1234
+              if (email === 'test@gmail.com' && password === '1234') {
+                const testUser = {
+                  id: 1000,
+                  name: "Test User",
+                  email: "test@gmail.com",
+                  phone: "(212) 555-0000",
+                  address: "123 User Street, User City, NY 10001",
+                  preferences: "Looking for modern styles and color techniques",
+                  favorites: [] // Initialize favorites array
+                };
+                setLoggedInUser(testUser);
+                setShowUserLogin(false);
+              } else {
+                alert('Invalid email or password. Use test@gmail.com / 1234 for test account.');
+              }
             }}>
               <div className="form-section">
                 <div className="form-group">
@@ -732,6 +781,198 @@ function App() {
                 <button type="button" className="cancel-button" onClick={() => setShowLogin(false)}>Cancel</button>
               </div>
             </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show user profile page for logged in user
+  if (showUserProfile && loggedInUser) {
+    const currentUser = isEditingUserProfile && editedUserProfile ? editedUserProfile : loggedInUser;
+    const userFavorites = currentUser.favorites || [];
+    const favoriteStylists = stylists.filter(s => userFavorites.includes(s.id));
+    
+    const handleSaveUserProfile = () => {
+      setLoggedInUser(editedUserProfile);
+      setIsEditingUserProfile(false);
+      setEditedUserProfile(null);
+      alert('Profile saved successfully!');
+    };
+
+    const handleCancelEditUser = () => {
+      setIsEditingUserProfile(false);
+      setEditedUserProfile(null);
+    };
+
+    return (
+      <div className="app">
+        <header className="header">
+          <button 
+            className="back-button"
+            onClick={() => {
+              setShowUserProfile(false);
+              setIsEditingUserProfile(false);
+              setEditedUserProfile(null);
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Home
+          </button>
+          {!isEditingUserProfile ? (
+            <button 
+              className="edit-profile-button header-right-button"
+              onClick={() => setIsEditingUserProfile(true)}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Edit Profile
+            </button>
+          ) : (
+            <div className="edit-actions header-right-button">
+              <button 
+                className="save-profile-button"
+                onClick={handleSaveUserProfile}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Save Changes
+              </button>
+              <button 
+                className="cancel-edit-button"
+                onClick={handleCancelEditUser}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          <h1>{currentUser.name}</h1>
+          <p className="subtitle">My Profile</p>
+        </header>
+        
+        <main className="main-content detail-page">
+          <div className="detail-container">
+            <div className="detail-main">
+              <div className="detail-image-section">
+                <div className="user-profile-avatar">
+                  <svg width="120" height="120" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+              </div>
+              
+              <div className="detail-info-section">
+                <div className="detail-info-card">
+                  <h2 className="detail-section-title">Personal Information</h2>
+                  {isEditingUserProfile ? (
+                    <div className="edit-form-group">
+                      <label><span className="label">Name:</span></label>
+                      <input 
+                        type="text" 
+                        value={editedUserProfile?.name || ''} 
+                        onChange={(e) => setEditedUserProfile({...editedUserProfile, name: e.target.value})}
+                        className="edit-input"
+                      />
+                      <label><span className="label">Email:</span></label>
+                      <input 
+                        type="email" 
+                        value={editedUserProfile?.email || ''} 
+                        onChange={(e) => setEditedUserProfile({...editedUserProfile, email: e.target.value})}
+                        className="edit-input"
+                      />
+                      <label><span className="label">Phone:</span></label>
+                      <input 
+                        type="tel" 
+                        value={editedUserProfile?.phone || ''} 
+                        onChange={(e) => setEditedUserProfile({...editedUserProfile, phone: e.target.value})}
+                        className="edit-input"
+                      />
+                      <label><span className="label">Address:</span></label>
+                      <input 
+                        type="text" 
+                        value={editedUserProfile?.address || ''} 
+                        onChange={(e) => setEditedUserProfile({...editedUserProfile, address: e.target.value})}
+                        className="edit-input"
+                      />
+                    </div>
+                  ) : (
+                    <div className="detail-contact-info">
+                      <p><span className="label">Name:</span> {currentUser.name}</p>
+                      <p><span className="label">Email:</span> <a href={`mailto:${currentUser.email}`}>{currentUser.email}</a></p>
+                      <p><span className="label">Phone:</span> <a href={`tel:${currentUser.phone}`}>{currentUser.phone}</a></p>
+                      <p><span className="label">Address:</span> {currentUser.address}</p>
+                    </div>
+                  )}
+                  
+                  <h2 className="detail-section-title">Preferences</h2>
+                  {isEditingUserProfile ? (
+                    <div className="edit-form-group">
+                      <label><span className="label">Style Preferences:</span></label>
+                      <textarea 
+                        value={editedUserProfile?.preferences || ''} 
+                        onChange={(e) => setEditedUserProfile({...editedUserProfile, preferences: e.target.value})}
+                        className="edit-textarea"
+                        rows="4"
+                        placeholder="Describe your style preferences..."
+                      />
+                    </div>
+                  ) : (
+                    <div className="detail-pricing-info">
+                      <p><span className="label">Style Preferences:</span> {currentUser.preferences || "No preferences set"}</p>
+                    </div>
+                  )}
+                </div>
+                
+                {!isEditingUserProfile && favoriteStylists.length > 0 && (
+                  <div className="detail-info-card">
+                    <h2 className="detail-section-title">Favorite Stylists</h2>
+                    <div className="favorites-list">
+                      {favoriteStylists.map((stylist) => (
+                        <div 
+                          key={stylist.id} 
+                          className="favorite-stylist-item"
+                          onClick={() => {
+                            setShowUserProfile(false);
+                            setSelectedStylistId(stylist.id);
+                          }}
+                        >
+                          <img 
+                            src={stylist.profilePicture} 
+                            alt={stylist.name}
+                            className="favorite-stylist-picture"
+                          />
+                          <div className="favorite-stylist-info">
+                            <h3 className="favorite-stylist-name">{stylist.name}</h3>
+                            <p className="favorite-stylist-specialty">{stylist.specialty}</p>
+                            <p className="favorite-stylist-rate">{stylist.rate}</p>
+                          </div>
+                          <button
+                            className="remove-favorite-button"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleFavorite(stylist.id);
+                            }}
+                            aria-label="Remove from favorites"
+                          >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </main>
       </div>
@@ -1523,6 +1764,35 @@ function App() {
                 onClick={() => {
                   setLoggedInStylist(null);
                   setShowProfile(false);
+                  setIsEditingProfile(false);
+                  setEditedProfile(null);
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Logout
+              </button>
+            </div>
+          ) : loggedInUser ? (
+            <div className="logged-in-buttons">
+              <button 
+                className="profile-button"
+                onClick={() => setShowUserProfile(true)}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                My Profile
+              </button>
+              <button 
+                className="logout-button"
+                onClick={() => {
+                  setLoggedInUser(null);
+                  setShowUserProfile(false);
                 }}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
@@ -1716,20 +1986,37 @@ function App() {
               <p className="no-results-message">Try adjusting your search terms or browse all stylists</p>
             </div>
           ) : (
-            filteredStylists.map((stylist) => (
-            <div 
-              key={stylist.id}
-              className="stylist-card"
-              onClick={() => setSelectedStylistId(stylist.id)}
-            >
-              <div className="stylist-header">
-                <img 
-                  src={stylist.profilePicture} 
-                  alt={stylist.name}
-                  className="stylist-profile-picture"
-                />
-                <h2 className="stylist-name">{stylist.name}</h2>
-              </div>
+            filteredStylists.map((stylist) => {
+              const isFavorited = loggedInUser && (loggedInUser.favorites || []).includes(stylist.id);
+              
+              return (
+              <div 
+                key={stylist.id}
+                className="stylist-card"
+                onClick={() => setSelectedStylistId(stylist.id)}
+              >
+                <div className="stylist-header">
+                  <img 
+                    src={stylist.profilePicture} 
+                    alt={stylist.name}
+                    className="stylist-profile-picture"
+                  />
+                  <h2 className="stylist-name">{stylist.name}</h2>
+                  {loggedInUser && (
+                    <button
+                      className={`favorite-button ${isFavorited ? 'favorited' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(stylist.id);
+                      }}
+                      aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+                    >
+                      <svg viewBox="0 0 24 24" fill={isFavorited ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                      </svg>
+                    </button>
+                  )}
+                </div>
               <div className="stylist-info">
                 <p className="stylist-address">
                   <span className="label">Address:</span> {stylist.address}
@@ -1785,7 +2072,8 @@ function App() {
                 </div>
               </div>
             </div>
-            ))
+            );
+            })
           )}
         </div>
       </main>

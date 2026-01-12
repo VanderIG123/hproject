@@ -1945,3 +1945,187 @@
     height: 160px;
   }
 }
+
+/* User Profile Styles */
+.user-profile-avatar {
+  width: 280px;
+  height: 280px;
+  border-radius: 50%;
+  border: 3px solid #000000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+  color: #000000;
+  transition: all 0.3s ease;
+}
+
+.user-profile-avatar:hover {
+  transform: scale(1.02);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .user-profile-avatar {
+    width: 200px;
+    height: 200px;
+  }
+
+  .user-profile-avatar svg {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* Favorite Button Styles */
+.favorite-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  width: auto;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 10;
+  padding: 4px;
+}
+
+.favorite-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.favorite-button:hover {
+  transform: scale(1.2);
+}
+
+.favorite-button.favorited {
+  color: #ff6b6b;
+}
+
+.favorite-button.favorited:hover {
+  color: #ff4444;
+}
+
+.stylist-header {
+  position: relative;
+}
+
+/* Favorites List Styles */
+.favorites-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.favorite-stylist-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  background: #ffffff;
+}
+
+.favorite-stylist-item:hover {
+  border-color: #000000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.favorite-stylist-picture {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #000000;
+  flex-shrink: 0;
+}
+
+.favorite-stylist-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.favorite-stylist-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #000000;
+  margin: 0 0 4px 0;
+}
+
+.favorite-stylist-specialty {
+  font-size: 14px;
+  color: #666666;
+  margin: 0 0 4px 0;
+}
+
+.favorite-stylist-rate {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000000;
+  margin: 0;
+}
+
+.remove-favorite-button {
+  background: transparent;
+  border: 2px solid #ff6b6b;
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #ff6b6b;
+  flex-shrink: 0;
+}
+
+.remove-favorite-button:hover {
+  background: #ff6b6b;
+  color: #ffffff;
+  transform: scale(1.1);
+}
+
+@media (max-width: 768px) {
+  .favorite-button {
+    top: 6px;
+    right: 6px;
+  }
+
+  .favorite-button svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .favorite-stylist-item {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .favorite-stylist-picture {
+    width: 60px;
+    height: 60px;
+  }
+
+  .favorite-stylist-name {
+    font-size: 16px;
+  }
+
+  .remove-favorite-button {
+    width: 32px;
+    height: 32px;
+  }
+}
