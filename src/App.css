@@ -13,11 +13,44 @@
   position: relative;
 }
 
-.stylist-menu-container {
+.header-buttons-container {
   position: absolute;
   right: 20px;
   top: 50%;
   transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.stylist-menu-container {
+  position: relative;
+}
+
+.looking-for-stylist-button {
+  padding: 12px 24px;
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.looking-for-stylist-button:hover {
+  background: #000000;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.looking-for-stylist-button:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
 }
 
 .register-stylist-button {
@@ -47,7 +80,12 @@
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
 }
 
-.stylist-dropdown {
+.user-menu-container {
+  position: relative;
+}
+
+.stylist-dropdown,
+.user-dropdown {
   position: absolute;
   top: calc(100% + 8px);
   right: 0;
@@ -958,12 +996,23 @@
     gap: 15px;
   }
 
-  .stylist-menu-container {
+  .header-buttons-container {
     position: relative;
     right: auto;
     top: auto;
     transform: none;
     margin-bottom: 20px;
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .user-menu-container,
+  .stylist-menu-container {
+    width: 100%;
+  }
+
+  .looking-for-stylist-button {
     width: 100%;
   }
 
@@ -971,7 +1020,8 @@
     width: 100%;
   }
 
-  .stylist-dropdown {
+  .stylist-dropdown,
+  .user-dropdown {
     width: 100%;
     right: 0;
   }

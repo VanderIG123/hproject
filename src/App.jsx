@@ -389,26 +389,32 @@ function App() {
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
   const [showRegistration, setShowRegistration] = React.useState(false);
   const [showLogin, setShowLogin] = React.useState(false);
+  const [showUserRegistration, setShowUserRegistration] = React.useState(false);
+  const [showUserLogin, setShowUserLogin] = React.useState(false);
   const [showStylistDropdown, setShowStylistDropdown] = React.useState(false);
+  const [showUserDropdown, setShowUserDropdown] = React.useState(false);
   const [registrationServices, setRegistrationServices] = React.useState([{ name: '', duration: '' }]);
   const [profilePhoto, setProfilePhoto] = React.useState(null);
   const [portfolioPhotos, setPortfolioPhotos] = React.useState([]);
 
-  // Close dropdown when clicking outside
+  // Close dropdowns when clicking outside
   React.useEffect(() => {
     const handleClickOutside = (event) => {
       if (showStylistDropdown && !event.target.closest('.stylist-menu-container')) {
         setShowStylistDropdown(false);
       }
+      if (showUserDropdown && !event.target.closest('.user-menu-container')) {
+        setShowUserDropdown(false);
+      }
     };
 
-    if (showStylistDropdown) {
+    if (showStylistDropdown || showUserDropdown) {
       document.addEventListener('mousedown', handleClickOutside);
       return () => {
         document.removeEventListener('mousedown', handleClickOutside);
       };
     }
-  }, [showStylistDropdown]);
+  }, [showStylistDropdown, showUserDropdown]);
 
   // Get unique values for filters
   const specialties = [...new Set(stylists.map(s => s.specialty))];
@@ -588,7 +594,54 @@ function App() {
     );
   }
 
-  // Show login page
+  // Show user login page
+  if (showUserLogin) {
+    return (
+      <div className="app">
+        <header className="header">
+          <button 
+            className="back-button"
+            onClick={() => setShowUserLogin(false)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          <h1>User Login</h1>
+          <p className="subtitle">Sign in to your account</p>
+        </header>
+        
+        <main className="main-content">
+          <div className="registration-container">
+            <form className="registration-form" onSubmit={(e) => {
+              e.preventDefault();
+              alert('Login submitted! (This is a demo - no authentication is implemented)');
+              setShowUserLogin(false);
+            }}>
+              <div className="form-section">
+                <div className="form-group">
+                  <label htmlFor="user-login-email">Email *</label>
+                  <input type="email" id="user-login-email" name="email" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="user-login-password">Password *</label>
+                  <input type="password" id="user-login-password" name="password" required />
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="submit-button">Login</button>
+                <button type="button" className="cancel-button" onClick={() => setShowUserLogin(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show stylist login page
   if (showLogin) {
     return (
       <div className="app">
@@ -615,18 +668,94 @@ function App() {
             }}>
               <div className="form-section">
                 <div className="form-group">
-                  <label htmlFor="login-email">Email *</label>
-                  <input type="email" id="login-email" name="email" required />
+                  <label htmlFor="stylist-login-email">Email *</label>
+                  <input type="email" id="stylist-login-email" name="email" required />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="login-password">Password *</label>
-                  <input type="password" id="login-password" name="password" required />
+                  <label htmlFor="stylist-login-password">Password *</label>
+                  <input type="password" id="stylist-login-password" name="password" required />
                 </div>
               </div>
 
               <div className="form-actions">
                 <button type="submit" className="submit-button">Login</button>
                 <button type="button" className="cancel-button" onClick={() => setShowLogin(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show user registration page
+  if (showUserRegistration) {
+    return (
+      <div className="app">
+        <header className="header">
+          <button 
+            className="back-button"
+            onClick={() => setShowUserRegistration(false)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          <h1>Create Account</h1>
+          <p className="subtitle">Join us to find your perfect stylist</p>
+        </header>
+        
+        <main className="main-content">
+          <div className="registration-container">
+            <form className="registration-form" onSubmit={(e) => {
+              e.preventDefault();
+              alert('Registration submitted! (This is a demo - no data is saved)');
+              setShowUserRegistration(false);
+            }}>
+              <div className="form-section">
+                <h2 className="form-section-title">Account Information</h2>
+                <div className="form-group">
+                  <label htmlFor="user-email">Email *</label>
+                  <input type="email" id="user-email" name="email" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="user-password">Password *</label>
+                  <input type="password" id="user-password" name="password" required minLength="6" />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="user-confirm-password">Confirm Password *</label>
+                  <input type="password" id="user-confirm-password" name="confirmPassword" required minLength="6" />
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2 className="form-section-title">Personal Information</h2>
+                <div className="form-group">
+                  <label htmlFor="user-name">Full Name *</label>
+                  <input type="text" id="user-name" name="name" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="user-phone">Phone Number *</label>
+                  <input type="tel" id="user-phone" name="phone" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="user-address">Address</label>
+                  <input type="text" id="user-address" name="address" />
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2 className="form-section-title">Preferences</h2>
+                <div className="form-group">
+                  <label htmlFor="user-preferences">Hair Style Preferences</label>
+                  <textarea id="user-preferences" name="preferences" rows="4" placeholder="Tell us about your preferred hair styles, colors, etc..."></textarea>
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="submit-button">Create Account</button>
+                <button type="button" className="cancel-button" onClick={() => setShowUserRegistration(false)}>Cancel</button>
               </div>
             </form>
           </div>
@@ -901,38 +1030,73 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <div className="stylist-menu-container">
-          <button 
-            className="register-stylist-button"
-            onClick={() => setShowStylistDropdown(!showStylistDropdown)}
-          >
-            I am a stylist
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', transition: 'transform 0.3s ease', transform: showStylistDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-              <path d="M6 9l6 6 6-6"/>
-            </svg>
-          </button>
-          {showStylistDropdown && (
-            <div className="stylist-dropdown">
-              <button 
-                className="dropdown-item"
-                onClick={() => {
-                  setShowStylistDropdown(false);
-                  setShowRegistration(true);
-                }}
-              >
-                Register
-              </button>
-              <button 
-                className="dropdown-item"
-                onClick={() => {
-                  setShowStylistDropdown(false);
-                  setShowLogin(true);
-                }}
-              >
-                Login
-              </button>
-            </div>
-          )}
+        <div className="header-buttons-container">
+          <div className="user-menu-container">
+            <button 
+              className="looking-for-stylist-button"
+              onClick={() => setShowUserDropdown(!showUserDropdown)}
+            >
+              I'm looking for a stylist
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', transition: 'transform 0.3s ease', transform: showUserDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            {showUserDropdown && (
+              <div className="user-dropdown">
+                <button 
+                  className="dropdown-item"
+                  onClick={() => {
+                    setShowUserDropdown(false);
+                    setShowUserRegistration(true);
+                  }}
+                >
+                  Register
+                </button>
+                <button 
+                  className="dropdown-item"
+                  onClick={() => {
+                    setShowUserDropdown(false);
+                    setShowUserLogin(true);
+                  }}
+                >
+                  Login
+                </button>
+              </div>
+            )}
+          </div>
+          <div className="stylist-menu-container">
+            <button 
+              className="register-stylist-button"
+              onClick={() => setShowStylistDropdown(!showStylistDropdown)}
+            >
+              I am a stylist
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', transition: 'transform 0.3s ease', transform: showStylistDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                <path d="M6 9l6 6 6-6"/>
+              </svg>
+            </button>
+            {showStylistDropdown && (
+              <div className="stylist-dropdown">
+                <button 
+                  className="dropdown-item"
+                  onClick={() => {
+                    setShowStylistDropdown(false);
+                    setShowRegistration(true);
+                  }}
+                >
+                  Register
+                </button>
+                <button 
+                  className="dropdown-item"
+                  onClick={() => {
+                    setShowStylistDropdown(false);
+                    setShowLogin(true);
+                  }}
+                >
+                  Login
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         <h1>Hair Stylists</h1>
         <p className="subtitle">Find your perfect stylist</p>
