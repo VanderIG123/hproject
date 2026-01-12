@@ -417,6 +417,8 @@ function App() {
   const [registrationServices, setRegistrationServices] = React.useState([{ name: '', duration: '' }]);
   const [profilePhoto, setProfilePhoto] = React.useState(null);
   const [portfolioPhotos, setPortfolioPhotos] = React.useState([]);
+  const [selectedHairStyles, setSelectedHairStyles] = React.useState([]);
+  const [customHairStyleInput, setCustomHairStyleInput] = React.useState('');
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
@@ -1498,8 +1500,96 @@ function App() {
               <div className="form-section">
                 <h2 className="form-section-title">Preferences</h2>
                 <div className="form-group">
-                  <label htmlFor="user-preferences">Hair Style Preferences</label>
-                  <textarea id="user-preferences" name="preferences" rows="4" placeholder="Tell us about your preferred hair styles, colors, etc..."></textarea>
+                  <label>Hair Style Preferences</label>
+                  <p className="form-hint">Select from available styles or add your own</p>
+                  
+                  {/* Predefined Hair Styles */}
+                  <div className="hair-styles-grid">
+                    {[
+                      "Haircut", "Hair Color", "Highlights", "Balayage", "Ombre",
+                      "Blowout", "Updo", "Bridal", "Men's Cut", "Fade",
+                      "Beard Trim", "Perm", "Keratin Treatment", "Hair Extensions",
+                      "Braids", "Natural Hair", "Curly Hair", "Straightening",
+                      "Vintage", "Retro", "Classic", "Modern", "Edgy"
+                    ].map((style) => (
+                      <label key={style} className="hair-style-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={selectedHairStyles.includes(style)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedHairStyles([...selectedHairStyles, style]);
+                            } else {
+                              setSelectedHairStyles(selectedHairStyles.filter(s => s !== style));
+                            }
+                          }}
+                        />
+                        <span>{style}</span>
+                      </label>
+                    ))}
+                  </div>
+                  
+                  {/* Custom Hair Style Input */}
+                  <div className="custom-hair-style-input">
+                    <input
+                      type="text"
+                      value={customHairStyleInput}
+                      onChange={(e) => setCustomHairStyleInput(e.target.value)}
+                      placeholder="Type a custom hair style..."
+                      onKeyPress={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          if (customHairStyleInput.trim() && !selectedHairStyles.includes(customHairStyleInput.trim())) {
+                            setSelectedHairStyles([...selectedHairStyles, customHairStyleInput.trim()]);
+                            setCustomHairStyleInput('');
+                          }
+                        }
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="add-custom-style-button"
+                      onClick={() => {
+                        if (customHairStyleInput.trim() && !selectedHairStyles.includes(customHairStyleInput.trim())) {
+                          setSelectedHairStyles([...selectedHairStyles, customHairStyleInput.trim()]);
+                          setCustomHairStyleInput('');
+                        }
+                      }}
+                    >
+                      Add
+                    </button>
+                  </div>
+                  
+                  {/* Selected Styles Bubbles */}
+                  {selectedHairStyles.length > 0 && (
+                    <div className="selected-hair-styles">
+                      {selectedHairStyles.map((style, index) => (
+                        <span key={index} className="hair-style-bubble">
+                          {style}
+                          <button
+                            type="button"
+                            className="remove-bubble-button"
+                            onClick={() => {
+                              setSelectedHairStyles(selectedHairStyles.filter((_, i) => i !== index));
+                            }}
+                            aria-label={`Remove ${style}`}
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Hidden input for form submission */}
+                  <input
+                    type="hidden"
+                    name="preferences"
+                    value={selectedHairStyles.join(', ')}
+                  />
                 </div>
               </div>
 
