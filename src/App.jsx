@@ -462,6 +462,12 @@ function App() {
     });
   };
 
+  // Helper function to generate Google Maps URL
+  const getGoogleMapsUrl = (address) => {
+    const encodedAddress = encodeURIComponent(address);
+    return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+  };
+
   // Get unique values for filters
   const specialties = [...new Set(stylists.map(s => s.specialty))];
   const rates = [...new Set(stylists.map(s => s.rate))].sort((a, b) => {
@@ -552,7 +558,7 @@ function App() {
                 <div className="detail-info-card">
                   <h2 className="detail-section-title">Contact Information</h2>
                   <div className="detail-contact-info">
-                    <p><span className="label">Address:</span> {selectedStylist.address}</p>
+                    <p><span className="label">Address:</span> <a href={getGoogleMapsUrl(selectedStylist.address)} target="_blank" rel="noopener noreferrer">{selectedStylist.address}</a></p>
                     <p><span className="label">Email:</span> <a href={`mailto:${selectedStylist.email}`}>{selectedStylist.email}</a></p>
                     <p><span className="label">Phone:</span> <a href={`tel:${selectedStylist.phone}`}>{selectedStylist.phone}</a></p>
                   </div>
@@ -908,7 +914,7 @@ function App() {
                       <p><span className="label">Name:</span> {currentUser.name}</p>
                       <p><span className="label">Email:</span> <a href={`mailto:${currentUser.email}`}>{currentUser.email}</a></p>
                       <p><span className="label">Phone:</span> <a href={`tel:${currentUser.phone}`}>{currentUser.phone}</a></p>
-                      <p><span className="label">Address:</span> {currentUser.address}</p>
+                      <p><span className="label">Address:</span> <a href={getGoogleMapsUrl(currentUser.address)} target="_blank" rel="noopener noreferrer">{currentUser.address}</a></p>
                     </div>
                   )}
                   
@@ -1117,7 +1123,7 @@ function App() {
                     </div>
                   ) : (
                     <div className="detail-contact-info">
-                      <p><span className="label">Address:</span> {currentStylist.address}</p>
+                      <p><span className="label">Address:</span> <a href={getGoogleMapsUrl(currentStylist.address)} target="_blank" rel="noopener noreferrer">{currentStylist.address}</a></p>
                       <p><span className="label">Email:</span> <a href={`mailto:${currentStylist.email}`}>{currentStylist.email}</a></p>
                       <p><span className="label">Phone:</span> <a href={`tel:${currentStylist.phone}`}>{currentStylist.phone}</a></p>
                     </div>
@@ -2019,7 +2025,7 @@ function App() {
                 </div>
               <div className="stylist-info">
                 <p className="stylist-address">
-                  <span className="label">Address:</span> {stylist.address}
+                  <span className="label">Address:</span> <a href={getGoogleMapsUrl(stylist.address)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>{stylist.address}</a>
                 </p>
                 <div className="stylist-contact">
                   <span className="label">Contact:</span>

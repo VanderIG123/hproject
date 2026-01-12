@@ -527,6 +527,20 @@
   align-items: flex-start;
 }
 
+.stylist-address a {
+  color: #000000;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.3s ease;
+  display: inline;
+  word-break: break-word;
+}
+
+.stylist-address a:hover {
+  text-decoration-color: #000000;
+}
+
 .stylist-contact {
   display: flex;
   flex-direction: column;
@@ -778,13 +792,16 @@
 
 .detail-contact-info a {
   color: #000000;
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-  transition: border-color 0.3s ease;
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  text-underline-offset: 2px;
+  transition: text-decoration-color 0.3s ease;
+  display: inline;
+  word-break: break-word;
 }
 
 .detail-contact-info a:hover {
-  border-bottom-color: #000000;
+  text-decoration-color: #000000;
 }
 
 .detail-services-list {
