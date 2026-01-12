@@ -17,6 +17,7 @@ const stylists = [
     specialty: "Modern cuts and color techniques",
     accommodations: "Kids welcome, Pets allowed",
     cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or cancellations within 24 hours.",
+    acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Venmo, PayPal",
     services: [
       { name: "Haircut", duration: "45 minutes" },
       { name: "Hair Color", duration: "2 hours" },
@@ -47,6 +48,7 @@ const stylists = [
     specialty: "Precision cuts and balayage",
     accommodations: "Kids welcome",
     cancellationPolicy: "48-hour cancellation notice required. 50% charge for cancellations within 48 hours. Full charge for no-shows.",
+    acceptedPaymentTypes: "Cash, Credit Card, Venmo, Zelle",
     services: [
       { name: "Precision Cut", duration: "60 minutes" },
       { name: "Balayage", duration: "3 hours" },
@@ -77,6 +79,7 @@ const stylists = [
     specialty: "Classic and contemporary techniques",
     accommodations: "Kids welcome, Pets allowed",
     cancellationPolicy: "24-hour cancellation notice required. Cancellations within 24 hours may result in a cancellation fee.",
+    acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Cash App",
     services: [
       { name: "Classic Cut", duration: "40 minutes" },
       { name: "Color Treatment", duration: "1.5 hours" },
@@ -107,6 +110,7 @@ const stylists = [
     specialty: "Vintage and retro styling",
     accommodations: "Kids welcome",
     cancellationPolicy: "72-hour cancellation notice required for appointments. Late cancellations subject to 50% fee.",
+    acceptedPaymentTypes: "Cash, Credit Card, PayPal, Venmo",
     services: [
       { name: "Vintage Cut", duration: "50 minutes" },
       { name: "Retro Styling", duration: "1.5 hours" },
@@ -137,6 +141,7 @@ const stylists = [
     specialty: "Asian hair techniques and keratin treatments",
     accommodations: "Kids welcome",
     cancellationPolicy: "48-hour cancellation notice required. Full charge for no-shows. 50% charge for cancellations within 48 hours.",
+    acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Venmo, PayPal, Cash App",
     services: [
       { name: "Asian Hair Cut", duration: "55 minutes" },
       { name: "Keratin Treatment", duration: "2.5 hours" },
@@ -167,6 +172,7 @@ const stylists = [
     specialty: "Natural hair and protective styles",
     accommodations: "Kids welcome, Pets allowed",
     cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or same-day cancellations.",
+    acceptedPaymentTypes: "Cash, Credit Card, Venmo, PayPal, Cash App",
     services: [
       { name: "Natural Hair Cut", duration: "45 minutes" },
       { name: "Protective Style", duration: "2 hours" },
@@ -197,6 +203,7 @@ const stylists = [
     specialty: "Men's grooming and fades",
     accommodations: "Kids welcome",
     cancellationPolicy: "24-hour cancellation notice required. Cancellations within 24 hours may be charged 50% of service cost.",
+    acceptedPaymentTypes: "Cash, Credit Card, Debit Card",
     services: [
       { name: "Men's Cut", duration: "30 minutes" },
       { name: "Fade", duration: "45 minutes" },
@@ -227,6 +234,7 @@ const stylists = [
     specialty: "Bridal and special event styling",
     accommodations: "Kids welcome",
     cancellationPolicy: "7-day cancellation notice required for bridal appointments. 50% non-refundable deposit required at booking.",
+    acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Check, PayPal, Venmo",
     services: [
       { name: "Bridal Consultation", duration: "1 hour" },
       { name: "Bridal Updo", duration: "2 hours" },
@@ -257,6 +265,7 @@ const stylists = [
     specialty: "Quick cuts and express services",
     accommodations: "Kids welcome, Pets allowed",
     cancellationPolicy: "12-hour cancellation notice required. Full charge for no-shows.",
+    acceptedPaymentTypes: "Cash, Credit Card, Venmo",
     services: [
       { name: "Express Cut", duration: "25 minutes" },
       { name: "Quick Style", duration: "20 minutes" },
@@ -287,6 +296,7 @@ const stylists = [
     specialty: "Curly hair and texture work",
     accommodations: "Kids welcome",
     cancellationPolicy: "24-hour cancellation notice required. Full charge for cancellations within 24 hours or no-shows.",
+    acceptedPaymentTypes: "Cash, Credit Card, Venmo, PayPal, Cash App",
     services: [
       { name: "Curly Cut", duration: "1 hour" },
       { name: "Deva Cut", duration: "1.5 hours" },
@@ -317,6 +327,7 @@ const stylists = [
     specialty: "Edgy and alternative styles",
     accommodations: "Kids welcome",
     cancellationPolicy: "48-hour cancellation notice required for color services. 24-hour notice for cuts. Full charge for no-shows.",
+    acceptedPaymentTypes: "Cash, Credit Card, Venmo, Zelle, Cash App",
     services: [
       { name: "Alternative Cut", duration: "1 hour" },
       { name: "Undercut", duration: "50 minutes" },
@@ -347,6 +358,7 @@ const stylists = [
     specialty: "Classic elegance and timeless styles",
     accommodations: "Kids welcome",
     cancellationPolicy: "72-hour cancellation notice required. Full charge for cancellations within 72 hours.",
+    acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Check, PayPal",
     services: [
       { name: "Classic Cut", duration: "50 minutes" },
       { name: "Elegant Updo", duration: "2 hours" },
@@ -377,6 +389,7 @@ const stylists = [
     specialty: "Hair extensions and volumizing",
     accommodations: "Kids welcome, Pets allowed",
     cancellationPolicy: "48-hour cancellation notice required. 50% deposit required for extension appointments. Full charge for no-shows.",
+    acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Venmo, PayPal, Zelle",
     services: [
       { name: "Extension Consultation", duration: "1 hour" },
       { name: "Tape-In Extensions", duration: "2.5 hours" },
@@ -420,6 +433,22 @@ function App() {
   const [selectedHairStyles, setSelectedHairStyles] = React.useState([]);
   const [customHairStyleInput, setCustomHairStyleInput] = React.useState('');
   const [hairStyleSearchQuery, setHairStyleSearchQuery] = React.useState('');
+  const [selectedPaymentTypes, setSelectedPaymentTypes] = React.useState([]);
+
+  const paymentTypes = [
+    "Cash",
+    "Credit Card",
+    "Debit Card",
+    "Check",
+    "Venmo",
+    "PayPal",
+    "Zelle",
+    "Cash App",
+    "Apple Pay",
+    "Google Pay",
+    "Square",
+    "Stripe"
+  ];
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
@@ -593,6 +622,9 @@ function App() {
                     <p><span className="label">Willing to Travel:</span> {selectedStylist.willingToTravel}</p>
                     {selectedStylist.accommodations && (
                       <p><span className="label">Accommodations:</span> {selectedStylist.accommodations}</p>
+                    )}
+                    {selectedStylist.acceptedPaymentTypes && (
+                      <p><span className="label">Accepted Payment Types:</span> {selectedStylist.acceptedPaymentTypes}</p>
                     )}
                     {selectedStylist.cancellationPolicy && (
                       <p><span className="label">Cancellation Policy:</span> {selectedStylist.cancellationPolicy}</p>
@@ -779,6 +811,7 @@ function App() {
                   yearsOfExperience: "5 years",
                   specialty: "Modern cuts and styling",
                   accommodations: "Kids welcome",
+                  acceptedPaymentTypes: "Cash, Credit Card, Venmo",
                   cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or cancellations within 24 hours.",
                   services: [
                     { name: "Haircut", duration: "45 minutes" },
@@ -1373,6 +1406,14 @@ function App() {
                           className="edit-input"
                           placeholder="e.g., Kids welcome, Pets allowed"
                         />
+                        <label><span className="label">Accepted Payment Types:</span></label>
+                        <input 
+                          type="text" 
+                          value={editedProfile?.acceptedPaymentTypes || ''} 
+                          onChange={(e) => setEditedProfile({...editedProfile, acceptedPaymentTypes: e.target.value})}
+                          className="edit-input"
+                          placeholder="e.g., Cash, Credit Card, Venmo, PayPal"
+                        />
                         <label><span className="label">Cancellation Policy:</span></label>
                         <textarea 
                           value={editedProfile?.cancellationPolicy || ''} 
@@ -1390,6 +1431,9 @@ function App() {
                         <p><span className="label">Willing to Travel:</span> {currentStylist.willingToTravel}</p>
                         {currentStylist.accommodations && (
                           <p><span className="label">Accommodations:</span> {currentStylist.accommodations}</p>
+                        )}
+                        {currentStylist.acceptedPaymentTypes && (
+                          <p><span className="label">Accepted Payment Types:</span> {currentStylist.acceptedPaymentTypes}</p>
                         )}
                         {currentStylist.cancellationPolicy && (
                           <p><span className="label">Cancellation Policy:</span> {currentStylist.cancellationPolicy}</p>
@@ -1971,6 +2015,34 @@ function App() {
                   />
                 </div>
                 <div className="form-group">
+                  <label>Accepted Payment Types</label>
+                  <p className="form-hint">Select all payment types you accept</p>
+                  <div className="payment-types-grid">
+                    {paymentTypes.map((type) => (
+                      <label key={type} className="payment-type-checkbox">
+                        <input
+                          type="checkbox"
+                          checked={selectedPaymentTypes.includes(type)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedPaymentTypes([...selectedPaymentTypes, type]);
+                            } else {
+                              setSelectedPaymentTypes(selectedPaymentTypes.filter(t => t !== type));
+                            }
+                          }}
+                        />
+                        <span>{type}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {/* Hidden input for form submission */}
+                  <input
+                    type="hidden"
+                    name="acceptedPaymentTypes"
+                    value={selectedPaymentTypes.join(', ')}
+                  />
+                </div>
+                <div className="form-group">
                   <label htmlFor="cancellationPolicy">Cancellation Policy</label>
                   <textarea 
                     id="cancellationPolicy" 
@@ -2413,6 +2485,11 @@ function App() {
                 {stylist.accommodations && (
                   <p className="stylist-accommodations">
                     <span className="label">Accommodations:</span> {stylist.accommodations}
+                  </p>
+                )}
+                {stylist.acceptedPaymentTypes && (
+                  <p className="stylist-payment-types">
+                    <span className="label">Accepted Payment Types:</span> {stylist.acceptedPaymentTypes}
                   </p>
                 )}
                 {stylist.cancellationPolicy && (
