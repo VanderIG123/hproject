@@ -419,6 +419,7 @@ function App() {
   const [portfolioPhotos, setPortfolioPhotos] = React.useState([]);
   const [selectedHairStyles, setSelectedHairStyles] = React.useState([]);
   const [customHairStyleInput, setCustomHairStyleInput] = React.useState('');
+  const [hairStyleSearchQuery, setHairStyleSearchQuery] = React.useState('');
 
   // Close dropdowns when clicking outside
   React.useEffect(() => {
@@ -453,9 +454,15 @@ function App() {
   // Initialize editedUserProfile when entering edit mode
   React.useEffect(() => {
     if (isEditingUserProfile && loggedInUser && !editedUserProfile) {
+      // Parse preferences from comma-separated string to array
+      const preferencesArray = loggedInUser.preferences 
+        ? loggedInUser.preferences.split(',').map(p => p.trim()).filter(p => p)
+        : [];
+      
       setEditedUserProfile({ 
         ...loggedInUser,
-        favorites: [...(loggedInUser.favorites || [])] // Preserve favorites array
+        favorites: [...(loggedInUser.favorites || [])], // Preserve favorites array
+        preferencesArray: preferencesArray // Store as array for editing
       });
     }
   }, [isEditingUserProfile, loggedInUser, editedUserProfile]);
@@ -819,15 +826,22 @@ function App() {
     const favoriteStylists = stylists.filter(s => userFavorites.includes(s.id));
     
     const handleSaveUserProfile = () => {
-      setLoggedInUser(editedUserProfile);
+      // Clean up preferencesArray before saving
+      const { preferencesArray, ...profileToSave } = editedUserProfile;
+      setLoggedInUser({
+        ...profileToSave,
+        preferences: editedUserProfile.preferences || ''
+      });
       setIsEditingUserProfile(false);
       setEditedUserProfile(null);
+      setCustomHairStyleInput(''); // Clear custom input
       alert('Profile saved successfully!');
     };
 
     const handleCancelEditUser = () => {
       setIsEditingUserProfile(false);
       setEditedUserProfile(null);
+      setCustomHairStyleInput(''); // Clear custom input
     };
 
     return (
@@ -940,18 +954,181 @@ function App() {
                   <h2 className="detail-section-title">Preferences</h2>
                   {isEditingUserProfile ? (
                     <div className="edit-form-group">
-                      <label><span className="label">Style Preferences:</span></label>
-                      <textarea 
-                        value={editedUserProfile?.preferences || ''} 
-                        onChange={(e) => setEditedUserProfile({...editedUserProfile, preferences: e.target.value})}
-                        className="edit-textarea"
-                        rows="4"
-                        placeholder="Describe your style preferences..."
-                      />
+                      <label><span className="label">Hair Style Preferences</span></label>
+                      <p className="form-hint">Select from available styles or add your own</p>
+                      
+                      {/* Search Input */}
+                      <div className="hair-style-search-wrapper">
+                        <input
+                          type="text"
+                          className="hair-style-search-input"
+                          placeholder="Search hair styles..."
+                          value={hairStyleSearchQuery}
+                          onChange={(e) => setHairStyleSearchQuery(e.target.value)}
+                        />
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hair-style-search-icon">
+                          <circle cx="11" cy="11" r="8"></circle>
+                          <path d="m21 21-4.35-4.35"></path>
+                        </svg>
+                        {hairStyleSearchQuery && (
+                          <button
+                            type="button"
+                            className="hair-style-search-clear"
+                            onClick={() => setHairStyleSearchQuery('')}
+                            aria-label="Clear search"
+                          >
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        )}
+                      </div>
+                      
+                      {/* Predefined Hair Styles */}
+                      <div className="hair-styles-grid">
+                        {[
+                          // Basic Services
+                          "Haircut", "Hair Color", "Highlights", "Balayage", "Ombre",
+                          "Blowout", "Updo", "Bridal", "Men's Cut", "Fade",
+                          "Beard Trim", "Perm", "Keratin Treatment", "Hair Extensions",
+                          "Braids", "Natural Hair", "Curly Hair", "Straightening",
+                          "Vintage", "Retro", "Classic", "Modern", "Edgy",
+                          // Black Hair & Natural Hair Styles
+                          "Box Braids", "Cornrows", "Ghana Braids", "Senegalese Twists", "Fulani Braids",
+                          "Locs", "Dreadlocks", "Starter Locs", "Maintenance Locs", "Interlocking",
+                          "Two Strand Twists", "Flat Twists", "Bantu Knots", "Finger Coils", "Wash and Go",
+                          "TWA (Teeny Weeny Afro)", "Afro", "Puff", "Pineapple", "Protective Styles",
+                          "Wig Installation", "Weave Installation", "Sew-In", "Quick Weave", "Closure",
+                          "Frontal", "360 Frontal", "Crochet Braids", "Passion Twists", "Knotless Braids",
+                          "Feed-In Braids", "Micro Braids", "Goddess Braids", "Dutch Braids", "French Braids",
+                          // Textured & Curly Hair
+                          "Deva Cut", "Curly Cut", "Dry Cut", "Razor Cut", "Texturizing",
+                          "Layered Cut", "Shag Cut", "Pixie Cut", "Bob Cut", "Lob Cut",
+                          // Color & Highlights
+                          "Full Color", "Root Touch-Up", "Color Correction", "Bleach", "Toner",
+                          "Foil Highlights", "Babylights", "Balayage Highlights", "Ombre Color", "Sombre",
+                          "Fashion Colors", "Pastel Colors", "Vivid Colors", "Color Melt", "Shadow Root",
+                          // Styling & Treatments
+                          "Hair Treatment", "Deep Conditioning", "Protein Treatment", "Hot Oil Treatment", "Scalp Treatment",
+                          "Hair Mask", "Hair Steam", "Hair Botox", "Hair Gloss", "Hair Glaze",
+                          // Special Occasions
+                          "Wedding Hair", "Prom Hair", "Event Styling", "Red Carpet", "Photoshoot",
+                          "Hair & Makeup", "Trial Run", "Hair Consultation", "Color Consultation", "Style Consultation"
+                        ].filter((style) => {
+                          if (!hairStyleSearchQuery.trim()) return true;
+                          return style.toLowerCase().includes(hairStyleSearchQuery.toLowerCase());
+                        }).map((style) => (
+                          <label key={style} className="hair-style-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={(editedUserProfile?.preferencesArray || []).includes(style)}
+                              onChange={(e) => {
+                                const currentPrefs = editedUserProfile?.preferencesArray || [];
+                                let updatedPrefs;
+                                if (e.target.checked) {
+                                  updatedPrefs = [...currentPrefs, style];
+                                } else {
+                                  updatedPrefs = currentPrefs.filter(s => s !== style);
+                                }
+                                setEditedUserProfile({
+                                  ...editedUserProfile,
+                                  preferencesArray: updatedPrefs,
+                                  preferences: updatedPrefs.join(', ')
+                                });
+                              }}
+                            />
+                            <span>{style}</span>
+                          </label>
+                        ))}
+                      </div>
+                      
+                      {/* Custom Hair Style Input */}
+                      <div className="custom-hair-style-input">
+                        <input
+                          type="text"
+                          value={customHairStyleInput}
+                          onChange={(e) => setCustomHairStyleInput(e.target.value)}
+                          placeholder="Type a custom hair style..."
+                          onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const currentPrefs = editedUserProfile?.preferencesArray || [];
+                              if (customHairStyleInput.trim() && !currentPrefs.includes(customHairStyleInput.trim())) {
+                                const updatedPrefs = [...currentPrefs, customHairStyleInput.trim()];
+                                setEditedUserProfile({
+                                  ...editedUserProfile,
+                                  preferencesArray: updatedPrefs,
+                                  preferences: updatedPrefs.join(', ')
+                                });
+                                setCustomHairStyleInput('');
+                              }
+                            }
+                          }}
+                        />
+                        <button
+                          type="button"
+                          className="add-custom-style-button"
+                          onClick={() => {
+                            const currentPrefs = editedUserProfile?.preferencesArray || [];
+                            if (customHairStyleInput.trim() && !currentPrefs.includes(customHairStyleInput.trim())) {
+                              const updatedPrefs = [...currentPrefs, customHairStyleInput.trim()];
+                              setEditedUserProfile({
+                                ...editedUserProfile,
+                                preferencesArray: updatedPrefs,
+                                preferences: updatedPrefs.join(', ')
+                              });
+                              setCustomHairStyleInput('');
+                            }
+                          }}
+                        >
+                          Add
+                        </button>
+                      </div>
+                      
+                      {/* Selected Styles Bubbles */}
+                      {(editedUserProfile?.preferencesArray || []).length > 0 && (
+                        <div className="selected-hair-styles">
+                          {(editedUserProfile?.preferencesArray || []).map((style, index) => (
+                            <span key={index} className="hair-style-bubble">
+                              {style}
+                              <button
+                                type="button"
+                                className="remove-bubble-button"
+                                onClick={() => {
+                                  const currentPrefs = editedUserProfile?.preferencesArray || [];
+                                  const updatedPrefs = currentPrefs.filter((_, i) => i !== index);
+                                  setEditedUserProfile({
+                                    ...editedUserProfile,
+                                    preferencesArray: updatedPrefs,
+                                    preferences: updatedPrefs.join(', ')
+                                  });
+                                }}
+                                aria-label={`Remove ${style}`}
+                              >
+                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                                </svg>
+                              </button>
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <div className="detail-pricing-info">
-                      <p><span className="label">Style Preferences:</span> {currentUser.preferences || "No preferences set"}</p>
+                      {currentUser.preferences ? (
+                        <div className="preferences-display">
+                          {currentUser.preferences.split(',').map((pref, index) => (
+                            <span key={index} className="hair-style-bubble-display">
+                              {pref.trim()}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <p><span className="label">Style Preferences:</span> No preferences set</p>
+                      )}
                     </div>
                   )}
                 </div>
@@ -1503,15 +1680,68 @@ function App() {
                   <label>Hair Style Preferences</label>
                   <p className="form-hint">Select from available styles or add your own</p>
                   
+                  {/* Search Input */}
+                  <div className="hair-style-search-wrapper">
+                    <input
+                      type="text"
+                      className="hair-style-search-input"
+                      placeholder="Search hair styles..."
+                      value={hairStyleSearchQuery}
+                      onChange={(e) => setHairStyleSearchQuery(e.target.value)}
+                    />
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="hair-style-search-icon">
+                      <circle cx="11" cy="11" r="8"></circle>
+                      <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    {hairStyleSearchQuery && (
+                      <button
+                        type="button"
+                        className="hair-style-search-clear"
+                        onClick={() => setHairStyleSearchQuery('')}
+                        aria-label="Clear search"
+                      >
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    )}
+                  </div>
+                  
                   {/* Predefined Hair Styles */}
                   <div className="hair-styles-grid">
                     {[
+                      // Basic Services
                       "Haircut", "Hair Color", "Highlights", "Balayage", "Ombre",
                       "Blowout", "Updo", "Bridal", "Men's Cut", "Fade",
                       "Beard Trim", "Perm", "Keratin Treatment", "Hair Extensions",
                       "Braids", "Natural Hair", "Curly Hair", "Straightening",
-                      "Vintage", "Retro", "Classic", "Modern", "Edgy"
-                    ].map((style) => (
+                      "Vintage", "Retro", "Classic", "Modern", "Edgy",
+                      // Black Hair & Natural Hair Styles
+                      "Box Braids", "Cornrows", "Ghana Braids", "Senegalese Twists", "Fulani Braids",
+                      "Locs", "Dreadlocks", "Starter Locs", "Maintenance Locs", "Interlocking",
+                      "Two Strand Twists", "Flat Twists", "Bantu Knots", "Finger Coils", "Wash and Go",
+                      "TWA (Teeny Weeny Afro)", "Afro", "Puff", "Pineapple", "Protective Styles",
+                      "Wig Installation", "Weave Installation", "Sew-In", "Quick Weave", "Closure",
+                      "Frontal", "360 Frontal", "Crochet Braids", "Passion Twists", "Knotless Braids",
+                      "Feed-In Braids", "Micro Braids", "Goddess Braids", "Dutch Braids", "French Braids",
+                      // Textured & Curly Hair
+                      "Deva Cut", "Curly Cut", "Dry Cut", "Razor Cut", "Texturizing",
+                      "Layered Cut", "Shag Cut", "Pixie Cut", "Bob Cut", "Lob Cut",
+                      // Color & Highlights
+                      "Full Color", "Root Touch-Up", "Color Correction", "Bleach", "Toner",
+                      "Foil Highlights", "Babylights", "Balayage Highlights", "Ombre Color", "Sombre",
+                      "Fashion Colors", "Pastel Colors", "Vivid Colors", "Color Melt", "Shadow Root",
+                      // Styling & Treatments
+                      "Hair Treatment", "Deep Conditioning", "Protein Treatment", "Hot Oil Treatment", "Scalp Treatment",
+                      "Hair Mask", "Hair Steam", "Hair Botox", "Hair Gloss", "Hair Glaze",
+                      // Special Occasions
+                      "Wedding Hair", "Prom Hair", "Event Styling", "Red Carpet", "Photoshoot",
+                      "Hair & Makeup", "Trial Run", "Hair Consultation", "Color Consultation", "Style Consultation"
+                    ].filter((style) => {
+                      if (!hairStyleSearchQuery.trim()) return true;
+                      return style.toLowerCase().includes(hairStyleSearchQuery.toLowerCase());
+                    }).map((style) => (
                       <label key={style} className="hair-style-checkbox">
                         <input
                           type="checkbox"
