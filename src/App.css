@@ -522,6 +522,7 @@
 .stylist-travel,
 .stylist-experience,
 .stylist-accommodations,
+.stylist-cancellation-policy,
 .stylist-specialty {
   display: flex;
   align-items: flex-start;
