@@ -13,11 +13,17 @@
   position: relative;
 }
 
-.register-stylist-button {
+.stylist-menu-container {
   position: absolute;
   right: 20px;
   top: 50%;
   transform: translateY(-50%);
+}
+
+.register-stylist-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   padding: 12px 24px;
   background: #000000;
   color: #ffffff;
@@ -33,13 +39,52 @@
 
 .register-stylist-button:hover {
   background: #333333;
-  transform: translateY(-50%) translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .register-stylist-button:focus {
   outline: none;
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
+}
+
+.stylist-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  min-width: 150px;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdown-item {
+  width: 100%;
+  padding: 12px 20px;
+  background: #ffffff;
+  color: #000000;
+  border: none;
+  text-align: left;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: block;
+}
+
+.dropdown-item:hover {
+  background: #f5f5f5;
+}
+
+.dropdown-item:focus {
+  outline: none;
+  background: #f5f5f5;
+}
+
+.dropdown-item:first-child {
+  border-bottom: 1px solid #f0f0f0;
 }
 
 .back-button {
@@ -376,6 +421,7 @@
 .stylist-availability,
 .stylist-travel,
 .stylist-experience,
+.stylist-accommodations,
 .stylist-specialty {
   display: flex;
   align-items: flex-start;
@@ -912,13 +958,22 @@
     gap: 15px;
   }
 
-  .register-stylist-button {
+  .stylist-menu-container {
     position: relative;
     right: auto;
     top: auto;
     transform: none;
     margin-bottom: 20px;
     width: 100%;
+  }
+
+  .register-stylist-button {
+    width: 100%;
+  }
+
+  .stylist-dropdown {
+    width: 100%;
+    right: 0;
   }
 }
 

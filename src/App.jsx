@@ -15,6 +15,7 @@ const stylists = [
     willingToTravel: "Yes, within 15 miles",
     yearsOfExperience: "12 years",
     specialty: "Modern cuts and color techniques",
+    accommodations: "Kids welcome, Pets allowed",
     services: [
       { name: "Haircut", duration: "45 minutes" },
       { name: "Hair Color", duration: "2 hours" },
@@ -43,6 +44,7 @@ const stylists = [
     willingToTravel: "Yes, within 25 miles",
     yearsOfExperience: "15 years",
     specialty: "Precision cuts and balayage",
+    accommodations: "Kids welcome",
     services: [
       { name: "Precision Cut", duration: "60 minutes" },
       { name: "Balayage", duration: "3 hours" },
@@ -71,6 +73,7 @@ const stylists = [
     willingToTravel: "No, salon only",
     yearsOfExperience: "7 years",
     specialty: "Classic and contemporary techniques",
+    accommodations: "Kids welcome, Pets allowed",
     services: [
       { name: "Classic Cut", duration: "40 minutes" },
       { name: "Color Treatment", duration: "1.5 hours" },
@@ -99,6 +102,7 @@ const stylists = [
     willingToTravel: "Yes, within 20 miles",
     yearsOfExperience: "8 years",
     specialty: "Vintage and retro styling",
+    accommodations: "Kids welcome",
     services: [
       { name: "Vintage Cut", duration: "50 minutes" },
       { name: "Retro Styling", duration: "1.5 hours" },
@@ -127,6 +131,7 @@ const stylists = [
     willingToTravel: "No, salon only",
     yearsOfExperience: "18 years",
     specialty: "Asian hair techniques and keratin treatments",
+    accommodations: "Kids welcome",
     services: [
       { name: "Asian Hair Cut", duration: "55 minutes" },
       { name: "Keratin Treatment", duration: "2.5 hours" },
@@ -155,6 +160,7 @@ const stylists = [
     willingToTravel: "Yes, within 10 miles",
     yearsOfExperience: "6 years",
     specialty: "Natural hair and protective styles",
+    accommodations: "Kids welcome, Pets allowed",
     services: [
       { name: "Natural Hair Cut", duration: "45 minutes" },
       { name: "Protective Style", duration: "2 hours" },
@@ -183,6 +189,7 @@ const stylists = [
     willingToTravel: "Yes, within 30 miles",
     yearsOfExperience: "5 years",
     specialty: "Men's grooming and fades",
+    accommodations: "Kids welcome",
     services: [
       { name: "Men's Cut", duration: "30 minutes" },
       { name: "Fade", duration: "45 minutes" },
@@ -211,6 +218,7 @@ const stylists = [
     willingToTravel: "Yes, within 15 miles",
     yearsOfExperience: "20 years",
     specialty: "Bridal and special event styling",
+    accommodations: "Kids welcome",
     services: [
       { name: "Bridal Consultation", duration: "1 hour" },
       { name: "Bridal Updo", duration: "2 hours" },
@@ -239,6 +247,7 @@ const stylists = [
     willingToTravel: "No, salon only",
     yearsOfExperience: "4 years",
     specialty: "Quick cuts and express services",
+    accommodations: "Kids welcome, Pets allowed",
     services: [
       { name: "Express Cut", duration: "25 minutes" },
       { name: "Quick Style", duration: "20 minutes" },
@@ -267,6 +276,7 @@ const stylists = [
     willingToTravel: "Yes, within 12 miles",
     yearsOfExperience: "11 years",
     specialty: "Curly hair and texture work",
+    accommodations: "Kids welcome",
     services: [
       { name: "Curly Cut", duration: "1 hour" },
       { name: "Deva Cut", duration: "1.5 hours" },
@@ -295,6 +305,7 @@ const stylists = [
     willingToTravel: "Yes, within 18 miles",
     yearsOfExperience: "9 years",
     specialty: "Edgy and alternative styles",
+    accommodations: "Kids welcome",
     services: [
       { name: "Alternative Cut", duration: "1 hour" },
       { name: "Undercut", duration: "50 minutes" },
@@ -323,6 +334,7 @@ const stylists = [
     willingToTravel: "No, salon only",
     yearsOfExperience: "22 years",
     specialty: "Classic elegance and timeless styles",
+    accommodations: "Kids welcome",
     services: [
       { name: "Classic Cut", duration: "50 minutes" },
       { name: "Elegant Updo", duration: "2 hours" },
@@ -351,6 +363,7 @@ const stylists = [
     willingToTravel: "Yes, within 22 miles",
     yearsOfExperience: "6 years",
     specialty: "Hair extensions and volumizing",
+    accommodations: "Kids welcome, Pets allowed",
     services: [
       { name: "Extension Consultation", duration: "1 hour" },
       { name: "Tape-In Extensions", duration: "2.5 hours" },
@@ -375,7 +388,25 @@ function App() {
   const [selectedTravel, setSelectedTravel] = React.useState('all');
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
   const [showRegistration, setShowRegistration] = React.useState(false);
+  const [showLogin, setShowLogin] = React.useState(false);
+  const [showStylistDropdown, setShowStylistDropdown] = React.useState(false);
   const [registrationServices, setRegistrationServices] = React.useState([{ name: '', duration: '' }]);
+
+  // Close dropdown when clicking outside
+  React.useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (showStylistDropdown && !event.target.closest('.stylist-menu-container')) {
+        setShowStylistDropdown(false);
+      }
+    };
+
+    if (showStylistDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+      };
+    }
+  }, [showStylistDropdown]);
 
   // Get unique values for filters
   const specialties = [...new Set(stylists.map(s => s.specialty))];
@@ -478,6 +509,9 @@ function App() {
                     <p><span className="label">Hours:</span> {selectedStylist.hours}</p>
                     <p><span className="label">Current Availability:</span> {selectedStylist.currentAvailability}</p>
                     <p><span className="label">Willing to Travel:</span> {selectedStylist.willingToTravel}</p>
+                    {selectedStylist.accommodations && (
+                      <p><span className="label">Accommodations:</span> {selectedStylist.accommodations}</p>
+                    )}
                   </div>
                   
                   <h2 className="detail-section-title">Experience</h2>
@@ -547,6 +581,53 @@ function App() {
               </div>
             </div>
           )}
+        </main>
+      </div>
+    );
+  }
+
+  // Show login page
+  if (showLogin) {
+    return (
+      <div className="app">
+        <header className="header">
+          <button 
+            className="back-button"
+            onClick={() => setShowLogin(false)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          <h1>Stylist Login</h1>
+          <p className="subtitle">Sign in to your stylist account</p>
+        </header>
+        
+        <main className="main-content">
+          <div className="registration-container">
+            <form className="registration-form" onSubmit={(e) => {
+              e.preventDefault();
+              alert('Login submitted! (This is a demo - no authentication is implemented)');
+              setShowLogin(false);
+            }}>
+              <div className="form-section">
+                <div className="form-group">
+                  <label htmlFor="login-email">Email *</label>
+                  <input type="email" id="login-email" name="email" required />
+                </div>
+                <div className="form-group">
+                  <label htmlFor="login-password">Password *</label>
+                  <input type="password" id="login-password" name="password" required />
+                </div>
+              </div>
+
+              <div className="form-actions">
+                <button type="submit" className="submit-button">Login</button>
+                <button type="button" className="cancel-button" onClick={() => setShowLogin(false)}>Cancel</button>
+              </div>
+            </form>
+          </div>
         </main>
       </div>
     );
@@ -643,6 +724,15 @@ function App() {
                     <option value="No, salon only">No, salon only</option>
                   </select>
                 </div>
+                <div className="form-group">
+                  <label htmlFor="accommodations">Accommodations</label>
+                  <input 
+                    type="text" 
+                    id="accommodations" 
+                    name="accommodations" 
+                    placeholder="e.g., Kids welcome, Pets allowed"
+                  />
+                </div>
               </div>
 
               <div className="form-section">
@@ -723,12 +813,39 @@ function App() {
   return (
     <div className="app">
       <header className="header">
-        <button 
-          className="register-stylist-button"
-          onClick={() => setShowRegistration(true)}
-        >
-          I am a stylist
-        </button>
+        <div className="stylist-menu-container">
+          <button 
+            className="register-stylist-button"
+            onClick={() => setShowStylistDropdown(!showStylistDropdown)}
+          >
+            I am a stylist
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', transition: 'transform 0.3s ease', transform: showStylistDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+              <path d="M6 9l6 6 6-6"/>
+            </svg>
+          </button>
+          {showStylistDropdown && (
+            <div className="stylist-dropdown">
+              <button 
+                className="dropdown-item"
+                onClick={() => {
+                  setShowStylistDropdown(false);
+                  setShowRegistration(true);
+                }}
+              >
+                Register
+              </button>
+              <button 
+                className="dropdown-item"
+                onClick={() => {
+                  setShowStylistDropdown(false);
+                  setShowLogin(true);
+                }}
+              >
+                Login
+              </button>
+            </div>
+          )}
+        </div>
         <h1>Hair Stylists</h1>
         <p className="subtitle">Find your perfect stylist</p>
       </header>
@@ -885,6 +1002,11 @@ function App() {
                 <p className="stylist-experience">
                   <span className="label">Years of Experience:</span> {stylist.yearsOfExperience}
                 </p>
+                {stylist.accommodations && (
+                  <p className="stylist-accommodations">
+                    <span className="label">Accommodations:</span> {stylist.accommodations}
+                  </p>
+                )}
                 <p className="stylist-specialty">
                   <span className="label">Speciality:</span> {stylist.specialty}
                 </p>
