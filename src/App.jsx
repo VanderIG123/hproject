@@ -393,6 +393,10 @@ function App() {
   const [showUserLogin, setShowUserLogin] = React.useState(false);
   const [showStylistDropdown, setShowStylistDropdown] = React.useState(false);
   const [showUserDropdown, setShowUserDropdown] = React.useState(false);
+  const [loggedInStylist, setLoggedInStylist] = React.useState(null);
+  const [showProfile, setShowProfile] = React.useState(false);
+  const [isEditingProfile, setIsEditingProfile] = React.useState(false);
+  const [editedProfile, setEditedProfile] = React.useState(null);
   const [registrationServices, setRegistrationServices] = React.useState([{ name: '', duration: '' }]);
   const [profilePhoto, setProfilePhoto] = React.useState(null);
   const [portfolioPhotos, setPortfolioPhotos] = React.useState([]);
@@ -415,6 +419,17 @@ function App() {
       };
     }
   }, [showStylistDropdown, showUserDropdown]);
+
+  // Initialize editedProfile when entering edit mode
+  React.useEffect(() => {
+    if (isEditingProfile && loggedInStylist && !editedProfile) {
+      setEditedProfile({ 
+        ...loggedInStylist, 
+        editedServices: [...loggedInStylist.services],
+        editedPortfolio: [...(loggedInStylist.portfolio || [])]
+      });
+    }
+  }, [isEditingProfile, loggedInStylist, editedProfile]);
 
   // Get unique values for filters
   const specialties = [...new Set(stylists.map(s => s.specialty))];
@@ -663,8 +678,43 @@ function App() {
           <div className="registration-container">
             <form className="registration-form" onSubmit={(e) => {
               e.preventDefault();
-              alert('Login submitted! (This is a demo - no authentication is implemented)');
-              setShowLogin(false);
+              const formData = new FormData(e.target);
+              const email = formData.get('email');
+              const password = formData.get('password');
+              
+              // Test account: test@gmail.com / 1234
+              if (email === 'test@gmail.com' && password === '1234') {
+                // Find the test stylist or create a test stylist object
+                const testStylist = stylists.find(s => s.email === 'test@gmail.com') || {
+                  id: 999,
+                  name: "Test Stylist",
+                  profilePicture: "https://i.pravatar.cc/200?img=1",
+                  address: "123 Test Street, Test City, NY 10001",
+                  email: "test@gmail.com",
+                  phone: "(212) 555-0000",
+                  rate: "$80/hour",
+                  hours: "Mon-Fri: 9:00 AM - 6:00 PM",
+                  currentAvailability: "Available this week",
+                  willingToTravel: "Yes, within 15 miles",
+                  yearsOfExperience: "5 years",
+                  specialty: "Modern cuts and styling",
+                  accommodations: "Kids welcome",
+                  services: [
+                    { name: "Haircut", duration: "45 minutes" },
+                    { name: "Hair Color", duration: "2 hours" },
+                    { name: "Highlights", duration: "2.5 hours" }
+                  ],
+                  about: "Test stylist account for demonstration purposes.",
+                  portfolio: [
+                    "https://images.unsplash.com/photo-1560869713-7d0a8b9b0a0a?w=400",
+                    "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400"
+                  ]
+                };
+                setLoggedInStylist(testStylist);
+                setShowLogin(false);
+              } else {
+                alert('Invalid email or password. Use test@gmail.com / 1234 for test account.');
+              }
             }}>
               <div className="form-section">
                 <div className="form-group">
@@ -683,6 +733,431 @@ function App() {
               </div>
             </form>
           </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show profile page for logged in stylist
+  if (showProfile && loggedInStylist) {
+    const currentStylist = isEditingProfile && editedProfile ? editedProfile : loggedInStylist;
+    
+    const handleSaveProfile = () => {
+      const updatedStylist = {
+        ...editedProfile,
+        services: editedProfile.editedServices || editedProfile.services,
+        portfolio: editedProfile.editedPortfolio || editedProfile.portfolio
+      };
+      delete updatedStylist.editedServices;
+      delete updatedStylist.editedPortfolio;
+      setLoggedInStylist(updatedStylist);
+      setIsEditingProfile(false);
+      setEditedProfile(null);
+    };
+
+    const handleCancelEdit = () => {
+      setIsEditingProfile(false);
+      setEditedProfile(null);
+    };
+
+    const similarStylists = stylists.filter(otherStylist => {
+      if (otherStylist.id === loggedInStylist.id) return false;
+      const stylistServiceNames = loggedInStylist.services.map(s => s.name.toLowerCase());
+      const otherServiceNames = otherStylist.services.map(s => s.name.toLowerCase());
+      return stylistServiceNames.some(service => otherServiceNames.includes(service));
+    }).slice(0, 6);
+
+    return (
+      <div className="app">
+        <header className="header">
+          <button 
+            className="back-button"
+            onClick={() => {
+              setShowProfile(false);
+              setIsEditingProfile(false);
+              setEditedProfile(null);
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Home
+          </button>
+          {!isEditingProfile ? (
+            <button 
+              className="edit-profile-button header-right-button"
+              onClick={() => setIsEditingProfile(true)}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+              </svg>
+              Edit Profile
+            </button>
+          ) : (
+            <div className="edit-actions header-right-button">
+              <button 
+                className="save-profile-button"
+                onClick={handleSaveProfile}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                Save Changes
+              </button>
+              <button 
+                className="cancel-edit-button"
+                onClick={handleCancelEdit}
+              >
+                Cancel
+              </button>
+            </div>
+          )}
+          <h1>{currentStylist.name}</h1>
+          <p className="subtitle">{currentStylist.specialty}</p>
+        </header>
+        
+        <main className="main-content detail-page">
+          <div className="detail-container">
+            <div className="detail-main">
+              <div className="detail-image-section">
+                {isEditingProfile ? (
+                  <div className="edit-image-container">
+                    <img 
+                      src={editedProfile?.profilePicture || currentStylist.profilePicture} 
+                      alt={currentStylist.name}
+                      className="detail-profile-picture"
+                    />
+                    <input 
+                      type="text" 
+                      value={editedProfile?.profilePicture || ''} 
+                      onChange={(e) => setEditedProfile({...editedProfile, profilePicture: e.target.value})}
+                      className="edit-image-url-input"
+                      placeholder="Image URL"
+                    />
+                  </div>
+                ) : (
+                  <img 
+                    src={currentStylist.profilePicture} 
+                    alt={currentStylist.name}
+                    className="detail-profile-picture"
+                  />
+                )}
+              </div>
+              
+              <div className="detail-info-section">
+                <div className="detail-info-card">
+                  <h2 className="detail-section-title">Contact Information</h2>
+                  {isEditingProfile ? (
+                    <div className="edit-form-group">
+                      <label><span className="label">Address:</span></label>
+                      <input 
+                        type="text" 
+                        value={editedProfile?.address || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, address: e.target.value})}
+                        className="edit-input"
+                      />
+                      <label><span className="label">Email:</span></label>
+                      <input 
+                        type="email" 
+                        value={editedProfile?.email || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, email: e.target.value})}
+                        className="edit-input"
+                      />
+                      <label><span className="label">Phone:</span></label>
+                      <input 
+                        type="tel" 
+                        value={editedProfile?.phone || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, phone: e.target.value})}
+                        className="edit-input"
+                      />
+                    </div>
+                  ) : (
+                    <div className="detail-contact-info">
+                      <p><span className="label">Address:</span> {currentStylist.address}</p>
+                      <p><span className="label">Email:</span> <a href={`mailto:${currentStylist.email}`}>{currentStylist.email}</a></p>
+                      <p><span className="label">Phone:</span> <a href={`tel:${currentStylist.phone}`}>{currentStylist.phone}</a></p>
+                    </div>
+                  )}
+                  
+                  <h2 className="detail-section-title">Pricing & Availability</h2>
+                  {isEditingProfile ? (
+                    <div className="edit-form-group">
+                      <label><span className="label">Rate:</span></label>
+                      <input 
+                        type="text" 
+                        value={editedProfile?.rate || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, rate: e.target.value})}
+                        className="edit-input"
+                        placeholder="e.g., $85/hour"
+                      />
+                      <label><span className="label">Hours:</span></label>
+                      <input 
+                        type="text" 
+                        value={editedProfile?.hours || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, hours: e.target.value})}
+                        className="edit-input"
+                        placeholder="e.g., Mon-Fri: 9:00 AM - 6:00 PM"
+                      />
+                      <label><span className="label">Current Availability:</span></label>
+                      <input 
+                        type="text" 
+                        value={editedProfile?.currentAvailability || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, currentAvailability: e.target.value})}
+                        className="edit-input"
+                        placeholder="e.g., Available this week"
+                      />
+                      <label><span className="label">Willing to Travel:</span></label>
+                      <select 
+                        value={editedProfile?.willingToTravel || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, willingToTravel: e.target.value})}
+                        className="edit-select"
+                      >
+                        <option value="Yes, within 10 miles">Yes, within 10 miles</option>
+                        <option value="Yes, within 15 miles">Yes, within 15 miles</option>
+                        <option value="Yes, within 20 miles">Yes, within 20 miles</option>
+                        <option value="Yes, within 25 miles">Yes, within 25 miles</option>
+                        <option value="Yes, within 30 miles">Yes, within 30 miles</option>
+                        <option value="No, salon only">No, salon only</option>
+                      </select>
+                      <label><span className="label">Accommodations:</span></label>
+                      <input 
+                        type="text" 
+                        value={editedProfile?.accommodations || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, accommodations: e.target.value})}
+                        className="edit-input"
+                        placeholder="e.g., Kids welcome, Pets allowed"
+                      />
+                    </div>
+                  ) : (
+                    <div className="detail-pricing-info">
+                      <p><span className="label">Rate:</span> {currentStylist.rate}</p>
+                      <p><span className="label">Hours:</span> {currentStylist.hours}</p>
+                      <p><span className="label">Current Availability:</span> {currentStylist.currentAvailability}</p>
+                      <p><span className="label">Willing to Travel:</span> {currentStylist.willingToTravel}</p>
+                      {currentStylist.accommodations && (
+                        <p><span className="label">Accommodations:</span> {currentStylist.accommodations}</p>
+                      )}
+                    </div>
+                  )}
+                  
+                  <h2 className="detail-section-title">Experience</h2>
+                  {isEditingProfile ? (
+                    <div className="edit-form-group">
+                      <label><span className="label">Years of Experience:</span></label>
+                      <input 
+                        type="text" 
+                        value={editedProfile?.yearsOfExperience || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, yearsOfExperience: e.target.value})}
+                        className="edit-input"
+                        placeholder="e.g., 5 years"
+                      />
+                      <label><span className="label">Specialty:</span></label>
+                      <input 
+                        type="text" 
+                        value={editedProfile?.specialty || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, specialty: e.target.value})}
+                        className="edit-input"
+                        placeholder="e.g., Modern cuts and color techniques"
+                      />
+                    </div>
+                  ) : (
+                    <>
+                      <p><span className="label">Years of Experience:</span> {currentStylist.yearsOfExperience}</p>
+                      <p><span className="label">Specialty:</span> {currentStylist.specialty}</p>
+                    </>
+                  )}
+                </div>
+                
+                <div className="detail-info-card">
+                  <h2 className="detail-section-title">Services Offered</h2>
+                  {isEditingProfile ? (
+                    <div className="edit-services-container">
+                      {(editedProfile?.editedServices || editedProfile?.services || []).map((service, index) => (
+                        <div key={index} className="edit-service-row">
+                          <input 
+                            type="text" 
+                            value={service.name || ''} 
+                            onChange={(e) => {
+                              const updatedServices = [...(editedProfile?.editedServices || editedProfile?.services || [])];
+                              updatedServices[index] = { ...updatedServices[index], name: e.target.value };
+                              setEditedProfile({...editedProfile, editedServices: updatedServices});
+                            }}
+                            className="edit-service-input"
+                            placeholder="Service name"
+                          />
+                          <input 
+                            type="text" 
+                            value={service.duration || ''} 
+                            onChange={(e) => {
+                              const updatedServices = [...(editedProfile?.editedServices || editedProfile?.services || [])];
+                              updatedServices[index] = { ...updatedServices[index], duration: e.target.value };
+                              setEditedProfile({...editedProfile, editedServices: updatedServices});
+                            }}
+                            className="edit-service-input"
+                            placeholder="Duration"
+                          />
+                          <button 
+                            type="button"
+                            className="remove-service-button"
+                            onClick={() => {
+                              const updatedServices = (editedProfile?.editedServices || editedProfile?.services || []).filter((_, i) => i !== index);
+                              setEditedProfile({...editedProfile, editedServices: updatedServices});
+                            }}
+                          >
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </div>
+                      ))}
+                      <button 
+                        type="button"
+                        className="add-service-button"
+                        onClick={() => {
+                          const updatedServices = [...(editedProfile?.editedServices || editedProfile?.services || []), { name: '', duration: '' }];
+                          setEditedProfile({...editedProfile, editedServices: updatedServices});
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                          <line x1="12" y1="5" x2="12" y2="19"></line>
+                          <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add Service
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="detail-services-list">
+                      {currentStylist.services.map((service, index) => (
+                        <div key={index} className="detail-service-item">
+                          <span className="service-name">{service.name}</span>
+                          <span className="service-duration">{service.duration}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                <div className="detail-info-card">
+                  <h2 className="detail-section-title">About</h2>
+                  {isEditingProfile ? (
+                    <textarea 
+                      value={editedProfile?.about || ''} 
+                      onChange={(e) => setEditedProfile({...editedProfile, about: e.target.value})}
+                      className="edit-textarea"
+                      rows="5"
+                      placeholder="Tell us about your experience and style..."
+                    />
+                  ) : (
+                    <p className="detail-about-text">{currentStylist.about}</p>
+                  )}
+                </div>
+              </div>
+            </div>
+            
+            <div className="portfolio-section">
+              <h2 className="detail-section-title portfolio-title">Previous Work</h2>
+              {isEditingProfile ? (
+                <div className="edit-portfolio-container">
+                  {(editedProfile?.editedPortfolio || editedProfile?.portfolio || []).map((imageUrl, index) => (
+                    <div key={index} className="edit-portfolio-item">
+                      <img 
+                        src={imageUrl} 
+                        alt={`Previous work ${index + 1}`}
+                        className="portfolio-preview-small"
+                        loading="lazy"
+                      />
+                      <input 
+                        type="text" 
+                        value={imageUrl} 
+                        onChange={(e) => {
+                          const updatedPortfolio = [...(editedProfile?.editedPortfolio || editedProfile?.portfolio || [])];
+                          updatedPortfolio[index] = e.target.value;
+                          setEditedProfile({...editedProfile, editedPortfolio: updatedPortfolio});
+                        }}
+                        className="edit-portfolio-url-input"
+                        placeholder="Image URL"
+                      />
+                      <button 
+                        type="button"
+                        className="remove-portfolio-button"
+                        onClick={() => {
+                          const updatedPortfolio = (editedProfile?.editedPortfolio || editedProfile?.portfolio || []).filter((_, i) => i !== index);
+                          setEditedProfile({...editedProfile, editedPortfolio: updatedPortfolio});
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  <button 
+                    type="button"
+                    className="add-portfolio-button"
+                    onClick={() => {
+                      const updatedPortfolio = [...(editedProfile?.editedPortfolio || editedProfile?.portfolio || []), ''];
+                      setEditedProfile({...editedProfile, editedPortfolio: updatedPortfolio});
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Portfolio Image
+                  </button>
+                </div>
+              ) : (
+                currentStylist.portfolio && currentStylist.portfolio.length > 0 && (
+                  <div className="portfolio-gallery">
+                    {currentStylist.portfolio.map((imageUrl, index) => (
+                      <div key={index} className="portfolio-item">
+                        <img 
+                          src={imageUrl} 
+                          alt={`Previous work ${index + 1}`}
+                          className="portfolio-image"
+                          loading="lazy"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+          
+          {similarStylists.length > 0 && (
+            <div className="similar-stylists-section">
+              <h2 className="similar-section-title">Similar Stylists</h2>
+              <div className="similar-stylists-carousel">
+                {similarStylists.map((similarStylist) => (
+                  <div 
+                    key={similarStylist.id} 
+                    className="similar-stylist-item"
+                    onClick={() => {
+                      setShowProfile(false);
+                      setSelectedStylistId(similarStylist.id);
+                    }}
+                  >
+                    <img 
+                      src={similarStylist.profilePicture} 
+                      alt={similarStylist.name}
+                      className="similar-item-picture"
+                    />
+                    <div className="similar-item-info">
+                      <h3 className="similar-item-name">{similarStylist.name}</h3>
+                      <p className="similar-item-specialty">{similarStylist.specialty}</p>
+                      <p className="similar-item-rate">{similarStylist.rate}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </main>
       </div>
     );
@@ -1031,72 +1506,103 @@ function App() {
     <div className="app">
       <header className="header">
         <div className="header-buttons-container">
-          <div className="user-menu-container">
-            <button 
-              className="looking-for-stylist-button"
-              onClick={() => setShowUserDropdown(!showUserDropdown)}
-            >
-              I'm looking for a stylist
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', transition: 'transform 0.3s ease', transform: showUserDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
-            {showUserDropdown && (
-              <div className="user-dropdown">
+          {loggedInStylist ? (
+            <div className="logged-in-buttons">
+              <button 
+                className="profile-button"
+                onClick={() => setShowProfile(true)}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                My Profile
+              </button>
+              <button 
+                className="logout-button"
+                onClick={() => {
+                  setLoggedInStylist(null);
+                  setShowProfile(false);
+                }}
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                  <polyline points="16 17 21 12 16 7"></polyline>
+                  <line x1="21" y1="12" x2="9" y2="12"></line>
+                </svg>
+                Logout
+              </button>
+            </div>
+          ) : (
+            <>
+              <div className="user-menu-container">
                 <button 
-                  className="dropdown-item"
-                  onClick={() => {
-                    setShowUserDropdown(false);
-                    setShowUserRegistration(true);
-                  }}
+                  className="looking-for-stylist-button"
+                  onClick={() => setShowUserDropdown(!showUserDropdown)}
                 >
-                  Register
+                  I'm looking for a stylist
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', transition: 'transform 0.3s ease', transform: showUserDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
                 </button>
-                <button 
-                  className="dropdown-item"
-                  onClick={() => {
-                    setShowUserDropdown(false);
-                    setShowUserLogin(true);
-                  }}
-                >
-                  Login
-                </button>
+                {showUserDropdown && (
+                  <div className="user-dropdown">
+                    <button 
+                      className="dropdown-item"
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        setShowUserRegistration(true);
+                      }}
+                    >
+                      Register
+                    </button>
+                    <button 
+                      className="dropdown-item"
+                      onClick={() => {
+                        setShowUserDropdown(false);
+                        setShowUserLogin(true);
+                      }}
+                    >
+                      Login
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div className="stylist-menu-container">
-            <button 
-              className="register-stylist-button"
-              onClick={() => setShowStylistDropdown(!showStylistDropdown)}
-            >
-              I am a stylist
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', transition: 'transform 0.3s ease', transform: showStylistDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}>
-                <path d="M6 9l6 6 6-6"/>
-              </svg>
-            </button>
-            {showStylistDropdown && (
-              <div className="stylist-dropdown">
+              <div className="stylist-menu-container">
                 <button 
-                  className="dropdown-item"
-                  onClick={() => {
-                    setShowStylistDropdown(false);
-                    setShowRegistration(true);
-                  }}
+                  className="register-stylist-button"
+                  onClick={() => setShowStylistDropdown(!showStylistDropdown)}
                 >
-                  Register
+                  I am a stylist
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginLeft: '8px', transition: 'transform 0.3s ease', transform: showStylistDropdown ? 'rotate(180deg)' : 'rotate(0deg)' }}>
+                    <path d="M6 9l6 6 6-6"/>
+                  </svg>
                 </button>
-                <button 
-                  className="dropdown-item"
-                  onClick={() => {
-                    setShowStylistDropdown(false);
-                    setShowLogin(true);
-                  }}
-                >
-                  Login
-                </button>
+                {showStylistDropdown && (
+                  <div className="stylist-dropdown">
+                    <button 
+                      className="dropdown-item"
+                      onClick={() => {
+                        setShowStylistDropdown(false);
+                        setShowRegistration(true);
+                      }}
+                    >
+                      Register
+                    </button>
+                    <button 
+                      className="dropdown-item"
+                      onClick={() => {
+                        setShowStylistDropdown(false);
+                        setShowLogin(true);
+                      }}
+                    >
+                      Login
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
+            </>
+          )}
         </div>
         <h1>Hair Stylists</h1>
         <p className="subtitle">Find your perfect stylist</p>
