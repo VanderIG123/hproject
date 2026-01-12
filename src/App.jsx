@@ -391,6 +391,8 @@ function App() {
   const [showLogin, setShowLogin] = React.useState(false);
   const [showStylistDropdown, setShowStylistDropdown] = React.useState(false);
   const [registrationServices, setRegistrationServices] = React.useState([{ name: '', duration: '' }]);
+  const [profilePhoto, setProfilePhoto] = React.useState(null);
+  const [portfolioPhotos, setPortfolioPhotos] = React.useState([]);
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -677,8 +679,44 @@ function App() {
                   <input type="text" id="name" name="name" required />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="profilePicture">Profile Picture URL</label>
-                  <input type="url" id="profilePicture" name="profilePicture" placeholder="https://example.com/image.jpg" />
+                  <label htmlFor="profilePicture">Profile Picture *</label>
+                  <div className="file-upload-container">
+                    <input 
+                      type="file" 
+                      id="profilePicture" 
+                      name="profilePicture" 
+                      accept="image/*"
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setProfilePhoto(e.target.files[0]);
+                        }
+                      }}
+                      className="file-input"
+                    />
+                    <label htmlFor="profilePicture" className="file-upload-label">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      {profilePhoto ? profilePhoto.name : 'Choose Profile Photo'}
+                    </label>
+                    {profilePhoto && (
+                      <div className="file-preview">
+                        <img src={URL.createObjectURL(profilePhoto)} alt="Profile preview" className="preview-image" />
+                        <button 
+                          type="button" 
+                          className="remove-file-button"
+                          onClick={() => setProfilePhoto(null)}
+                        >
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                          </svg>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="form-group">
                   <label htmlFor="address">Address *</label>
@@ -740,6 +778,56 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="about">About Yourself *</label>
                   <textarea id="about" name="about" rows="5" required placeholder="Tell us about your experience and style..."></textarea>
+                </div>
+              </div>
+
+              <div className="form-section">
+                <h2 className="form-section-title">Portfolio</h2>
+                <div className="form-group">
+                  <label>Portfolio Pictures (Add your previous work)</label>
+                  <div className="portfolio-upload-container">
+                    <input 
+                      type="file" 
+                      id="portfolioPictures" 
+                      name="portfolioPictures" 
+                      accept="image/*"
+                      multiple
+                      onChange={(e) => {
+                        if (e.target.files) {
+                          const newFiles = Array.from(e.target.files);
+                          setPortfolioPhotos([...portfolioPhotos, ...newFiles]);
+                        }
+                      }}
+                      className="file-input"
+                    />
+                    <label htmlFor="portfolioPictures" className="file-upload-label">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      Add Portfolio Pictures
+                    </label>
+                    {portfolioPhotos.length > 0 && (
+                      <div className="portfolio-preview-grid">
+                        {portfolioPhotos.map((photo, index) => (
+                          <div key={index} className="portfolio-preview-item">
+                            <img src={URL.createObjectURL(photo)} alt={`Portfolio ${index + 1}`} className="preview-image" />
+                            <button 
+                              type="button" 
+                              className="remove-file-button"
+                              onClick={() => setPortfolioPhotos(portfolioPhotos.filter((_, i) => i !== index))}
+                            >
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                              </svg>
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
 
