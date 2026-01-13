@@ -15,6 +15,7 @@ const stylists = [
     willingToTravel: "Yes, within 15 miles",
     yearsOfExperience: "12 years",
     specialty: "Modern cuts and color techniques",
+    hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome, Pets allowed",
     cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or cancellations within 24 hours.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Venmo, PayPal",
@@ -46,6 +47,7 @@ const stylists = [
     willingToTravel: "Yes, within 25 miles",
     yearsOfExperience: "15 years",
     specialty: "Precision cuts and balayage",
+    hairTextureTypes: "Type A, Type B",
     accommodations: "Kids welcome",
     cancellationPolicy: "48-hour cancellation notice required. 50% charge for cancellations within 48 hours. Full charge for no-shows.",
     acceptedPaymentTypes: "Cash, Credit Card, Venmo, Zelle",
@@ -77,6 +79,7 @@ const stylists = [
     willingToTravel: "No, salon only",
     yearsOfExperience: "7 years",
     specialty: "Classic and contemporary techniques",
+    hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome, Pets allowed",
     cancellationPolicy: "24-hour cancellation notice required. Cancellations within 24 hours may result in a cancellation fee.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Cash App",
@@ -108,6 +111,7 @@ const stylists = [
     willingToTravel: "Yes, within 20 miles",
     yearsOfExperience: "8 years",
     specialty: "Vintage and retro styling",
+    hairTextureTypes: "Type A, Type B",
     accommodations: "Kids welcome",
     cancellationPolicy: "72-hour cancellation notice required for appointments. Late cancellations subject to 50% fee.",
     acceptedPaymentTypes: "Cash, Credit Card, PayPal, Venmo",
@@ -139,6 +143,7 @@ const stylists = [
     willingToTravel: "No, salon only",
     yearsOfExperience: "18 years",
     specialty: "Asian hair techniques and keratin treatments",
+    hairTextureTypes: "Type A",
     accommodations: "Kids welcome",
     cancellationPolicy: "48-hour cancellation notice required. Full charge for no-shows. 50% charge for cancellations within 48 hours.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Venmo, PayPal, Cash App",
@@ -170,6 +175,7 @@ const stylists = [
     willingToTravel: "Yes, within 10 miles",
     yearsOfExperience: "6 years",
     specialty: "Natural hair and protective styles",
+    hairTextureTypes: "Type C",
     accommodations: "Kids welcome, Pets allowed",
     cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or same-day cancellations.",
     acceptedPaymentTypes: "Cash, Credit Card, Venmo, PayPal, Cash App",
@@ -201,6 +207,7 @@ const stylists = [
     willingToTravel: "Yes, within 30 miles",
     yearsOfExperience: "5 years",
     specialty: "Men's grooming and fades",
+    hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome",
     cancellationPolicy: "24-hour cancellation notice required. Cancellations within 24 hours may be charged 50% of service cost.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card",
@@ -232,6 +239,7 @@ const stylists = [
     willingToTravel: "Yes, within 15 miles",
     yearsOfExperience: "20 years",
     specialty: "Bridal and special event styling",
+    hairTextureTypes: "Type A, Type B",
     accommodations: "Kids welcome",
     cancellationPolicy: "7-day cancellation notice required for bridal appointments. 50% non-refundable deposit required at booking.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Check, PayPal, Venmo",
@@ -263,6 +271,7 @@ const stylists = [
     willingToTravel: "No, salon only",
     yearsOfExperience: "4 years",
     specialty: "Quick cuts and express services",
+    hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome, Pets allowed",
     cancellationPolicy: "12-hour cancellation notice required. Full charge for no-shows.",
     acceptedPaymentTypes: "Cash, Credit Card, Venmo",
@@ -294,6 +303,7 @@ const stylists = [
     willingToTravel: "Yes, within 12 miles",
     yearsOfExperience: "11 years",
     specialty: "Curly hair and texture work",
+    hairTextureTypes: "Type B, Type C",
     accommodations: "Kids welcome",
     cancellationPolicy: "24-hour cancellation notice required. Full charge for cancellations within 24 hours or no-shows.",
     acceptedPaymentTypes: "Cash, Credit Card, Venmo, PayPal, Cash App",
@@ -325,6 +335,7 @@ const stylists = [
     willingToTravel: "Yes, within 18 miles",
     yearsOfExperience: "9 years",
     specialty: "Edgy and alternative styles",
+    hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome",
     cancellationPolicy: "48-hour cancellation notice required for color services. 24-hour notice for cuts. Full charge for no-shows.",
     acceptedPaymentTypes: "Cash, Credit Card, Venmo, Zelle, Cash App",
@@ -356,6 +367,7 @@ const stylists = [
     willingToTravel: "No, salon only",
     yearsOfExperience: "22 years",
     specialty: "Classic elegance and timeless styles",
+    hairTextureTypes: "Type A, Type B",
     accommodations: "Kids welcome",
     cancellationPolicy: "72-hour cancellation notice required. Full charge for cancellations within 72 hours.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Check, PayPal",
@@ -387,6 +399,7 @@ const stylists = [
     willingToTravel: "Yes, within 22 miles",
     yearsOfExperience: "6 years",
     specialty: "Hair extensions and volumizing",
+    hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome, Pets allowed",
     cancellationPolicy: "48-hour cancellation notice required. 50% deposit required for extension appointments. Full charge for no-shows.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Venmo, PayPal, Zelle",
@@ -412,6 +425,7 @@ function App() {
   const [selectedSpecialty, setSelectedSpecialty] = React.useState('all');
   const [selectedRate, setSelectedRate] = React.useState('all');
   const [selectedTravel, setSelectedTravel] = React.useState('all');
+  const [selectedHairTextureType, setSelectedHairTextureType] = React.useState('all');
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
   const [showRegistration, setShowRegistration] = React.useState(false);
   const [showLogin, setShowLogin] = React.useState(false);
@@ -434,6 +448,7 @@ function App() {
   const [customHairStyleInput, setCustomHairStyleInput] = React.useState('');
   const [hairStyleSearchQuery, setHairStyleSearchQuery] = React.useState('');
   const [selectedPaymentTypes, setSelectedPaymentTypes] = React.useState([]);
+  const [selectedHairTextureTypes, setSelectedHairTextureTypes] = React.useState([]);
   const [currentAvailability, setCurrentAvailability] = React.useState('');
   const [customAvailability, setCustomAvailability] = React.useState('');
   const [useCustomAvailability, setUseCustomAvailability] = React.useState(false);
@@ -665,7 +680,11 @@ function App() {
       (selectedTravel === 'yes' && stylist.willingToTravel.toLowerCase().includes('yes')) ||
       (selectedTravel === 'no' && stylist.willingToTravel.toLowerCase().includes('no'));
 
-    return matchesSearch && matchesSpecialty && matchesRate && matchesTravel;
+    // Hair texture type filter
+    const matchesHairTextureType = selectedHairTextureType === 'all' || 
+      (stylist.hairTextureTypes && stylist.hairTextureTypes.includes(selectedHairTextureType));
+
+    return matchesSearch && matchesSpecialty && matchesRate && matchesTravel && matchesHairTextureType;
   });
 
   const selectedStylist = stylists.find(s => s.id === selectedStylistId);
@@ -740,6 +759,9 @@ function App() {
                   
                   <h2 className="detail-section-title">Experience</h2>
                   <p><span className="label">Years of Experience:</span> {selectedStylist.yearsOfExperience}</p>
+                  {selectedStylist.hairTextureTypes && (
+                    <p><span className="label">Hair Texture Types:</span> {selectedStylist.hairTextureTypes}</p>
+                  )}
                 </div>
                 
                 <div className="detail-info-card">
@@ -917,6 +939,7 @@ function App() {
                   willingToTravel: "Yes, within 15 miles",
                   yearsOfExperience: "5 years",
                   specialty: "Modern cuts and styling",
+                  hairTextureTypes: "Type A, Type B, Type C",
                   accommodations: "Kids welcome",
                   acceptedPaymentTypes: "Cash, Credit Card, Venmo",
                   cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or cancellations within 24 hours.",
@@ -1567,11 +1590,22 @@ function App() {
                         className="edit-input"
                         placeholder="e.g., Modern cuts and color techniques"
                       />
+                      <label><span className="label">Hair Texture Types:</span></label>
+                      <input 
+                        type="text" 
+                        value={editedProfile?.hairTextureTypes || ''} 
+                        onChange={(e) => setEditedProfile({...editedProfile, hairTextureTypes: e.target.value})}
+                        className="edit-input"
+                        placeholder="e.g., Type A, Type B, Type C"
+                      />
                     </div>
                   ) : (
                     <>
                       <p><span className="label">Years of Experience:</span> {currentStylist.yearsOfExperience}</p>
                       <p><span className="label">Specialty:</span> {currentStylist.specialty}</p>
+                      {currentStylist.hairTextureTypes && (
+                        <p><span className="label">Hair Texture Types:</span> {currentStylist.hairTextureTypes}</p>
+                      )}
                     </>
                   )}
                 </div>
@@ -2085,6 +2119,65 @@ function App() {
                   <input type="text" id="specialty" name="specialty" required placeholder="e.g., Modern cuts and color techniques" />
                 </div>
                 <div className="form-group">
+                  <label htmlFor="hairTextureTypes">Hair Texture Types *</label>
+                  <p className="form-hint">Select all hair texture types you work with</p>
+                  <div className="hair-texture-types-grid">
+                    <label className="hair-texture-checkbox">
+                      <input 
+                        type="checkbox" 
+                        name="hairTextureTypes" 
+                        value="Type A"
+                        checked={selectedHairTextureTypes.includes("Type A")}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedHairTextureTypes([...selectedHairTextureTypes, "Type A"]);
+                          } else {
+                            setSelectedHairTextureTypes(selectedHairTextureTypes.filter(t => t !== "Type A"));
+                          }
+                        }}
+                      />
+                      <span>Type A (Straight)</span>
+                    </label>
+                    <label className="hair-texture-checkbox">
+                      <input 
+                        type="checkbox" 
+                        name="hairTextureTypes" 
+                        value="Type B"
+                        checked={selectedHairTextureTypes.includes("Type B")}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedHairTextureTypes([...selectedHairTextureTypes, "Type B"]);
+                          } else {
+                            setSelectedHairTextureTypes(selectedHairTextureTypes.filter(t => t !== "Type B"));
+                          }
+                        }}
+                      />
+                      <span>Type B (Wavy)</span>
+                    </label>
+                    <label className="hair-texture-checkbox">
+                      <input 
+                        type="checkbox" 
+                        name="hairTextureTypes" 
+                        value="Type C"
+                        checked={selectedHairTextureTypes.includes("Type C")}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedHairTextureTypes([...selectedHairTextureTypes, "Type C"]);
+                          } else {
+                            setSelectedHairTextureTypes(selectedHairTextureTypes.filter(t => t !== "Type C"));
+                          }
+                        }}
+                      />
+                      <span>Type C (Curly)</span>
+                    </label>
+                  </div>
+                  <input
+                    type="hidden"
+                    name="hairTextureTypes"
+                    value={selectedHairTextureTypes.join(', ')}
+                  />
+                </div>
+                <div className="form-group">
                   <label htmlFor="yearsOfExperience">Years of Experience *</label>
                   <input type="text" id="yearsOfExperience" name="yearsOfExperience" required placeholder="e.g., 5 years" />
                 </div>
@@ -2501,13 +2594,29 @@ function App() {
             </select>
           </div>
 
-          {(selectedSpecialty !== 'all' || selectedRate !== 'all' || selectedTravel !== 'all') && (
+          <div className="filter-group">
+            <label htmlFor="hair-texture-filter" className="filter-label">Hair Texture Type</label>
+            <select
+              id="hair-texture-filter"
+              className="filter-select"
+              value={selectedHairTextureType}
+              onChange={(e) => setSelectedHairTextureType(e.target.value)}
+            >
+              <option value="all">All Types</option>
+              <option value="Type A">Type A (Straight)</option>
+              <option value="Type B">Type B (Wavy)</option>
+              <option value="Type C">Type C (Curly)</option>
+            </select>
+          </div>
+
+          {(selectedSpecialty !== 'all' || selectedRate !== 'all' || selectedTravel !== 'all' || selectedHairTextureType !== 'all') && (
             <button
               className="clear-filters-button"
               onClick={() => {
                 setSelectedSpecialty('all');
                 setSelectedRate('all');
                 setSelectedTravel('all');
+                setSelectedHairTextureType('all');
               }}
             >
               Clear Filters
@@ -2615,6 +2724,11 @@ function App() {
                 <p className="stylist-specialty">
                   <span className="label">Speciality:</span> {stylist.specialty}
                 </p>
+                {stylist.hairTextureTypes && (
+                  <p className="stylist-hair-texture">
+                    <span className="label">Hair Texture Types:</span> {stylist.hairTextureTypes}
+                  </p>
+                )}
                 <div className="stylist-services">
                   <span className="label">Services:</span>
                   <div className="services-list">

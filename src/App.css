@@ -2512,6 +2512,53 @@
   margin-left: 0;
 }
 
+.hair-texture-types-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
+  margin-top: 8px;
+  padding: 16px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fafafa;
+}
+
+.hair-texture-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  font-size: 0.9rem;
+  user-select: none;
+}
+
+.hair-texture-checkbox:hover {
+  background: #f0f0f0;
+}
+
+.hair-texture-checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: #000000;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.hair-texture-checkbox span {
+  color: #000000;
+  font-weight: 500;
+  margin-left: 0;
+}
+
+.stylist-hair-texture {
+  display: flex;
+  align-items: flex-start;
+}
+
 @media (max-width: 768px) {
   .payment-types-grid {
     grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
@@ -2520,6 +2567,17 @@
   }
 
   .payment-type-checkbox {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+  }
+
+  .hair-texture-types-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .hair-texture-checkbox {
     padding: 6px 10px;
     font-size: 0.85rem;
   }
