@@ -17,6 +17,8 @@ const stylists = [
     specialty: "Modern cuts and color techniques",
     hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome, Pets allowed",
+    lastMinuteBookingsAllowed: "Yes",
+    streetParkingAvailable: "Yes",
     cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or cancellations within 24 hours.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Venmo, PayPal",
     services: [
@@ -49,6 +51,8 @@ const stylists = [
     specialty: "Precision cuts and balayage",
     hairTextureTypes: "Type A, Type B",
     accommodations: "Kids welcome",
+    lastMinuteBookingsAllowed: "No",
+    streetParkingAvailable: "Yes, but paid",
     cancellationPolicy: "48-hour cancellation notice required. 50% charge for cancellations within 48 hours. Full charge for no-shows.",
     acceptedPaymentTypes: "Cash, Credit Card, Venmo, Zelle",
     services: [
@@ -81,6 +85,8 @@ const stylists = [
     specialty: "Classic and contemporary techniques",
     hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome, Pets allowed",
+    lastMinuteBookingsAllowed: "Yes",
+    streetParkingAvailable: "Yes",
     cancellationPolicy: "24-hour cancellation notice required. Cancellations within 24 hours may result in a cancellation fee.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Cash App",
     services: [
@@ -113,6 +119,8 @@ const stylists = [
     specialty: "Vintage and retro styling",
     hairTextureTypes: "Type A, Type B",
     accommodations: "Kids welcome",
+    lastMinuteBookingsAllowed: "Yes",
+    streetParkingAvailable: "Yes",
     cancellationPolicy: "72-hour cancellation notice required for appointments. Late cancellations subject to 50% fee.",
     acceptedPaymentTypes: "Cash, Credit Card, PayPal, Venmo",
     services: [
@@ -145,6 +153,8 @@ const stylists = [
     specialty: "Asian hair techniques and keratin treatments",
     hairTextureTypes: "Type A",
     accommodations: "Kids welcome",
+    lastMinuteBookingsAllowed: "No",
+    streetParkingAvailable: "No",
     cancellationPolicy: "48-hour cancellation notice required. Full charge for no-shows. 50% charge for cancellations within 48 hours.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Venmo, PayPal, Cash App",
     services: [
@@ -177,6 +187,8 @@ const stylists = [
     specialty: "Natural hair and protective styles",
     hairTextureTypes: "Type C",
     accommodations: "Kids welcome, Pets allowed",
+    lastMinuteBookingsAllowed: "Yes",
+    streetParkingAvailable: "Yes",
     cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or same-day cancellations.",
     acceptedPaymentTypes: "Cash, Credit Card, Venmo, PayPal, Cash App",
     services: [
@@ -209,6 +221,8 @@ const stylists = [
     specialty: "Men's grooming and fades",
     hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome",
+    lastMinuteBookingsAllowed: "Yes",
+    streetParkingAvailable: "Yes, but paid",
     cancellationPolicy: "24-hour cancellation notice required. Cancellations within 24 hours may be charged 50% of service cost.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card",
     services: [
@@ -241,6 +255,8 @@ const stylists = [
     specialty: "Bridal and special event styling",
     hairTextureTypes: "Type A, Type B",
     accommodations: "Kids welcome",
+    lastMinuteBookingsAllowed: "No",
+    streetParkingAvailable: "Yes",
     cancellationPolicy: "7-day cancellation notice required for bridal appointments. 50% non-refundable deposit required at booking.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Check, PayPal, Venmo",
     services: [
@@ -273,6 +289,8 @@ const stylists = [
     specialty: "Quick cuts and express services",
     hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome, Pets allowed",
+    lastMinuteBookingsAllowed: "Yes",
+    streetParkingAvailable: "Yes",
     cancellationPolicy: "12-hour cancellation notice required. Full charge for no-shows.",
     acceptedPaymentTypes: "Cash, Credit Card, Venmo",
     services: [
@@ -305,6 +323,8 @@ const stylists = [
     specialty: "Curly hair and texture work",
     hairTextureTypes: "Type B, Type C",
     accommodations: "Kids welcome",
+    lastMinuteBookingsAllowed: "Yes",
+    streetParkingAvailable: "Yes",
     cancellationPolicy: "24-hour cancellation notice required. Full charge for cancellations within 24 hours or no-shows.",
     acceptedPaymentTypes: "Cash, Credit Card, Venmo, PayPal, Cash App",
     services: [
@@ -337,6 +357,8 @@ const stylists = [
     specialty: "Edgy and alternative styles",
     hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome",
+    lastMinuteBookingsAllowed: "Yes",
+    streetParkingAvailable: "Yes, but paid",
     cancellationPolicy: "48-hour cancellation notice required for color services. 24-hour notice for cuts. Full charge for no-shows.",
     acceptedPaymentTypes: "Cash, Credit Card, Venmo, Zelle, Cash App",
     services: [
@@ -369,6 +391,8 @@ const stylists = [
     specialty: "Classic elegance and timeless styles",
     hairTextureTypes: "Type A, Type B",
     accommodations: "Kids welcome",
+    lastMinuteBookingsAllowed: "No",
+    streetParkingAvailable: "No",
     cancellationPolicy: "72-hour cancellation notice required. Full charge for cancellations within 72 hours.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Check, PayPal",
     services: [
@@ -401,6 +425,8 @@ const stylists = [
     specialty: "Hair extensions and volumizing",
     hairTextureTypes: "Type A, Type B, Type C",
     accommodations: "Kids welcome, Pets allowed",
+    lastMinuteBookingsAllowed: "Yes",
+    streetParkingAvailable: "Yes",
     cancellationPolicy: "48-hour cancellation notice required. 50% deposit required for extension appointments. Full charge for no-shows.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Venmo, PayPal, Zelle",
     services: [
@@ -749,6 +775,12 @@ function App() {
                     {selectedStylist.accommodations && (
                       <p><span className="label">Accommodations:</span> {selectedStylist.accommodations}</p>
                     )}
+                    {selectedStylist.lastMinuteBookingsAllowed && (
+                      <p><span className="label">Last Minute Bookings Allowed:</span> {selectedStylist.lastMinuteBookingsAllowed}</p>
+                    )}
+                    {selectedStylist.streetParkingAvailable && (
+                      <p><span className="label">Is Street Parking Available:</span> {selectedStylist.streetParkingAvailable}</p>
+                    )}
                     {selectedStylist.acceptedPaymentTypes && (
                       <p><span className="label">Accepted Payment Types:</span> {selectedStylist.acceptedPaymentTypes}</p>
                     )}
@@ -943,6 +975,8 @@ function App() {
                   specialty: "Modern cuts and styling",
                   hairTextureTypes: "Type A, Type B, Type C",
                   accommodations: "Kids welcome",
+                  lastMinuteBookingsAllowed: "Yes",
+                  streetParkingAvailable: "Yes",
                   acceptedPaymentTypes: "Cash, Credit Card, Venmo",
                   cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or cancellations within 24 hours.",
                   services: [
@@ -1538,6 +1572,27 @@ function App() {
                           className="edit-input"
                           placeholder="e.g., Kids welcome, Pets allowed"
                         />
+                        <label><span className="label">Last Minute Bookings Allowed:</span></label>
+                        <select
+                          value={editedProfile?.lastMinuteBookingsAllowed || ''}
+                          onChange={(e) => setEditedProfile({...editedProfile, lastMinuteBookingsAllowed: e.target.value})}
+                          className="edit-select"
+                        >
+                          <option value="">Select an option</option>
+                          <option value="Yes">Yes</option>
+                          <option value="No">No</option>
+                        </select>
+                        <label><span className="label">Is Street Parking Available:</span></label>
+                        <select
+                          value={editedProfile?.streetParkingAvailable || ''}
+                          onChange={(e) => setEditedProfile({...editedProfile, streetParkingAvailable: e.target.value})}
+                          className="edit-select"
+                        >
+                          <option value="">Select an option</option>
+                          <option value="No">No</option>
+                          <option value="Yes">Yes</option>
+                          <option value="Yes, but paid">Yes, but paid</option>
+                        </select>
                         <label><span className="label">Accepted Payment Types:</span></label>
                         <input 
                           type="text" 
@@ -1563,6 +1618,12 @@ function App() {
                         <p><span className="label">Willing to Travel:</span> {currentStylist.willingToTravel}</p>
                         {currentStylist.accommodations && (
                           <p><span className="label">Accommodations:</span> {currentStylist.accommodations}</p>
+                        )}
+                        {currentStylist.lastMinuteBookingsAllowed && (
+                          <p><span className="label">Last Minute Bookings Allowed:</span> {currentStylist.lastMinuteBookingsAllowed}</p>
+                        )}
+                        {currentStylist.streetParkingAvailable && (
+                          <p><span className="label">Is Street Parking Available:</span> {currentStylist.streetParkingAvailable}</p>
                         )}
                         {currentStylist.acceptedPaymentTypes && (
                           <p><span className="label">Accepted Payment Types:</span> {currentStylist.acceptedPaymentTypes}</p>
@@ -2230,6 +2291,23 @@ function App() {
                   />
                 </div>
                 <div className="form-group">
+                  <label htmlFor="lastMinuteBookingsAllowed">Last Minute Bookings Allowed</label>
+                  <select id="lastMinuteBookingsAllowed" name="lastMinuteBookingsAllowed">
+                    <option value="">Select an option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="streetParkingAvailable">Is Street Parking Available</label>
+                  <select id="streetParkingAvailable" name="streetParkingAvailable">
+                    <option value="">Select an option</option>
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                    <option value="Yes, but paid">Yes, but paid</option>
+                  </select>
+                </div>
+                <div className="form-group">
                   <label>Accepted Payment Types</label>
                   <p className="form-hint">Select all payment types you accept</p>
                   <div className="payment-types-grid">
@@ -2727,6 +2805,16 @@ function App() {
                 {stylist.accommodations && (
                   <p className="stylist-accommodations">
                     <span className="label">Accommodations:</span> {stylist.accommodations}
+                  </p>
+                )}
+                {stylist.lastMinuteBookingsAllowed && (
+                  <p className="stylist-last-minute">
+                    <span className="label">Last Minute Bookings Allowed:</span> {stylist.lastMinuteBookingsAllowed}
+                  </p>
+                )}
+                {stylist.streetParkingAvailable && (
+                  <p className="stylist-parking">
+                    <span className="label">Is Street Parking Available:</span> {stylist.streetParkingAvailable}
                   </p>
                 )}
                 {stylist.acceptedPaymentTypes && (

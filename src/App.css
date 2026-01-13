@@ -523,7 +523,9 @@
 .stylist-experience,
 .stylist-accommodations,
 .stylist-cancellation-policy,
-.stylist-specialty {
+.stylist-specialty,
+.stylist-last-minute,
+.stylist-parking {
   display: flex;
   align-items: flex-start;
 }
