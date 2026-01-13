@@ -434,6 +434,9 @@ function App() {
   const [customHairStyleInput, setCustomHairStyleInput] = React.useState('');
   const [hairStyleSearchQuery, setHairStyleSearchQuery] = React.useState('');
   const [selectedPaymentTypes, setSelectedPaymentTypes] = React.useState([]);
+  const [currentAvailability, setCurrentAvailability] = React.useState('');
+  const [customAvailability, setCustomAvailability] = React.useState('');
+  const [useCustomAvailability, setUseCustomAvailability] = React.useState(false);
 
   const paymentTypes = [
     "Cash",
@@ -448,6 +451,23 @@ function App() {
     "Google Pay",
     "Square",
     "Stripe"
+  ];
+
+  const availabilityOptions = [
+    "Available this week",
+    "Available next week",
+    "Available in 2 weeks",
+    "Available in 3 weeks",
+    "Available in 4 weeks",
+    "Limited availability - next opening in 1 week",
+    "Limited availability - next opening in 2 weeks",
+    "Limited availability - next opening in 3 weeks",
+    "Fully booked - next opening in 1 week",
+    "Fully booked - next opening in 2 weeks",
+    "Fully booked - next opening in 3 weeks",
+    "Fully booked - next opening in 4 weeks",
+    "Available immediately",
+    "Not currently accepting new clients"
   ];
 
   // Close dropdowns when clicking outside
@@ -517,6 +537,93 @@ function App() {
   const getGoogleMapsUrl = (address) => {
     const encodedAddress = encodeURIComponent(address);
     return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
+  };
+
+  // Parse payment types string into array
+  const parsePaymentTypes = (paymentTypesString) => {
+    if (!paymentTypesString) return [];
+    return paymentTypesString.split(',').map(type => type.trim());
+  };
+
+  // Get payment method icon
+  const getPaymentIcon = (paymentType) => {
+    const type = paymentType.toLowerCase();
+    
+    if (type.includes('cash')) {
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+          <path d="M7 14h.01M17 14h.01"></path>
+        </svg>
+      );
+    } else if (type.includes('credit card')) {
+      // Credit card icon with chip
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+          <rect x="4" y="6" width="6" height="4" rx="0.5"></rect>
+          <path d="M18 16h-4M16 14h-2"></path>
+        </svg>
+      );
+    } else if (type.includes('debit card')) {
+      // Debit card icon with chip and lines
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+          <line x1="1" y1="10" x2="23" y2="10"></line>
+          <rect x="4" y="6" width="6" height="4" rx="0.5"></rect>
+          <path d="M18 16h-4M16 14h-2M16 18h-2"></path>
+        </svg>
+      );
+    } else if (type.includes('venmo')) {
+      // Venmo logo - "V" letter
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2L2 12l10 10 10-10L12 2zm0 3.5L18.5 12 12 18.5 5.5 12 12 5.5z"/>
+        </svg>
+      );
+    } else if (type.includes('paypal')) {
+      // PayPal logo - "P" letter
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M7 3h6c3 0 5 2 5 5s-2 5-5 5H9.5v4.5H7V3zm2.5 6h3c1.5 0 2.5-1 2.5-2.5S14 4.5 12.5 4.5H9.5V9z"/>
+        </svg>
+      );
+    } else if (type.includes('zelle')) {
+      // Zelle logo - "Z" letter
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M4 4h16v2.5H8.5l9 9H4v-2.5h11.5l-9-9H4V4z"/>
+        </svg>
+      );
+    } else if (type.includes('cash app')) {
+      // Cash App logo - "$" in square
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="4" width="16" height="16" rx="2"/>
+          <path d="M12 6v12M10 8h4M10 16h4"/>
+          <circle cx="12" cy="8" r="1" fill="currentColor"/>
+          <circle cx="12" cy="16" r="1" fill="currentColor"/>
+        </svg>
+      );
+    } else if (type.includes('check')) {
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M20 6L9 17l-5-5"></path>
+        </svg>
+      );
+    } else {
+      // Default icon for unknown payment types
+      return (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+      );
+    }
   };
 
   // Get unique values for filters
@@ -2488,9 +2595,17 @@ function App() {
                   </p>
                 )}
                 {stylist.acceptedPaymentTypes && (
-                  <p className="stylist-payment-types">
-                    <span className="label">Accepted Payment Types:</span> {stylist.acceptedPaymentTypes}
-                  </p>
+                  <div className="stylist-payment-types">
+                    <span className="label">Accepted Payment Types:</span>
+                    <div className="payment-methods-icons">
+                      {parsePaymentTypes(stylist.acceptedPaymentTypes).map((paymentType, index) => (
+                        <div key={index} className="payment-method-icon" title={paymentType}>
+                          {getPaymentIcon(paymentType)}
+                          <span className="payment-method-name">{paymentType}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
                 {stylist.cancellationPolicy && (
                   <p className="stylist-cancellation-policy">
