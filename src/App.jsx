@@ -20,11 +20,11 @@ const stylists = [
     cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or cancellations within 24 hours.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Venmo, PayPal",
     services: [
-      { name: "Haircut", duration: "45 minutes" },
-      { name: "Hair Color", duration: "2 hours" },
-      { name: "Highlights", duration: "2.5 hours" },
-      { name: "Blowout", duration: "30 minutes" },
-      { name: "Haircut & Color", duration: "2.5 hours" }
+      { name: "Haircut", duration: "45 minutes", price: "$30" },
+      { name: "Hair Color", duration: "2 hours", price: "$120" },
+      { name: "Highlights", duration: "2.5 hours", price: "$150" },
+      { name: "Blowout", duration: "30 minutes", price: "$25" },
+      { name: "Haircut & Color", duration: "2.5 hours", price: "$140" }
     ],
     about: "With over 10 years of experience in the industry, Sarah specializes in modern cuts and color techniques. She is known for her attention to detail and personalized approach to each client's unique style.",
     portfolio: [
@@ -84,11 +84,11 @@ const stylists = [
     cancellationPolicy: "24-hour cancellation notice required. Cancellations within 24 hours may result in a cancellation fee.",
     acceptedPaymentTypes: "Cash, Credit Card, Debit Card, Cash App",
     services: [
-      { name: "Classic Cut", duration: "40 minutes" },
-      { name: "Color Treatment", duration: "1.5 hours" },
-      { name: "Perm", duration: "3 hours" },
-      { name: "Deep Conditioning", duration: "20 minutes" },
-      { name: "Updo", duration: "1 hour" }
+      { name: "Classic Cut", duration: "40 minutes", price: "$35" },
+      { name: "Color Treatment", duration: "1.5 hours", price: "$100" },
+      { name: "Perm", duration: "3 hours", price: "$150" },
+      { name: "Deep Conditioning", duration: "20 minutes", price: "$20" },
+      { name: "Updo", duration: "1 hour", price: "$60" }
     ],
     about: "Emily brings a fresh perspective to hair styling with her background in both classic and contemporary techniques. She is passionate about helping clients find their perfect look and creating styles that boost confidence.",
     portfolio: [
@@ -116,11 +116,11 @@ const stylists = [
     cancellationPolicy: "72-hour cancellation notice required for appointments. Late cancellations subject to 50% fee.",
     acceptedPaymentTypes: "Cash, Credit Card, PayPal, Venmo",
     services: [
-      { name: "Vintage Cut", duration: "50 minutes" },
-      { name: "Retro Styling", duration: "1.5 hours" },
-      { name: "Pin Curls", duration: "2 hours" },
-      { name: "Vintage Updo", duration: "1.5 hours" },
-      { name: "Color & Style", duration: "3 hours" }
+      { name: "Vintage Cut", duration: "50 minutes", price: "$40" },
+      { name: "Retro Styling", duration: "1.5 hours", price: "$80" },
+      { name: "Pin Curls", duration: "2 hours", price: "$90" },
+      { name: "Vintage Updo", duration: "1.5 hours", price: "$75" },
+      { name: "Color & Style", duration: "3 hours", price: "$200" }
     ],
     about: "Jessica specializes in vintage and retro hair styling, bringing classic Hollywood glamour to modern clients. Her attention to period-accurate techniques has made her a favorite for themed events and period productions.",
     portfolio: [
@@ -441,7 +441,7 @@ function App() {
   const [isEditingUserProfile, setIsEditingUserProfile] = React.useState(false);
   const [editedProfile, setEditedProfile] = React.useState(null);
   const [editedUserProfile, setEditedUserProfile] = React.useState(null);
-  const [registrationServices, setRegistrationServices] = React.useState([{ name: '', duration: '' }]);
+  const [registrationServices, setRegistrationServices] = React.useState([{ name: '', duration: '', price: '' }]);
   const [profilePhoto, setProfilePhoto] = React.useState(null);
   const [portfolioPhotos, setPortfolioPhotos] = React.useState([]);
   const [selectedHairStyles, setSelectedHairStyles] = React.useState([]);
@@ -769,7 +769,9 @@ function App() {
                   <div className="detail-services-list">
                     {selectedStylist.services.map((service, index) => (
                       <div key={index} className="detail-service-item">
-                        <span className="service-name">{service.name}</span>
+                        <span className="service-name">
+                          {service.name}{service.price ? ` (${service.price})` : ''}
+                        </span>
                         <span className="service-duration">{service.duration}</span>
                       </div>
                     ))}
@@ -1638,6 +1640,17 @@ function App() {
                             className="edit-service-input"
                             placeholder="Duration"
                           />
+                          <input 
+                            type="text" 
+                            value={service.price || ''} 
+                            onChange={(e) => {
+                              const updatedServices = [...(editedProfile?.editedServices || editedProfile?.services || [])];
+                              updatedServices[index] = { ...updatedServices[index], price: e.target.value };
+                              setEditedProfile({...editedProfile, editedServices: updatedServices});
+                            }}
+                            className="edit-service-input"
+                            placeholder="Price (optional, e.g., $30)"
+                          />
                           <button 
                             type="button"
                             className="remove-service-button"
@@ -1657,7 +1670,7 @@ function App() {
                         type="button"
                         className="add-service-button"
                         onClick={() => {
-                          const updatedServices = [...(editedProfile?.editedServices || editedProfile?.services || []), { name: '', duration: '' }];
+                          const updatedServices = [...(editedProfile?.editedServices || editedProfile?.services || []), { name: '', duration: '', price: '' }];
                           setEditedProfile({...editedProfile, editedServices: updatedServices});
                         }}
                       >
@@ -1672,7 +1685,9 @@ function App() {
                     <div className="detail-services-list">
                       {currentStylist.services.map((service, index) => (
                         <div key={index} className="detail-service-item">
-                          <span className="service-name">{service.name}</span>
+                          <span className="service-name">
+                            {service.name}{service.price ? ` (${service.price})` : ''}
+                          </span>
                           <span className="service-duration">{service.duration}</span>
                         </div>
                       ))}
@@ -2340,6 +2355,17 @@ function App() {
                             setRegistrationServices(newServices);
                           }}
                         />
+                        <input 
+                          type="text" 
+                          className="service-price-input" 
+                          placeholder="Price (optional, e.g., $30)" 
+                          value={service.price || ''}
+                          onChange={(e) => {
+                            const newServices = [...registrationServices];
+                            newServices[index].price = e.target.value;
+                            setRegistrationServices(newServices);
+                          }}
+                        />
                         {registrationServices.length > 1 && (
                           <button 
                             type="button" 
@@ -2357,7 +2383,7 @@ function App() {
                       type="button" 
                       className="add-service-button"
                       onClick={() => {
-                        setRegistrationServices([...registrationServices, { name: '', duration: '' }]);
+                        setRegistrationServices([...registrationServices, { name: '', duration: '', price: '' }]);
                       }}
                     >
                       Add Service
@@ -2734,7 +2760,9 @@ function App() {
                   <div className="services-list">
                     {stylist.services.map((service, index) => (
                       <div key={index} className="service-item">
-                        <span className="service-name">{service.name}</span>
+                        <span className="service-name">
+                          {service.name}{service.price ? ` (${service.price})` : ''}
+                        </span>
                         <span className="service-duration">{service.duration}</span>
                       </div>
                     ))}
