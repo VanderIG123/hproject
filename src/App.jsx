@@ -452,6 +452,10 @@ function App() {
   const [selectedRate, setSelectedRate] = React.useState('all');
   const [selectedTravel, setSelectedTravel] = React.useState('all');
   const [selectedHairTextureType, setSelectedHairTextureType] = React.useState('all');
+  const [selectedDate, setSelectedDate] = React.useState('');
+  const [selectedTime, setSelectedTime] = React.useState('');
+  const [appliedDate, setAppliedDate] = React.useState('');
+  const [appliedTime, setAppliedTime] = React.useState('');
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
   const [showRegistration, setShowRegistration] = React.useState(false);
   const [showLogin, setShowLogin] = React.useState(false);
@@ -472,6 +476,25 @@ function App() {
   const [portfolioPhotos, setPortfolioPhotos] = React.useState([]);
   const [selectedHairStyles, setSelectedHairStyles] = React.useState([]);
   const [customHairStyleInput, setCustomHairStyleInput] = React.useState('');
+  
+  // Initialize recommendations from localStorage or use empty object
+  const [recommendations, setRecommendations] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem('stylistRecommendations');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+  
+  // Save recommendations to localStorage whenever they change
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('stylistRecommendations', JSON.stringify(recommendations));
+    } catch (e) {
+      console.error('Failed to save recommendations to localStorage', e);
+    }
+  }, [recommendations]);
   const [hairStyleSearchQuery, setHairStyleSearchQuery] = React.useState('');
   const [selectedPaymentTypes, setSelectedPaymentTypes] = React.useState([]);
   const [selectedHairTextureTypes, setSelectedHairTextureTypes] = React.useState([]);
@@ -574,6 +597,43 @@ function App() {
     });
   };
 
+  // Helper function to recommend a stylist
+  const recommendStylist = (stylistId) => {
+    // Only allow users/customers to recommend, not stylists
+    if (!loggedInUser) {
+      alert('Please log in as a customer to recommend a stylist.');
+      return;
+    }
+    
+    const currentRecommendations = recommendations[stylistId] || [];
+    const userId = loggedInUser.id;
+    
+    // Check if user already recommended this stylist
+    if (currentRecommendations.includes(userId)) {
+      alert('You have already recommended this stylist.');
+      return;
+    }
+    
+    // Add user to recommendations list
+    setRecommendations({
+      ...recommendations,
+      [stylistId]: [...currentRecommendations, userId]
+    });
+  };
+
+  // Helper function to get recommendation count for a stylist
+  const getRecommendationCount = (stylistId) => {
+    return (recommendations[stylistId] || []).length;
+  };
+
+  // Helper function to check if current user has recommended a stylist
+  const hasRecommended = (stylistId) => {
+    // Only check for logged-in users/customers, not stylists
+    if (!loggedInUser) return false;
+    const userId = loggedInUser.id;
+    return (recommendations[stylistId] || []).includes(userId);
+  };
+
   // Helper function to generate Google Maps URL
   const getGoogleMapsUrl = (address) => {
     const encodedAddress = encodeURIComponent(address);
@@ -667,6 +727,100 @@ function App() {
     }
   };
 
+  // Helper function to check if a stylist might be available at a given date/time
+  const checkAvailability = (stylist, dateStr, timeStr) => {
+    // If neither date nor time is selected, don't filter
+    if (!dateStr && !timeStr) return true;
+    
+    try {
+      // Use current date if only time is provided (to get current day of the week)
+      const dateToUse = dateStr || new Date().toISOString().split('T')[0];
+      const selectedDate = new Date(dateToUse + 'T00:00:00'); // Add time to avoid timezone issues
+      const dayIndex = selectedDate.getDay(); // 0 = Sunday, 1 = Monday, etc. (current day of week when date not provided)
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      const dayAbbrev = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+      const selectedDayName = dayNames[dayIndex];
+      const selectedDayAbbrev = dayAbbrev[dayIndex];
+      
+      const hours = stylist.hours || '';
+      const hoursLower = hours.toLowerCase();
+      
+      // Check for day ranges (e.g., "Mon-Fri", "Tue-Sat")
+      const dayMap = { mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6, sun: 0 };
+      const dayRangePattern = /(mon|tue|wed|thu|fri|sat|sun)\s*-\s*(mon|tue|wed|thu|fri|sat|sun)/gi;
+      const dayRangeMatches = [...hoursLower.matchAll(dayRangePattern)];
+      
+      let dayInHours = false;
+      
+      if (dayRangeMatches.length > 0) {
+        // Check if selected day falls within any range
+        for (const match of dayRangeMatches) {
+          const startDay = match[1].toLowerCase();
+          const endDay = match[2].toLowerCase();
+          const startIndex = dayMap[startDay];
+          const endIndex = dayMap[endDay];
+          
+          // Check if selected day falls within the range
+          if (startIndex <= endIndex) {
+            // Normal range (e.g., Mon-Fri)
+            if (dayIndex >= startIndex && dayIndex <= endIndex) {
+              dayInHours = true;
+              break;
+            }
+          } else {
+            // Wrapping range (e.g., Sat-Mon)
+            if (dayIndex >= startIndex || dayIndex <= endIndex) {
+              dayInHours = true;
+              break;
+            }
+          }
+        }
+      }
+      
+      // If day range didn't match, check if the selected day is mentioned directly in the hours
+      if (!dayInHours) {
+        dayInHours = hoursLower.includes(selectedDayName.toLowerCase().substring(0, 3)) ||
+                      hoursLower.includes(selectedDayAbbrev.toLowerCase()) ||
+                      (selectedDayName === 'Monday' && (hoursLower.includes('mon') || hoursLower.includes('weekday'))) ||
+                      (selectedDayName === 'Tuesday' && hoursLower.includes('tue')) ||
+                      (selectedDayName === 'Wednesday' && hoursLower.includes('wed')) ||
+                      (selectedDayName === 'Thursday' && (hoursLower.includes('thu') || hoursLower.includes('thur'))) ||
+                      (selectedDayName === 'Friday' && hoursLower.includes('fri')) ||
+                      (selectedDayName === 'Saturday' && hoursLower.includes('sat')) ||
+                      (selectedDayName === 'Sunday' && hoursLower.includes('sun'));
+      }
+      
+      // If only date is provided, check day availability
+      if (dateStr && !timeStr) {
+        return dayInHours;
+      }
+      
+      // If only time is provided or both are provided, check day first
+      if (!dayInHours) return false;
+      
+      // Time checking is basic for now - return true if day matches
+      // (More sophisticated time parsing could be added here)
+      
+      // Try to parse the time (expecting HH:MM format)
+      const [hoursStr, minutesStr] = timeStr.split(':');
+      const selectedHour = parseInt(hoursStr);
+      const selectedMinute = parseInt(minutesStr || '0');
+      
+      // Extract time ranges from hours string (simple pattern matching)
+      // This is a basic check - in a real app, you'd want more sophisticated parsing
+      const timePatterns = hours.match(/\d{1,2}:\d{2}\s*(AM|PM)/gi);
+      if (timePatterns && timePatterns.length >= 2) {
+        // If we can parse opening and closing times, check if selected time falls within
+        // For now, just return true if day matches (more sophisticated logic could be added)
+        return true;
+      }
+      
+      return true; // If we can't parse times, assume available if day matches
+    } catch (e) {
+      return true; // If parsing fails, don't filter out the stylist
+    }
+  };
+
   // Get unique values for filters
   const specialties = [...new Set(stylists.map(s => s.specialty))];
   const rates = [...new Set(stylists.map(s => s.rate))].sort((a, b) => {
@@ -750,11 +904,37 @@ function App() {
           <div className="detail-container">
             <div className="detail-main">
               <div className="detail-image-section">
-                <img 
-                  src={selectedStylist.profilePicture} 
-                  alt={selectedStylist.name}
-                  className="detail-profile-picture"
-                />
+                <div className="detail-image-wrapper">
+                  <img 
+                    src={selectedStylist.profilePicture} 
+                    alt={selectedStylist.name}
+                    className="detail-profile-picture"
+                  />
+                  {loggedInUser && (
+                    <button
+                      className={`recommend-button-detail ${hasRecommended(selectedStylist.id) ? 'recommended' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        recommendStylist(selectedStylist.id);
+                      }}
+                      aria-label={hasRecommended(selectedStylist.id) ? "You've recommended this stylist" : "Recommend this stylist"}
+                      disabled={hasRecommended(selectedStylist.id)}
+                    >
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill={hasRecommended(selectedStylist.id) ? "currentColor" : "none"} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                      </svg>
+                      <span>{hasRecommended(selectedStylist.id) ? 'Recommended' : 'Recommend this stylist'}</span>
+                    </button>
+                  )}
+                  {getRecommendationCount(selectedStylist.id) > 0 && (
+                    <p className="recommendation-count-detail">
+                      {getRecommendationCount(selectedStylist.id)} {getRecommendationCount(selectedStylist.id) === 1 ? 'person recommends' : 'people recommend'} this stylist
+                    </p>
+                  )}
+                </div>
               </div>
               
               <div className="detail-info-section">
@@ -2713,7 +2893,38 @@ function App() {
             </select>
           </div>
 
-          {(selectedSpecialty !== 'all' || selectedRate !== 'all' || selectedTravel !== 'all' || selectedHairTextureType !== 'all') && (
+          <div className="filter-group">
+            <label htmlFor="date-filter" className="filter-label">Desired Date</label>
+            <input
+              type="date"
+              id="date-filter"
+              className="filter-input"
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+              onBlur={(e) => {
+                if (selectedDate) {
+                  setAppliedDate(selectedDate);
+                }
+              }}
+            />
+          </div>
+
+          <div className="filter-group">
+            <label htmlFor="time-filter" className="filter-label">Desired Time</label>
+            <input
+              type="time"
+              id="time-filter"
+              className="filter-input"
+              value={selectedTime}
+              onChange={(e) => setSelectedTime(e.target.value)}
+              onBlur={(e) => {
+                // Update appliedTime when user clicks outside, using current input value
+                setAppliedTime(e.target.value || '');
+              }}
+            />
+          </div>
+
+          {(selectedSpecialty !== 'all' || selectedRate !== 'all' || selectedTravel !== 'all' || selectedHairTextureType !== 'all' || selectedDate || selectedTime || appliedDate || appliedTime) && (
             <button
               className="clear-filters-button"
               onClick={() => {
@@ -2721,6 +2932,10 @@ function App() {
                 setSelectedRate('all');
                 setSelectedTravel('all');
                 setSelectedHairTextureType('all');
+                setSelectedDate('');
+                setSelectedTime('');
+                setAppliedDate('');
+                setAppliedTime('');
               }}
             >
               Clear Filters
@@ -2743,11 +2958,24 @@ function App() {
           ) : (
             filteredStylists.map((stylist) => {
               const isFavorited = loggedInUser && (loggedInUser.favorites || []).includes(stylist.id);
+              // Check availability: if neither date nor time is applied, all stylists are available
+              // Otherwise, check availability (handles date-only, time-only, or both)
+              const isAvailableAtDateTime = (!appliedDate && !appliedTime) || checkAvailability(stylist, appliedDate || '', appliedTime || '');
+              
+              // Determine warning message based on what filters are applied
+              let warningMessage = 'Not available';
+              if (appliedDate && appliedTime) {
+                warningMessage = 'Not available at selected date/time';
+              } else if (appliedDate) {
+                warningMessage = 'Not available on selected date';
+              } else if (appliedTime) {
+                warningMessage = 'Not available at selected time';
+              }
               
               return (
               <div 
                 key={stylist.id}
-                className="stylist-card"
+                className={`stylist-card ${!isAvailableAtDateTime ? 'not-available' : ''}`}
                 onClick={() => setSelectedStylistId(stylist.id)}
               >
                 <div className="stylist-header">
@@ -2772,7 +3000,22 @@ function App() {
                     </button>
                   )}
                 </div>
+              {!isAvailableAtDateTime && (
+                <div className="availability-warning">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                  <span>{warningMessage}</span>
+                </div>
+              )}
               <div className="stylist-info">
+                {getRecommendationCount(stylist.id) > 0 && (
+                  <p className="recommendation-count-simple">
+                    {getRecommendationCount(stylist.id)} {getRecommendationCount(stylist.id) === 1 ? 'person recommends' : 'people recommend'} this stylist
+                  </p>
+                )}
                 <p className="stylist-address">
                   <span className="label">Address:</span> <a href={getGoogleMapsUrl(stylist.address)} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>{stylist.address}</a>
                 </p>
