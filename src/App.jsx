@@ -518,6 +518,25 @@ function App() {
       console.error('Failed to save reviews to localStorage', e);
     }
   }, [reviews]);
+  
+  // Initialize recently viewed from localStorage (per user)
+  const [recentlyViewed, setRecentlyViewed] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem('recentlyViewedStylists');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+  
+  // Save recently viewed to localStorage whenever they change
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('recentlyViewedStylists', JSON.stringify(recentlyViewed));
+    } catch (e) {
+      console.error('Failed to save recently viewed to localStorage', e);
+    }
+  }, [recentlyViewed]);
   const [hairStyleSearchQuery, setHairStyleSearchQuery] = React.useState('');
   const [selectedPaymentTypes, setSelectedPaymentTypes] = React.useState([]);
   const [selectedHairTextureTypes, setSelectedHairTextureTypes] = React.useState([]);
@@ -714,6 +733,33 @@ function App() {
     if (stylistReviews.length === 0) return 0;
     const sum = stylistReviews.reduce((acc, review) => acc + review.rating, 0);
     return (sum / stylistReviews.length).toFixed(1);
+  };
+
+  // Helper function to add a stylist to recently viewed
+  const addToRecentlyViewed = (stylistId) => {
+    if (!loggedInUser || !stylistId) return;
+    
+    const userId = loggedInUser.id;
+    const userRecentlyViewed = recentlyViewed[userId] || [];
+    
+    // Remove if already in list (to move to front)
+    const filtered = userRecentlyViewed.filter(id => id !== stylistId);
+    
+    // Add to front and limit to 20 most recent
+    const updated = [stylistId, ...filtered].slice(0, 20);
+    
+    setRecentlyViewed({
+      ...recentlyViewed,
+      [userId]: updated
+    });
+  };
+
+  // Helper function to get recently viewed stylists for current user
+  const getRecentlyViewed = () => {
+    if (!loggedInUser) return [];
+    const userId = loggedInUser.id;
+    const viewedIds = recentlyViewed[userId] || [];
+    return viewedIds.map(id => stylists.find(s => s.id === id)).filter(Boolean);
   };
 
   // Helper function to generate Google Maps URL
@@ -950,6 +996,14 @@ function App() {
   });
 
   const selectedStylist = stylists.find(s => s.id === selectedStylistId);
+  
+  // Track when a stylist is viewed (for recently viewed list)
+  React.useEffect(() => {
+    if (selectedStylistId && loggedInUser) {
+      addToRecentlyViewed(selectedStylistId);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedStylistId, loggedInUser?.id]);
   
   // Find similar stylists based on shared services
   const getSimilarStylists = (stylist) => {
@@ -1431,6 +1485,7 @@ function App() {
     const currentUser = isEditingUserProfile && editedUserProfile ? editedUserProfile : loggedInUser;
     const userFavorites = currentUser.favorites || [];
     const favoriteStylists = stylists.filter(s => userFavorites.includes(s.id));
+    const recentlyViewedStylists = getRecentlyViewed();
     
     const handleSaveUserProfile = () => {
       // Clean up preferencesArray before saving
@@ -1740,9 +1795,38 @@ function App() {
                   )}
                 </div>
                 
+                {!isEditingUserProfile && recentlyViewedStylists.length > 0 && (
+                  <div className="detail-info-card">
+                    <h2 className="detail-section-title">Recently Viewed</h2>
+                    <div className="recently-viewed-list">
+                      {recentlyViewedStylists.map((stylist) => (
+                        <div 
+                          key={stylist.id} 
+                          className="recently-viewed-item"
+                          onClick={() => {
+                            setShowUserProfile(false);
+                            setSelectedStylistId(stylist.id);
+                          }}
+                        >
+                          <img 
+                            src={stylist.profilePicture} 
+                            alt={stylist.name}
+                            className="recently-viewed-picture"
+                          />
+                          <div className="recently-viewed-info">
+                            <h3 className="recently-viewed-name">{stylist.name}</h3>
+                            <p className="recently-viewed-specialty">{stylist.specialty}</p>
+                            <p className="recently-viewed-rate">{stylist.rate}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
                 {!isEditingUserProfile && favoriteStylists.length > 0 && (
                   <div className="detail-info-card">
-                    <h2 className="detail-section-title">Favorite Stylists</h2>
+                    <h2 className="detail-section-title">Liked Stylists</h2>
                     <div className="favorites-list">
                       {favoriteStylists.map((stylist) => (
                         <div 
