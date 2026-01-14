@@ -457,6 +457,10 @@ function App() {
   const [appliedDate, setAppliedDate] = React.useState('');
   const [appliedTime, setAppliedTime] = React.useState('');
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
+  const [showReviewForm, setShowReviewForm] = React.useState(false);
+  const [reviewRating, setReviewRating] = React.useState(0);
+  const [reviewComment, setReviewComment] = React.useState('');
+  const [hoveredRating, setHoveredRating] = React.useState(0);
   const [showRegistration, setShowRegistration] = React.useState(false);
   const [showLogin, setShowLogin] = React.useState(false);
   const [showUserRegistration, setShowUserRegistration] = React.useState(false);
@@ -495,6 +499,25 @@ function App() {
       console.error('Failed to save recommendations to localStorage', e);
     }
   }, [recommendations]);
+  
+  // Initialize reviews from localStorage or use empty object
+  const [reviews, setReviews] = React.useState(() => {
+    try {
+      const saved = localStorage.getItem('stylistReviews');
+      return saved ? JSON.parse(saved) : {};
+    } catch (e) {
+      return {};
+    }
+  });
+  
+  // Save reviews to localStorage whenever they change
+  React.useEffect(() => {
+    try {
+      localStorage.setItem('stylistReviews', JSON.stringify(reviews));
+    } catch (e) {
+      console.error('Failed to save reviews to localStorage', e);
+    }
+  }, [reviews]);
   const [hairStyleSearchQuery, setHairStyleSearchQuery] = React.useState('');
   const [selectedPaymentTypes, setSelectedPaymentTypes] = React.useState([]);
   const [selectedHairTextureTypes, setSelectedHairTextureTypes] = React.useState([]);
@@ -632,6 +655,65 @@ function App() {
     if (!loggedInUser) return false;
     const userId = loggedInUser.id;
     return (recommendations[stylistId] || []).includes(userId);
+  };
+
+  // Helper function to add a review for a stylist
+  const addReview = (stylistId, rating, comment) => {
+    // Only allow users/customers to review, not stylists
+    if (!loggedInUser) {
+      alert('Please log in as a customer to review a stylist.');
+      return;
+    }
+    
+    const currentReviews = reviews[stylistId] || [];
+    const userId = loggedInUser.id;
+    const userName = loggedInUser.name || 'Anonymous';
+    
+    // Check if user already reviewed this stylist
+    const existingReviewIndex = currentReviews.findIndex(r => r.userId === userId);
+    
+    const newReview = {
+      userId,
+      userName,
+      rating,
+      comment,
+      date: new Date().toISOString()
+    };
+    
+    let updatedReviews;
+    if (existingReviewIndex >= 0) {
+      // Update existing review
+      updatedReviews = [...currentReviews];
+      updatedReviews[existingReviewIndex] = newReview;
+    } else {
+      // Add new review
+      updatedReviews = [...currentReviews, newReview];
+    }
+    
+    setReviews({
+      ...reviews,
+      [stylistId]: updatedReviews
+    });
+  };
+
+  // Helper function to get reviews for a stylist
+  const getReviews = (stylistId) => {
+    return reviews[stylistId] || [];
+  };
+
+  // Helper function to check if current user has reviewed a stylist
+  const hasReviewed = (stylistId) => {
+    if (!loggedInUser) return false;
+    const userId = loggedInUser.id;
+    return (reviews[stylistId] || []).some(r => r.userId === userId);
+  };
+
+  // Helper function to get average rating for a stylist
+  const getAverageRating = (stylistId) => {
+    const stylistReviews = reviews[stylistId] || [];
+    if (stylistReviews.length === 0) return 0;
+    const sum = stylistReviews.reduce((acc, review) => acc + review.rating, 0);
+    return (sum / stylistReviews.length).toFixed(1);
   };
 
   // Helper function to generate Google Maps URL
@@ -993,6 +1075,152 @@ function App() {
                 <div className="detail-info-card">
                   <h2 className="detail-section-title">About</h2>
                   <p className="detail-about-text">{selectedStylist.about}</p>
+                </div>
+                
+                <div className="detail-info-card">
+                  <h2 className="detail-section-title">Reviews</h2>
+                  {(() => {
+                    const stylistReviews = getReviews(selectedStylist.id);
+                    const avgRating = getAverageRating(selectedStylist.id);
+                    const userReview = stylistReviews.find(r => loggedInUser && r.userId === loggedInUser.id);
+                    
+                    return (
+                      <>
+                        {stylistReviews.length > 0 && (
+                          <div className="reviews-summary">
+                            <div className="average-rating">
+                              <span className="rating-number">{avgRating}</span>
+                              <div className="rating-stars-display">
+                                {[1, 2, 3, 4, 5].map(star => (
+                                  <svg key={star} width="20" height="20" viewBox="0 0 24 24" fill={star <= avgRating ? "#ffd700" : "#e0e0e0"} stroke="#ffd700" strokeWidth="2">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                  </svg>
+                                ))}
+                              </div>
+                              <span className="review-count">({stylistReviews.length} {stylistReviews.length === 1 ? 'review' : 'reviews'})</span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {loggedInUser && !userReview && !showReviewForm && (
+                          <button
+                            className="write-review-button"
+                            onClick={() => setShowReviewForm(true)}
+                          >
+                            Write a Review
+                          </button>
+                        )}
+                        
+                        {loggedInUser && showReviewForm && (
+                          <div className="review-form">
+                            <h3 className="review-form-title">Write a Review</h3>
+                              <div className="rating-input">
+                              <label>Rating:</label>
+                              <div 
+                                className="star-rating"
+                                onMouseLeave={() => setHoveredRating(0)}
+                              >
+                                {[1, 2, 3, 4, 5].map(star => (
+                                  <button
+                                    key={star}
+                                    type="button"
+                                    className="star-button"
+                                    onClick={() => setReviewRating(star)}
+                                    onMouseEnter={() => setHoveredRating(star)}
+                                  >
+                                    <svg width="32" height="32" viewBox="0 0 24 24" fill={star <= (hoveredRating || reviewRating) ? "#ffd700" : "#e0e0e0"} stroke="#ffd700" strokeWidth="2">
+                                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                    </svg>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <div className="review-comment-input">
+                              <label htmlFor="review-comment">Your Review:</label>
+                              <textarea
+                                id="review-comment"
+                                value={reviewComment}
+                                onChange={(e) => setReviewComment(e.target.value)}
+                                placeholder="Share your experience..."
+                                rows="5"
+                                className="review-textarea"
+                              />
+                            </div>
+                            <div className="review-form-actions">
+                              <button
+                                className="submit-review-button"
+                                onClick={() => {
+                                  if (reviewRating === 0) {
+                                    alert('Please select a rating');
+                                    return;
+                                  }
+                                  addReview(selectedStylist.id, reviewRating, reviewComment);
+                                  setShowReviewForm(false);
+                                  setReviewRating(0);
+                                  setReviewComment('');
+                                }}
+                              >
+                                Submit Review
+                              </button>
+                              <button
+                                className="cancel-review-button"
+                                onClick={() => {
+                                  setShowReviewForm(false);
+                                  setReviewRating(0);
+                                  setReviewComment('');
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {userReview && (
+                          <div className="user-review">
+                            <div className="user-review-header">
+                              <h3 className="user-review-title">Your Review</h3>
+                              <span className="user-review-author">{userReview.userName}</span>
+                            </div>
+                            <div className="user-review-rating">
+                              {[1, 2, 3, 4, 5].map(star => (
+                                <svg key={star} width="20" height="20" viewBox="0 0 24 24" fill={star <= userReview.rating ? "#ffd700" : "#e0e0e0"} stroke="#ffd700" strokeWidth="2">
+                                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                              ))}
+                            </div>
+                            {userReview.comment && (
+                              <p className="user-review-comment">{userReview.comment}</p>
+                            )}
+                            <span className="user-review-date">{new Date(userReview.date).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                        
+                        <div className="reviews-list">
+                          {stylistReviews
+                            .filter(r => !loggedInUser || r.userId !== loggedInUser.id)
+                            .map((review, index) => (
+                            <div key={index} className="review-item">
+                              <div className="review-header">
+                                <span className="review-author">{review.userName}</span>
+                                <div className="review-rating">
+                                  {[1, 2, 3, 4, 5].map(star => (
+                                    <svg key={star} width="16" height="16" viewBox="0 0 24 24" fill={star <= review.rating ? "#ffd700" : "#e0e0e0"} stroke="#ffd700" strokeWidth="2">
+                                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                    </svg>
+                                  ))}
+                                </div>
+                              </div>
+                              {review.comment && (
+                                <p className="review-text">{review.comment}</p>
+                              )}
+                              <span className="review-date">{new Date(review.date).toLocaleDateString()}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             </div>
