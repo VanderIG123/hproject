@@ -543,6 +543,8 @@ function App() {
   const [currentAvailability, setCurrentAvailability] = React.useState('');
   const [customAvailability, setCustomAvailability] = React.useState('');
   const [useCustomAvailability, setUseCustomAvailability] = React.useState(false);
+  const [footerEmail, setFooterEmail] = React.useState('');
+  const [emailSubmitted, setEmailSubmitted] = React.useState(false);
 
   const paymentTypes = [
     "Cash",
@@ -1251,26 +1253,32 @@ function App() {
                         )}
                         
                         <div className="reviews-list">
-                          {stylistReviews
-                            .filter(r => !loggedInUser || r.userId !== loggedInUser.id)
-                            .map((review, index) => (
-                            <div key={index} className="review-item">
-                              <div className="review-header">
-                                <span className="review-author">{review.userName}</span>
-                                <div className="review-rating">
-                                  {[1, 2, 3, 4, 5].map(star => (
-                                    <svg key={star} width="16" height="16" viewBox="0 0 24 24" fill={star <= review.rating ? "#ffd700" : "#e0e0e0"} stroke="#ffd700" strokeWidth="2">
-                                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                                    </svg>
-                                  ))}
-                                </div>
-                              </div>
-                              {review.comment && (
-                                <p className="review-text">{review.comment}</p>
-                              )}
-                              <span className="review-date">{new Date(review.date).toLocaleDateString()}</span>
+                          {stylistReviews.length === 0 ? (
+                            <div className="no-reviews-message">
+                              <p>No reviews yet</p>
                             </div>
-                          ))}
+                          ) : (
+                            stylistReviews
+                              .filter(r => !loggedInUser || r.userId !== loggedInUser.id)
+                              .map((review, index) => (
+                              <div key={index} className="review-item">
+                                <div className="review-header">
+                                  <span className="review-author">{review.userName}</span>
+                                  <div className="review-rating">
+                                    {[1, 2, 3, 4, 5].map(star => (
+                                      <svg key={star} width="16" height="16" viewBox="0 0 24 24" fill={star <= review.rating ? "#ffd700" : "#e0e0e0"} stroke="#ffd700" strokeWidth="2">
+                                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                      </svg>
+                                    ))}
+                                  </div>
+                                </div>
+                                {review.comment && (
+                                  <p className="review-text">{review.comment}</p>
+                                )}
+                                <span className="review-date">{new Date(review.date).toLocaleDateString()}</span>
+                              </div>
+                            ))
+                          )}
                         </div>
                       </>
                     );
@@ -3439,6 +3447,61 @@ function App() {
             })
           )}
         </div>
+
+        {/* Get in Touch Footer */}
+        <footer className="get-in-touch-footer">
+          <div className="footer-content">
+            <div className="footer-text">
+              <h2 className="footer-title">Get in Touch</h2>
+              <p className="footer-subtitle">Stay updated with the latest stylists and exclusive offers</p>
+            </div>
+            <div className="footer-form-container">
+              {emailSubmitted ? (
+                <div className="footer-success-message">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                    <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                  </svg>
+                  <span>Thank you! We'll be in touch soon.</span>
+                </div>
+              ) : (
+                <form 
+                  className="footer-email-form"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (footerEmail && footerEmail.includes('@')) {
+                      setEmailSubmitted(true);
+                      setFooterEmail('');
+                      setTimeout(() => setEmailSubmitted(false), 5000);
+                    }
+                  }}
+                >
+                  <div className="footer-input-wrapper">
+                    <svg className="footer-email-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                      <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <input
+                      type="email"
+                      className="footer-email-input"
+                      placeholder="Enter your email address"
+                      value={footerEmail}
+                      onChange={(e) => setFooterEmail(e.target.value)}
+                      required
+                    />
+                    <button type="submit" className="footer-submit-button">
+                      Subscribe
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                      </svg>
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </footer>
       </main>
     </div>
   )
