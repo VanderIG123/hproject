@@ -34,6 +34,11 @@ const stylists = [
       "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400",
       "https://images.unsplash.com/photo-1559599101-f09722fb4948?w=400",
       "https://images.unsplash.com/photo-1492106087820-71f1a00d2b11?w=400"
+    ],
+    products: [
+      { title: "Professional Hair Serum", price: "28", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400" },
+      { title: "Color Protection Shampoo", price: "22", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400" },
+      { title: "Heat Protectant Spray", price: "18", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400" }
     ]
   },
   {
@@ -68,6 +73,12 @@ const stylists = [
       "https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=400",
       "https://images.unsplash.com/photo-1560869713-7d0a8b9b0a0a?w=400",
       "https://images.unsplash.com/photo-1515191107209-c28698631303?w=400"
+    ],
+    products: [
+      { title: "Premium Hair Oil", price: "35", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400" },
+      { title: "Deep Conditioning Mask", price: "32", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400" },
+      { title: "Styling Cream", price: "24", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400" },
+      { title: "Volume Boosting Mousse", price: "20", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400" }
     ]
   },
   {
@@ -136,6 +147,11 @@ const stylists = [
       "https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?w=400",
       "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400",
       "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400"
+    ],
+    products: [
+      { title: "Vintage Hair Pins Set", price: "15", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400" },
+      { title: "Retro Styling Gel", price: "19", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400" },
+      { title: "Classic Hair Spray", price: "16", image: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=400" }
     ]
   },
   {
@@ -1304,6 +1320,28 @@ function App() {
                 </div>
               </div>
             )}
+            
+            {selectedStylist.products && selectedStylist.products.length > 0 && (
+              <div className="products-section">
+                <h2 className="detail-section-title portfolio-title">Products</h2>
+                <div className="products-carousel">
+                  {selectedStylist.products.map((product, index) => (
+                    <div key={index} className="product-item">
+                      <img 
+                        src={product.image || 'https://via.placeholder.com/200'} 
+                        alt={product.title || 'Product'}
+                        className="product-image"
+                        loading="lazy"
+                      />
+                      <div className="product-info">
+                        <h3 className="product-title">{product.title}</h3>
+                        <p className="product-price">{product.price && product.price.startsWith('$') ? product.price : `$${product.price}`}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           
           {similarStylists.length > 0 && (
@@ -1888,10 +1926,12 @@ function App() {
       const updatedStylist = {
         ...editedProfile,
         services: editedProfile.editedServices || editedProfile.services,
-        portfolio: editedProfile.editedPortfolio || editedProfile.portfolio
+        portfolio: editedProfile.editedPortfolio || editedProfile.portfolio,
+        products: editedProfile.editedProducts || editedProfile.products || []
       };
       delete updatedStylist.editedServices;
       delete updatedStylist.editedPortfolio;
+      delete updatedStylist.editedProducts;
       setLoggedInStylist(updatedStylist);
       setIsEditingProfile(false);
       setEditedProfile(null);
@@ -1928,7 +1968,15 @@ function App() {
           {!isEditingProfile ? (
             <button 
               className="edit-profile-button header-right-button"
-              onClick={() => setIsEditingProfile(true)}
+              onClick={() => {
+                setEditedProfile({
+                  ...loggedInStylist,
+                  editedServices: loggedInStylist.services || [],
+                  editedPortfolio: loggedInStylist.portfolio || [],
+                  editedProducts: loggedInStylist.products || []
+                });
+                setIsEditingProfile(true);
+              }}
             >
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
@@ -2303,17 +2351,33 @@ function App() {
                         className="portfolio-preview-small"
                         loading="lazy"
                       />
-                      <input 
-                        type="text" 
-                        value={imageUrl} 
-                        onChange={(e) => {
-                          const updatedPortfolio = [...(editedProfile?.editedPortfolio || editedProfile?.portfolio || [])];
-                          updatedPortfolio[index] = e.target.value;
-                          setEditedProfile({...editedProfile, editedPortfolio: updatedPortfolio});
-                        }}
-                        className="edit-portfolio-url-input"
-                        placeholder="Image URL"
-                      />
+                      <label className="portfolio-image-upload-label">
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          className="portfolio-image-file-input"
+                          onChange={(e) => {
+                            const file = e.target.files[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                const updatedPortfolio = [...(editedProfile?.editedPortfolio || editedProfile?.portfolio || [])];
+                                updatedPortfolio[index] = reader.result;
+                                setEditedProfile({...editedProfile, editedPortfolio: updatedPortfolio});
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                        />
+                        <span className="portfolio-image-upload-button">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                          </svg>
+                          Upload Image
+                        </span>
+                      </label>
                       <button 
                         type="button"
                         className="remove-portfolio-button"
@@ -2358,6 +2422,123 @@ function App() {
                       </div>
                     ))}
                   </div>
+                )
+              )}
+            </div>
+            
+            <div className="products-section">
+              <h2 className="detail-section-title portfolio-title">Products</h2>
+              {isEditingProfile ? (
+                <div className="edit-products-container">
+                  {(editedProfile?.editedProducts || editedProfile?.products || []).map((product, index) => (
+                    <div key={index} className="edit-product-item">
+                      <img 
+                        src={product.image || 'https://via.placeholder.com/200'} 
+                        alt={product.title || 'Product'}
+                        className="product-preview-small"
+                        loading="lazy"
+                      />
+                      <div className="edit-product-inputs">
+                        <input 
+                          type="text" 
+                          value={product.title || ''} 
+                          onChange={(e) => {
+                            const updatedProducts = [...(editedProfile?.editedProducts || editedProfile?.products || [])];
+                            updatedProducts[index] = { ...updatedProducts[index], title: e.target.value };
+                            setEditedProfile({...editedProfile, editedProducts: updatedProducts});
+                          }}
+                          className="edit-product-input"
+                          placeholder="Product Title"
+                        />
+                        <input 
+                          type="text" 
+                          value={product.price || ''} 
+                          onChange={(e) => {
+                            const updatedProducts = [...(editedProfile?.editedProducts || editedProfile?.products || [])];
+                            updatedProducts[index] = { ...updatedProducts[index], price: e.target.value };
+                            setEditedProfile({...editedProfile, editedProducts: updatedProducts});
+                          }}
+                          className="edit-product-input"
+                          placeholder="Price (e.g., $25)"
+                        />
+                        <label className="product-image-upload-label">
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            className="product-image-file-input"
+                            onChange={(e) => {
+                              const file = e.target.files[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  const updatedProducts = [...(editedProfile?.editedProducts || editedProfile?.products || [])];
+                                  updatedProducts[index] = { ...updatedProducts[index], image: reader.result };
+                                  setEditedProfile({...editedProfile, editedProducts: updatedProducts});
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                          <span className="product-image-upload-button">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                              <polyline points="17 8 12 3 7 8"></polyline>
+                              <line x1="12" y1="3" x2="12" y2="15"></line>
+                            </svg>
+                            Upload Image
+                          </span>
+                        </label>
+                      </div>
+                      <button 
+                        type="button"
+                        className="remove-product-button"
+                        onClick={() => {
+                          const updatedProducts = (editedProfile?.editedProducts || editedProfile?.products || []).filter((_, i) => i !== index);
+                          setEditedProfile({...editedProfile, editedProducts: updatedProducts});
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  <button 
+                    type="button"
+                    className="add-product-button"
+                    onClick={() => {
+                      const updatedProducts = [...(editedProfile?.editedProducts || editedProfile?.products || []), { title: '', price: '', image: '' }];
+                      setEditedProfile({...editedProfile, editedProducts: updatedProducts});
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Product
+                  </button>
+                </div>
+              ) : (
+                currentStylist.products && currentStylist.products.length > 0 ? (
+                  <div className="products-carousel">
+                    {currentStylist.products.map((product, index) => (
+                      <div key={index} className="product-item">
+                        <img 
+                          src={product.image || 'https://via.placeholder.com/200'} 
+                          alt={product.title || 'Product'}
+                          className="product-image"
+                          loading="lazy"
+                        />
+                        <div className="product-info">
+                          <h3 className="product-title">{product.title}</h3>
+                          <p className="product-price">{product.price && product.price.startsWith('$') ? product.price : `$${product.price}`}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-products-message">No products added yet.</p>
                 )
               )}
             </div>
@@ -3322,7 +3503,19 @@ function App() {
                     alt={stylist.name}
                     className="stylist-profile-picture"
                   />
-                  <h2 className="stylist-name">{stylist.name}</h2>
+                  <div className="stylist-name-container">
+                    <h2 className="stylist-name">{stylist.name}</h2>
+                    {stylist.products && stylist.products.length > 0 && (
+                      <div className="products-indicator" title={`${stylist.products.length} product${stylist.products.length === 1 ? '' : 's'} available`}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                          <line x1="3" y1="6" x2="21" y2="6"></line>
+                          <path d="M16 10a4 4 0 0 1-8 0"></path>
+                        </svg>
+                        <span className="products-count">{stylist.products.length}</span>
+                      </div>
+                    )}
+                  </div>
                   {loggedInUser && (
                     <button
                       className={`favorite-button ${isFavorited ? 'favorited' : ''}`}
