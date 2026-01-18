@@ -1483,19 +1483,105 @@ function App() {
   if (showProfile && loggedInStylist) {
     const currentStylist = isEditingProfile && editedProfile ? editedProfile : loggedInStylist;
     
-    const handleSaveProfile = () => {
-      const updatedStylist = {
-        ...editedProfile,
-        services: editedProfile.editedServices || editedProfile.services,
-        portfolio: editedProfile.editedPortfolio || editedProfile.portfolio,
-        products: editedProfile.editedProducts || editedProfile.products || []
-      };
-      delete updatedStylist.editedServices;
-      delete updatedStylist.editedPortfolio;
-      delete updatedStylist.editedProducts;
-      setLoggedInStylist(updatedStylist);
-      setIsEditingProfile(false);
-      setEditedProfile(null);
+    const handleSaveProfile = async () => {
+      try {
+        if (!editedProfile) {
+          alert('No changes to save. Please edit your profile first.');
+          return;
+        }
+        
+        if (!loggedInStylist || !loggedInStylist.id) {
+          alert('Unable to identify stylist. Please log in again.');
+          return;
+        }
+        
+        // Prepare updated stylist data - keep only the fields we want to send
+        const updatedStylist = {
+          name: editedProfile.name || '',
+          email: editedProfile.email || '',
+          phone: editedProfile.phone || '',
+          address: editedProfile.address || '',
+          profilePicture: editedProfile.profilePicture || '',
+          specialty: editedProfile.specialty || '',
+          hairTextureTypes: editedProfile.hairTextureTypes || '',
+          yearsOfExperience: editedProfile.yearsOfExperience || '',
+          rate: editedProfile.rate || '',
+          hours: editedProfile.hours || '',
+          currentAvailability: editedProfile.currentAvailability || '',
+          willingToTravel: editedProfile.willingToTravel || '',
+          accommodations: editedProfile.accommodations || '',
+          lastMinuteBookingsAllowed: editedProfile.lastMinuteBookingsAllowed || '',
+          streetParkingAvailable: editedProfile.streetParkingAvailable || '',
+          cancellationPolicy: editedProfile.cancellationPolicy || '',
+          acceptedPaymentTypes: editedProfile.acceptedPaymentTypes || '',
+          services: editedProfile.editedServices || editedProfile.services || [],
+          about: editedProfile.about || '',
+          portfolio: editedProfile.editedPortfolio || editedProfile.portfolio || [],
+          products: editedProfile.editedProducts || editedProfile.products || []
+        };
+        
+        // Log what we're sending
+        console.log('Saving profile for stylist ID:', loggedInStylist.id);
+        console.log('Updated stylist data:', updatedStylist);
+        
+        // Send update to backend API
+        const response = await fetch(`http://localhost:3001/api/stylists/${loggedInStylist.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updatedStylist)
+        });
+        
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
+        // Check if response is ok before parsing JSON
+        let result;
+        try {
+          const responseText = await response.text();
+          console.log('Response text:', responseText);
+          
+          if (!response.ok) {
+            // Try to parse as JSON, but handle if it's not
+            try {
+              result = JSON.parse(responseText);
+              console.error('Error response:', result);
+              throw new Error(result.message || `HTTP error! status: ${response.status}`);
+            } catch (parseError) {
+              throw new Error(`Server error: ${response.status} ${response.statusText}. Response: ${responseText.substring(0, 200)}`);
+            }
+          }
+          
+          // Parse the successful response
+          result = JSON.parse(responseText);
+          console.log('Response result:', result);
+        } catch (parseError) {
+          console.error('Error parsing response:', parseError);
+          throw new Error(`Failed to parse server response: ${parseError.message}`);
+        }
+        
+        if (result.success && result.data) {
+          // Update local state with the response from backend
+          setLoggedInStylist(result.data);
+          
+          // Also update the stylist in the main stylists list so changes appear everywhere
+          setStylists(prevStylists => 
+            prevStylists.map(s => s.id === loggedInStylist.id ? result.data : s)
+          );
+          
+          setIsEditingProfile(false);
+          setEditedProfile(null);
+          alert('Profile updated successfully!');
+        } else {
+          alert(result.message || 'Failed to update profile. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error updating profile:', error);
+        console.error('Error stack:', error.stack);
+        const errorMessage = error.message || 'Unknown error occurred';
+        alert(`Failed to update profile: ${errorMessage}. Please check your connection and try again.`);
+      }
     };
 
     const handleCancelEdit = () => {
