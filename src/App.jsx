@@ -70,6 +70,7 @@ function App() {
   const [registrationServices, setRegistrationServices] = React.useState([{ name: '', duration: '', price: '' }]);
   const [profilePhoto, setProfilePhoto] = React.useState(null);
   const [portfolioPhotos, setPortfolioPhotos] = React.useState([]);
+  const [selectedHairStyles, setSelectedHairStyles] = React.useState([]);
   
   // Initialize recommendations from localStorage or use empty object
   const [recommendations, setRecommendations] = React.useState(() => {
@@ -128,6 +129,7 @@ function App() {
     }
   }, [recentlyViewed]);
   const [hairStyleSearchQuery, setHairStyleSearchQuery] = React.useState('');
+  const [customHairStyleInput, setCustomHairStyleInput] = React.useState('');
   const [selectedPaymentTypes, setSelectedPaymentTypes] = React.useState([]);
   const [selectedHairTextureTypes, setSelectedHairTextureTypes] = React.useState([]);
   const [currentAvailability, setCurrentAvailability] = React.useState('');
@@ -968,27 +970,36 @@ function App() {
         
         <main className="main-content">
           <div className="registration-container">
-            <form className="registration-form" onSubmit={(e) => {
+            <form className="registration-form" onSubmit={async (e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
-              const email = formData.get('email');
-              const password = formData.get('password');
               
-              // Test account: test@gmail.com / 1234
-              if (email === 'test@gmail.com' && password === '1234') {
-                const testUser = {
-                  id: 1000,
-                  name: "Test User",
-                  email: "test@gmail.com",
-                  phone: "(212) 555-0000",
-                  address: "123 User Street, User City, NY 10001",
-                  preferences: "Looking for modern styles and color techniques",
-                  favorites: [] // Initialize favorites array
-                };
-                setLoggedInUser(testUser);
-                setShowUserLogin(false);
-              } else {
-                alert('Invalid email or password. Use test@gmail.com / 1234 for test account.');
+              try {
+                const formData = new FormData(e.target);
+                const email = formData.get('email');
+                const password = formData.get('password');
+                
+                // Call backend login endpoint
+                const response = await fetch('http://localhost:3001/api/users/login', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                  // Login successful - set logged in user
+                  setLoggedInUser(result.data);
+                  setShowUserLogin(false);
+                  alert('Login successful! Welcome back.');
+                } else {
+                  alert(result.message || 'Invalid email or password. Please try again.');
+                }
+              } catch (error) {
+                console.error('Error during login:', error);
+                alert('Login failed. Please check your connection and try again.');
               }
             }}>
               <div className="form-section">
@@ -1094,17 +1105,73 @@ function App() {
     const favoriteStylists = stylists.filter(s => userFavorites.includes(s.id));
     const recentlyViewedStylists = getRecentlyViewed();
     
-    const handleSaveUserProfile = () => {
-      // Clean up preferencesArray before saving
-      const { preferencesArray, ...profileToSave } = editedUserProfile;
-      setLoggedInUser({
-        ...profileToSave,
-        preferences: editedUserProfile.preferences || ''
-      });
-      setIsEditingUserProfile(false);
-      setEditedUserProfile(null);
-      setCustomHairStyleInput(''); // Clear custom input
-      alert('Profile saved successfully!');
+    const handleSaveUserProfile = async () => {
+      try {
+        if (!editedUserProfile) {
+          alert('No changes to save. Please edit your profile first.');
+          return;
+        }
+        
+        if (!loggedInUser || !loggedInUser.id) {
+          alert('Unable to identify user. Please log in again.');
+          return;
+        }
+        
+        // Prepare updated user data
+        const updatedUser = {
+          name: editedUserProfile.name || '',
+          email: editedUserProfile.email || '',
+          phone: editedUserProfile.phone || '',
+          address: editedUserProfile.address || '',
+          preferences: editedUserProfile.preferencesArray 
+            ? editedUserProfile.preferencesArray.join(', ') 
+            : (editedUserProfile.preferences || '')
+        };
+        
+        // Send update to backend API
+        const response = await fetch(`http://localhost:3001/api/users/${loggedInUser.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updatedUser)
+        });
+        
+        // Check if response is ok before parsing JSON
+        let result;
+        try {
+          const responseText = await response.text();
+          
+          if (!response.ok) {
+            try {
+              result = JSON.parse(responseText);
+              throw new Error(result.message || `HTTP error! status: ${response.status}`);
+            } catch (parseError) {
+              throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            }
+          }
+          
+          result = JSON.parse(responseText);
+        } catch (parseError) {
+          console.error('Error parsing response:', parseError);
+          throw new Error(`Failed to parse server response: ${parseError.message}`);
+        }
+        
+        if (result.success && result.data) {
+          // Update local state with the response from backend
+          setLoggedInUser(result.data);
+          setIsEditingUserProfile(false);
+          setEditedUserProfile(null);
+          setCustomHairStyleInput(''); // Clear custom input
+          alert('Profile updated successfully!');
+        } else {
+          alert(result.message || 'Failed to update profile. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error updating user profile:', error);
+        const errorMessage = error.message || 'Unknown error occurred';
+        alert(`Failed to update profile: ${errorMessage}. Please check your connection and try again.`);
+      }
     };
 
     const handleCancelEditUser = () => {
@@ -2244,10 +2311,67 @@ function App() {
         
         <main className="main-content">
           <div className="registration-container">
-            <form className="registration-form" onSubmit={(e) => {
+            <form className="registration-form" onSubmit={async (e) => {
               e.preventDefault();
-              alert('Registration submitted! (This is a demo - no data is saved)');
-              setShowUserRegistration(false);
+              
+              try {
+                const formData = new FormData(e.target);
+                const email = formData.get('email');
+                const password = formData.get('password');
+                const confirmPassword = formData.get('confirmPassword');
+                const name = formData.get('name');
+                const phone = formData.get('phone');
+                const address = formData.get('address');
+                
+                // Validate password match
+                if (password !== confirmPassword) {
+                  alert('Passwords do not match. Please try again.');
+                  return;
+                }
+                
+                // Prepare user data
+                const userData = {
+                  name: name.trim(),
+                  email: email.trim(),
+                  password: password,
+                  phone: phone.trim(),
+                  address: address ? address.trim() : '',
+                  preferences: selectedHairStyles.length > 0 
+                    ? selectedHairStyles.join(', ') 
+                    : ''
+                };
+                
+                // Submit to backend API
+                const response = await fetch('http://localhost:3001/api/users', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify(userData)
+                });
+                
+                if (!response.ok) {
+                  const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+                  throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                  alert('Registration successful! You can now log in.');
+                  setShowUserRegistration(false);
+                  // Reset form state
+                  setSelectedHairStyles([]);
+                  setHairStyleSearchQuery('');
+                  setCustomHairStyleInput('');
+                  e.target.reset();
+                } else {
+                  alert(result.message || 'Registration failed. Please try again.');
+                }
+              } catch (error) {
+                console.error('Error registering user:', error);
+                alert(`Registration failed: ${error.message}. Please try again.`);
+              }
             }}>
               <div className="form-section">
                 <h2 className="form-section-title">Account Information</h2>
