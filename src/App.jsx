@@ -1033,49 +1033,36 @@ function App() {
         
         <main className="main-content">
           <div className="registration-container">
-            <form className="registration-form" onSubmit={(e) => {
+            <form className="registration-form" onSubmit={async (e) => {
               e.preventDefault();
-              const formData = new FormData(e.target);
-              const email = formData.get('email');
-              const password = formData.get('password');
               
-              // Test account: test@gmail.com / 1234
-              if (email === 'test@gmail.com' && password === '1234') {
-                // Find the test stylist or create a test stylist object
-                const testStylist = stylists.find(s => s.email === 'test@gmail.com') || {
-                  id: 999,
-                  name: "Test Stylist",
-                  profilePicture: "https://i.pravatar.cc/200?img=1",
-                  address: "123 Test Street, Test City, NY 10001",
-                  email: "test@gmail.com",
-                  phone: "(212) 555-0000",
-                  rate: "$80/hour",
-                  hours: "Mon-Fri: 9:00 AM - 6:00 PM",
-                  currentAvailability: "Available this week",
-                  willingToTravel: "Yes, within 15 miles",
-                  yearsOfExperience: "5 years",
-                  specialty: "Modern cuts and styling",
-                  hairTextureTypes: "Type A, Type B, Type C",
-                  accommodations: "Kids welcome",
-                  lastMinuteBookingsAllowed: "Yes",
-                  streetParkingAvailable: "Yes",
-                  acceptedPaymentTypes: "Cash, Credit Card, Venmo",
-                  cancellationPolicy: "24-hour cancellation notice required. Full charge for no-shows or cancellations within 24 hours.",
-                  services: [
-                    { name: "Haircut", duration: "45 minutes" },
-                    { name: "Hair Color", duration: "2 hours" },
-                    { name: "Highlights", duration: "2.5 hours" }
-                  ],
-                  about: "Test stylist account for demonstration purposes.",
-                  portfolio: [
-                    "https://images.unsplash.com/photo-1560869713-7d0a8b9b0a0a?w=400",
-                    "https://images.unsplash.com/photo-1562322140-8baeececf3df?w=400"
-                  ]
-                };
-                setLoggedInStylist(testStylist);
-                setShowLogin(false);
-              } else {
-                alert('Invalid email or password. Use test@gmail.com / 1234 for test account.');
+              try {
+                const formData = new FormData(e.target);
+                const email = formData.get('email');
+                const password = formData.get('password');
+                
+                // Call backend login endpoint
+                const response = await fetch('http://localhost:3001/api/stylists/login', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ email, password })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                  // Login successful - set logged in stylist
+                  setLoggedInStylist(result.data);
+                  setShowLogin(false);
+                  alert('Login successful! Welcome back.');
+                } else {
+                  alert(result.message || 'Invalid email or password. Please try again.');
+                }
+              } catch (error) {
+                console.error('Error during login:', error);
+                alert('Login failed. Please check your connection and try again.');
               }
             }}>
               <div className="form-section">
