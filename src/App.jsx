@@ -2388,10 +2388,71 @@ function App() {
         
         <main className="main-content">
           <div className="registration-container">
-            <form className="registration-form" onSubmit={(e) => {
+            <form className="registration-form" onSubmit={async (e) => {
               e.preventDefault();
-              alert('Registration submitted! (This is a demo - no data is saved)');
-              setShowRegistration(false);
+              
+              try {
+                const formData = new FormData(e.target);
+                
+                // Add profile picture file if selected
+                if (profilePhoto) {
+                  formData.append('profilePicture', profilePhoto);
+                }
+                
+                // Add portfolio pictures files if any selected
+                portfolioPhotos.forEach((photo) => {
+                  formData.append('portfolioPictures', photo);
+                });
+                
+                // Add services as JSON string (FormData doesn't handle arrays well)
+                const validServices = registrationServices.filter(s => s.name && s.name.trim());
+                if (validServices.length > 0) {
+                  formData.append('services', JSON.stringify(validServices));
+                }
+                
+                // Add hair texture types (already handled by checkboxes, but ensure it's set)
+                if (selectedHairTextureTypes.length > 0) {
+                  formData.set('hairTextureTypes', selectedHairTextureTypes.join(', '));
+                }
+                
+                // Add accepted payment types
+                if (selectedPaymentTypes.length > 0) {
+                  formData.set('acceptedPaymentTypes', selectedPaymentTypes.join(', '));
+                }
+                
+                // Submit to backend API with FormData (includes files)
+                const response = await fetch('http://localhost:3001/api/stylists', {
+                  method: 'POST',
+                  // Don't set Content-Type header - let browser set it with boundary for multipart/form-data
+                  body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                  // Refetch stylists to get the updated list
+                  const stylistsResponse = await fetch('http://localhost:3001/api/stylists');
+                  const stylistsResult = await stylistsResponse.json();
+                  if (stylistsResult.success && stylistsResult.data) {
+                    setStylists(stylistsResult.data);
+                  }
+                  
+                  alert('Registration successful! Your profile has been added.');
+                  setShowRegistration(false);
+                  // Reset form state
+                  setProfilePhoto(null);
+                  setPortfolioPhotos([]);
+                  setRegistrationServices([{ name: '', duration: '', price: '' }]);
+                  setSelectedPaymentTypes([]);
+                  setSelectedHairTextureTypes([]);
+                  e.target.reset();
+                } else {
+                  alert(`Registration failed: ${result.message || 'Unknown error'}`);
+                }
+              } catch (error) {
+                console.error('Error registering stylist:', error);
+                alert(`Registration failed: ${error.message}`);
+              }
             }}>
               <div className="form-section">
                 <h2 className="form-section-title">Account Information</h2>
@@ -2417,7 +2478,6 @@ function App() {
                     <input 
                       type="file" 
                       id="profilePicture" 
-                      name="profilePicture" 
                       accept="image/*"
                       onChange={(e) => {
                         if (e.target.files && e.target.files[0]) {
@@ -2635,7 +2695,6 @@ function App() {
                     <input 
                       type="file" 
                       id="portfolioPictures" 
-                      name="portfolioPictures" 
                       accept="image/*"
                       multiple
                       onChange={(e) => {
