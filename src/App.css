@@ -3834,3 +3834,472 @@
     font-size: 0.9rem;
   }
 }
+
+/* Book Appointment Button */
+.book-appointment-button {
+  width: 100%;
+  padding: 16px 24px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+  text-transform: none;
+  letter-spacing: 0.5px;
+}
+
+.book-appointment-button:hover {
+  background-color: #333333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.book-appointment-button:active {
+  transform: translateY(0);
+}
+
+/* Booking Page Styles */
+.booking-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.booking-stylist-info {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.booking-stylist-photo {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #000000;
+}
+
+.booking-stylist-details h2 {
+  margin: 0 0 8px 0;
+  font-size: 1.5rem;
+  color: #000000;
+}
+
+.booking-stylist-specialty {
+  margin: 0 0 4px 0;
+  color: #666666;
+  font-size: 1rem;
+}
+
+.booking-stylist-rate {
+  margin: 0 0 8px 0;
+  color: #000000;
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.booking-stylist-address {
+  margin: 0;
+  color: #666666;
+  font-size: 0.9rem;
+}
+
+.booking-form {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 32px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.form-group {
+  margin-bottom: 24px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+.form-label .required {
+  color: #ff0000;
+  margin-left: 4px;
+}
+
+.form-textarea,
+.form-input {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: border-color 0.3s ease;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+.form-textarea:focus,
+.form-input:focus {
+  outline: none;
+  border-color: #000000;
+}
+
+.booking-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 32px;
+  justify-content: flex-end;
+}
+
+.cancel-booking-button,
+.submit-booking-button {
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-booking-button {
+  background-color: #f5f5f5;
+  color: #000000;
+  border: 2px solid #e0e0e0;
+}
+
+.cancel-booking-button:hover {
+  background-color: #e0e0e0;
+  border-color: #cccccc;
+}
+
+.submit-booking-button {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+.submit-booking-button:hover {
+  background-color: #333333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+@media (max-width: 768px) {
+  .booking-stylist-info {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .booking-actions {
+    flex-direction: column;
+  }
+
+  .cancel-booking-button,
+  .submit-booking-button {
+    width: 100%;
+  }
+}
+
+/* Booking Services Selection */
+.booking-services-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.booking-service-button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #ffffff;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  width: 100%;
+}
+
+.booking-service-button:hover {
+  border-color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.booking-service-button.selected {
+  background: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+
+.booking-service-checkbox {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e0e0e0;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.booking-service-button.selected .booking-service-checkbox {
+  border-color: #ffffff;
+  background: #ffffff;
+}
+
+.booking-service-checkbox svg {
+  color: #000000;
+}
+
+.booking-service-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.booking-service-name {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000000;
+  transition: color 0.3s ease;
+}
+
+.booking-service-button.selected .booking-service-name {
+  color: #ffffff;
+}
+
+.booking-service-details {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.875rem;
+  color: #666666;
+  transition: color 0.3s ease;
+}
+
+.booking-service-button.selected .booking-service-details {
+  color: #cccccc;
+}
+
+.booking-service-price {
+  font-weight: 600;
+}
+
+.booking-service-duration {
+  font-style: italic;
+}
+
+.booking-service-separator {
+  color: #cccccc;
+}
+
+.form-hint {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  color: #666666;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .booking-services-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Appointments Section Styles */
+.appointments-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.appointment-item {
+  padding: 20px;
+  background: #ffffff;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.appointment-item:hover {
+  border-color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.appointment-item.past {
+  opacity: 0.7;
+  background: #f9f9f9;
+}
+
+.appointment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.appointment-stylist-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+}
+
+.appointment-stylist-photo {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e0e0e0;
+}
+
+.appointment-stylist-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.appointment-stylist-name {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+.appointment-status {
+  margin: 0;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.confirmed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.completed {
+  background: #d1ecf1;
+  color: #0c5460;
+}
+
+.status-badge.cancelled {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.appointment-date-time {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.appointment-date,
+.appointment-time {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #666666;
+  font-weight: 500;
+}
+
+.appointment-date svg,
+.appointment-time svg {
+  color: #000000;
+  flex-shrink: 0;
+}
+
+.appointment-purpose {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.95rem;
+  color: #000000;
+}
+
+.appointment-services {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.appointment-services-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.appointment-service-tag {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #f0f0f0;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: #000000;
+  font-weight: 500;
+}
+
+.no-appointments {
+  text-align: center;
+  padding: 40px 20px;
+  color: #666666;
+  font-style: italic;
+}
+
+@media (max-width: 768px) {
+  .appointment-header {
+    flex-direction: column;
+  }
+
+  .appointment-date-time {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .appointment-item {
+    padding: 16px;
+  }
+}

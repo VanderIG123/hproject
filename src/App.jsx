@@ -44,10 +44,19 @@ function App() {
   const [selectedRate, setSelectedRate] = React.useState('all');
   const [selectedTravel, setSelectedTravel] = React.useState('all');
   const [selectedHairTextureType, setSelectedHairTextureType] = React.useState('all');
+  const [selectedAvailableNow, setSelectedAvailableNow] = React.useState('all');
   const [selectedDate, setSelectedDate] = React.useState('');
   const [selectedTime, setSelectedTime] = React.useState('');
   const [appliedDate, setAppliedDate] = React.useState('');
   const [appliedTime, setAppliedTime] = React.useState('');
+  const [showBookingPage, setShowBookingPage] = React.useState(false);
+  const [bookingStylistId, setBookingStylistId] = React.useState(null);
+  const [appointmentPurpose, setAppointmentPurpose] = React.useState('');
+  const [appointmentDate, setAppointmentDate] = React.useState('');
+  const [appointmentTime, setAppointmentTime] = React.useState('');
+  const [selectedServices, setSelectedServices] = React.useState([]);
+  const [userAppointments, setUserAppointments] = React.useState([]);
+  const [userAppointmentsLoading, setUserAppointmentsLoading] = React.useState(false);
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
   const [showReviewForm, setShowReviewForm] = React.useState(false);
   const [reviewRating, setReviewRating] = React.useState(0);
@@ -586,7 +595,12 @@ function App() {
     const matchesHairTextureType = selectedHairTextureType === 'all' || 
       (stylist.hairTextureTypes && stylist.hairTextureTypes.includes(selectedHairTextureType));
 
-    return matchesSearch && matchesSpecialty && matchesRate && matchesTravel && matchesHairTextureType;
+    // Available now filter
+    const matchesAvailableNow = selectedAvailableNow === 'all' || 
+      (selectedAvailableNow === 'yes' && stylist.availableNow === true) ||
+      (selectedAvailableNow === 'no' && (stylist.availableNow === false || stylist.availableNow === undefined));
+
+    return matchesSearch && matchesSpecialty && matchesRate && matchesTravel && matchesHairTextureType && matchesAvailableNow;
   });
 
   const selectedStylist = stylists.find(s => s.id === selectedStylistId);
@@ -598,6 +612,32 @@ function App() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStylistId, loggedInUser?.id]);
+  
+  // Fetch user appointments when profile is shown
+  React.useEffect(() => {
+    const fetchUserAppointments = async () => {
+      if (!showUserProfile || !loggedInUser || !loggedInUser.id) return;
+      
+      try {
+        setUserAppointmentsLoading(true);
+        const response = await fetch(`http://localhost:3001/api/appointments?userId=${loggedInUser.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch appointments');
+        }
+        const result = await response.json();
+        if (result.success && result.data) {
+          setUserAppointments(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching user appointments:', error);
+        setUserAppointments([]);
+      } finally {
+        setUserAppointmentsLoading(false);
+      }
+    };
+    
+    fetchUserAppointments();
+  }, [loggedInUser?.id, showUserProfile]);
   
   // Find similar stylists based on shared services
   const getSimilarStylists = (stylist) => {
@@ -945,6 +985,239 @@ function App() {
               </div>
             </div>
           )}
+        </main>
+      </div>
+    );
+  }
+
+  // Show booking page
+  if (showBookingPage && bookingStylistId) {
+    const bookingStylist = stylists.find(s => s.id === bookingStylistId);
+    
+    const toggleService = (service) => {
+      const isSelected = selectedServices.some(s => s.name === service.name);
+      if (isSelected) {
+        setSelectedServices(selectedServices.filter(s => s.name !== service.name));
+      } else {
+        setSelectedServices([...selectedServices, service]);
+      }
+    };
+    
+    const handleBookingSubmit = async (e) => {
+      e.preventDefault();
+      
+      // If services are selected, use them; otherwise require purpose text
+      const finalPurpose = selectedServices.length > 0 
+        ? selectedServices.map(s => {
+            const serviceText = s.name + (s.price ? ` (${s.price})` : '') + (s.duration ? ` - ${s.duration}` : '');
+            return serviceText;
+          }).join(', ') + (appointmentPurpose.trim() ? ` - ${appointmentPurpose.trim()}` : '')
+        : appointmentPurpose.trim();
+      
+      if (!finalPurpose) {
+        alert('Please select at least one service or enter what the appointment is for.');
+        return;
+      }
+      
+      if (!appointmentDate) {
+        alert('Please select a date for the appointment.');
+        return;
+      }
+      
+      if (!appointmentTime) {
+        alert('Please select a time for the appointment.');
+        return;
+      }
+      
+      try {
+        const bookingData = {
+          stylistId: bookingStylistId,
+          userId: loggedInUser ? loggedInUser.id : null,
+          purpose: finalPurpose,
+          services: selectedServices.map(s => s.name),
+          date: appointmentDate,
+          time: appointmentTime,
+          customerName: loggedInUser ? loggedInUser.name : '',
+          customerEmail: loggedInUser ? loggedInUser.email : '',
+          customerPhone: loggedInUser ? loggedInUser.phone : ''
+        };
+        
+        const response = await fetch('http://localhost:3001/api/appointments', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(bookingData)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          alert('Appointment booked successfully!');
+          setShowBookingPage(false);
+          setBookingStylistId(null);
+          setAppointmentPurpose('');
+          setAppointmentDate('');
+          setAppointmentTime('');
+          setSelectedServices([]);
+        } else {
+          alert(result.message || 'Failed to book appointment. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error booking appointment:', error);
+        alert('Failed to book appointment. Please check your connection and try again.');
+      }
+    };
+    
+    return (
+      <div className="app">
+        <header className="header">
+          <button 
+            className="back-button"
+            onClick={() => {
+          setShowBookingPage(false);
+          setBookingStylistId(null);
+          setAppointmentPurpose('');
+          setAppointmentDate('');
+          setAppointmentTime('');
+          setSelectedServices([]);
+            }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Home
+          </button>
+          <h1>Book Appointment</h1>
+          <p className="subtitle">Schedule with {bookingStylist ? bookingStylist.name : 'Stylist'}</p>
+        </header>
+        
+        <main className="main-content">
+          <div className="booking-container">
+            {bookingStylist && (
+              <div className="booking-stylist-info">
+                <img 
+                  src={bookingStylist.profilePicture} 
+                  alt={bookingStylist.name}
+                  className="booking-stylist-photo"
+                />
+                <div className="booking-stylist-details">
+                  <h2>{bookingStylist.name}</h2>
+                  <p className="booking-stylist-specialty">{bookingStylist.specialty}</p>
+                  <p className="booking-stylist-rate">{bookingStylist.rate}</p>
+                  <p className="booking-stylist-address">{bookingStylist.address}</p>
+                </div>
+              </div>
+            )}
+            
+            <form className="booking-form" onSubmit={handleBookingSubmit}>
+              {bookingStylist && bookingStylist.services && bookingStylist.services.length > 0 && (
+                <div className="form-group">
+                  <label className="form-label">
+                    Select Services <span className="required">*</span>
+                  </label>
+                  <div className="booking-services-grid">
+                    {bookingStylist.services.map((service, index) => {
+                      const isSelected = selectedServices.some(s => s.name === service.name);
+                      return (
+                        <button
+                          key={index}
+                          type="button"
+                          className={`booking-service-button ${isSelected ? 'selected' : ''}`}
+                          onClick={() => toggleService(service)}
+                        >
+                          <div className="booking-service-checkbox">
+                            {isSelected && (
+                              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                              </svg>
+                            )}
+                          </div>
+                          <div className="booking-service-info">
+                            <div className="booking-service-name">{service.name}</div>
+                            <div className="booking-service-details">
+                              {service.price && <span className="booking-service-price">{service.price}</span>}
+                              {service.price && service.duration && <span className="booking-service-separator"> • </span>}
+                              {service.duration && <span className="booking-service-duration">{service.duration}</span>}
+                            </div>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              <div className="form-group">
+                <label htmlFor="appointment-purpose" className="form-label">
+                  Additional Notes (Optional)
+                </label>
+                <textarea
+                  id="appointment-purpose"
+                  className="form-textarea"
+                  value={appointmentPurpose}
+                  onChange={(e) => setAppointmentPurpose(e.target.value)}
+                  placeholder="Add any additional notes or custom requests..."
+                  rows="3"
+                />
+                {selectedServices.length > 0 && (
+                  <p className="form-hint">Selected services will be included in your appointment booking.</p>
+                )}
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="appointment-date" className="form-label">
+                  Date <span className="required">*</span>
+                </label>
+                <input
+                  type="date"
+                  id="appointment-date"
+                  className="form-input"
+                  value={appointmentDate}
+                  onChange={(e) => setAppointmentDate(e.target.value)}
+                  min={new Date().toISOString().split('T')[0]}
+                  required
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="appointment-time" className="form-label">
+                  Time <span className="required">*</span>
+                </label>
+                <input
+                  type="time"
+                  id="appointment-time"
+                  className="form-input"
+                  value={appointmentTime}
+                  onChange={(e) => setAppointmentTime(e.target.value)}
+                  required
+                />
+              </div>
+              
+              <div className="booking-actions">
+                <button 
+                  type="button"
+                  className="cancel-booking-button"
+                  onClick={() => {
+                    setShowBookingPage(false);
+                    setBookingStylistId(null);
+                    setAppointmentPurpose('');
+                    setAppointmentDate('');
+                    setAppointmentTime('');
+                    setSelectedServices([]);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  className="submit-booking-button"
+                >
+                  Confirm Booking
+                </button>
+              </div>
+            </form>
+          </div>
         </main>
       </div>
     );
@@ -1498,6 +1771,91 @@ function App() {
                   </div>
                 )}
                 
+                {!isEditingUserProfile && (
+                  <div className="detail-info-card">
+                    <h2 className="detail-section-title">Appointments</h2>
+                    {userAppointmentsLoading ? (
+                      <p>Loading appointments...</p>
+                    ) : userAppointments.length > 0 ? (
+                      <div className="appointments-list">
+                        {userAppointments.map((appointment) => {
+                          const stylist = stylists.find(s => s.id === appointment.stylistId);
+                          const appointmentDate = new Date(appointment.date);
+                          const isPast = appointmentDate < new Date();
+                          
+                          return (
+                            <div 
+                              key={appointment.id} 
+                              className={`appointment-item ${isPast ? 'past' : 'upcoming'}`}
+                              onClick={() => {
+                                if (stylist) {
+                                  setShowUserProfile(false);
+                                  setSelectedStylistId(stylist.id);
+                                }
+                              }}
+                            >
+                              <div className="appointment-header">
+                                <div className="appointment-stylist-info">
+                                  {stylist && (
+                                    <img 
+                                      src={stylist.profilePicture} 
+                                      alt={stylist.name}
+                                      className="appointment-stylist-photo"
+                                    />
+                                  )}
+                                  <div className="appointment-stylist-details">
+                                    <h3 className="appointment-stylist-name">
+                                      {stylist ? stylist.name : 'Unknown Stylist'}
+                                    </h3>
+                                    <p className="appointment-status">
+                                      <span className={`status-badge ${appointment.status}`}>
+                                        {appointment.status}
+                                      </span>
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="appointment-date-time">
+                                  <div className="appointment-date">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                                    </svg>
+                                    <span>{appointmentDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                                  </div>
+                                  <div className="appointment-time">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                      <circle cx="12" cy="12" r="10"></circle>
+                                      <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    <span>{appointment.time}</span>
+                                  </div>
+                                </div>
+                              </div>
+                              <div className="appointment-purpose">
+                                <span className="label">Service:</span> {appointment.purpose}
+                              </div>
+                              {appointment.services && appointment.services.length > 0 && (
+                                <div className="appointment-services">
+                                  <span className="label">Services:</span>
+                                  <div className="appointment-services-list">
+                                    {appointment.services.map((service, index) => (
+                                      <span key={index} className="appointment-service-tag">{service}</span>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <p className="no-appointments">No appointments yet. Book your first appointment to see it here!</p>
+                    )}
+                  </div>
+                )}
+                
                 {!isEditingUserProfile && favoriteStylists.length > 0 && (
                   <div className="detail-info-card">
                     <h2 className="detail-section-title">Liked Stylists</h2>
@@ -1575,6 +1933,7 @@ function App() {
           rate: editedProfile.rate || '',
           hours: editedProfile.hours || '',
           currentAvailability: editedProfile.currentAvailability || '',
+          availableNow: editedProfile.availableNow !== undefined ? editedProfile.availableNow : false,
           willingToTravel: editedProfile.willingToTravel || '',
           accommodations: editedProfile.accommodations || '',
           lastMinuteBookingsAllowed: editedProfile.lastMinuteBookingsAllowed || '',
@@ -1813,6 +2172,16 @@ function App() {
                         className="edit-input"
                         placeholder="e.g., Available this week"
                       />
+                      <label><span className="label">Available Now:</span></label>
+                      <select 
+                        value={editedProfile?.availableNow === true ? 'yes' : (editedProfile?.availableNow === false ? 'no' : '')} 
+                        onChange={(e) => setEditedProfile({...editedProfile, availableNow: e.target.value === 'yes'})}
+                        className="edit-select"
+                      >
+                        <option value="">Select an option</option>
+                        <option value="yes">Yes - Available Now</option>
+                        <option value="no">No - Not Available Now</option>
+                      </select>
                       <label><span className="label">Willing to Travel:</span></label>
                       <select 
                         value={editedProfile?.willingToTravel || ''} 
@@ -1877,6 +2246,9 @@ function App() {
                         <p><span className="label">Rate:</span> {currentStylist.rate}</p>
                         <p><span className="label">Hours:</span> {currentStylist.hours}</p>
                         <p><span className="label">Current Availability:</span> {currentStylist.currentAvailability}</p>
+                        {currentStylist.availableNow && (
+                          <p><span className="label">Available Now:</span> <span className="available-now-status">Yes</span></p>
+                        )}
                         <p><span className="label">Willing to Travel:</span> {currentStylist.willingToTravel}</p>
                         {currentStylist.accommodations && (
                           <p><span className="label">Accommodations:</span> {currentStylist.accommodations}</p>
@@ -3243,6 +3615,20 @@ function App() {
           </div>
 
           <div className="filter-group">
+            <label htmlFor="available-now-filter" className="filter-label">Available Now</label>
+            <select
+              id="available-now-filter"
+              className="filter-select"
+              value={selectedAvailableNow}
+              onChange={(e) => setSelectedAvailableNow(e.target.value)}
+            >
+              <option value="all">All</option>
+              <option value="yes">Available Now</option>
+              <option value="no">Not Available Now</option>
+            </select>
+          </div>
+
+          <div className="filter-group">
             <label htmlFor="date-filter" className="filter-label">Desired Date</label>
             <input
               type="date"
@@ -3273,7 +3659,7 @@ function App() {
             />
           </div>
 
-          {(selectedSpecialty !== 'all' || selectedRate !== 'all' || selectedTravel !== 'all' || selectedHairTextureType !== 'all' || selectedDate || selectedTime || appliedDate || appliedTime) && (
+          {(selectedSpecialty !== 'all' || selectedRate !== 'all' || selectedTravel !== 'all' || selectedHairTextureType !== 'all' || selectedAvailableNow !== 'all' || selectedDate || selectedTime || appliedDate || appliedTime) && (
             <button
               className="clear-filters-button"
               onClick={() => {
@@ -3281,6 +3667,7 @@ function App() {
                 setSelectedRate('all');
                 setSelectedTravel('all');
                 setSelectedHairTextureType('all');
+                setSelectedAvailableNow('all');
                 setSelectedDate('');
                 setSelectedTime('');
                 setAppliedDate('');
@@ -3335,16 +3722,27 @@ function App() {
                   />
                   <div className="stylist-name-container">
                     <h2 className="stylist-name">{stylist.name}</h2>
-                    {stylist.products && stylist.products.length > 0 && (
-                      <div className="products-indicator" title={`${stylist.products.length} product${stylist.products.length === 1 ? '' : 's'} available`}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
-                          <line x1="3" y1="6" x2="21" y2="6"></line>
-                          <path d="M16 10a4 4 0 0 1-8 0"></path>
-                        </svg>
-                        <span className="products-count">{stylist.products.length}</span>
-                      </div>
-                    )}
+                    <div className="stylist-badges">
+                      {stylist.availableNow && (
+                        <span className="available-now-badge" title="Available Now">
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <polyline points="12 6 12 12 16 14"></polyline>
+                          </svg>
+                          Available Now
+                        </span>
+                      )}
+                      {stylist.products && stylist.products.length > 0 && (
+                        <div className="products-indicator" title={`${stylist.products.length} product${stylist.products.length === 1 ? '' : 's'} available`}>
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                            <line x1="3" y1="6" x2="21" y2="6"></line>
+                            <path d="M16 10a4 4 0 0 1-8 0"></path>
+                          </svg>
+                          <span className="products-count">{stylist.products.length}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
                   {loggedInUser && (
                     <button
@@ -3465,6 +3863,18 @@ function App() {
                   <p className="about-text">{stylist.about}</p>
                 </div>
               </div>
+              {loggedInUser && (
+                <button
+                  className="book-appointment-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setBookingStylistId(stylist.id);
+                    setShowBookingPage(true);
+                  }}
+                >
+                  Book Appointment
+                </button>
+              )}
             </div>
             );
             })
