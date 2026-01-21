@@ -62,6 +62,7 @@ function App() {
   const [suggestingDateTime, setSuggestingDateTime] = React.useState(null);
   const [suggestedDate, setSuggestedDate] = React.useState('');
   const [suggestedTime, setSuggestedTime] = React.useState('');
+  const [viewMode, setViewMode] = React.useState('stylists'); // 'stylists' or 'products'
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
   const [showReviewForm, setShowReviewForm] = React.useState(false);
   const [reviewRating, setReviewRating] = React.useState(0);
@@ -3887,8 +3888,33 @@ function App() {
             </>
           )}
         </div>
-        <h1>Hair Stylists</h1>
-        <p className="subtitle">Find your perfect stylist</p>
+        <div className="view-toggle-container">
+          <button
+            className={`view-toggle-button ${viewMode === 'stylists' ? 'active' : ''}`}
+            onClick={() => setViewMode('stylists')}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            Stylists
+          </button>
+          <button
+            className={`view-toggle-button ${viewMode === 'products' ? 'active' : ''}`}
+            onClick={() => setViewMode('products')}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <path d="M16 10a4 4 0 0 1-8 0"></path>
+            </svg>
+            Products
+          </button>
+        </div>
+        <h1>{viewMode === 'stylists' ? 'Hair Stylists' : 'Products'}</h1>
+        <p className="subtitle">{viewMode === 'stylists' ? 'Find your perfect stylist' : 'Browse products from all stylists'}</p>
       </header>
       
       <main className="main-content">
@@ -4052,20 +4078,105 @@ function App() {
           )}
         </div>
         
-        <div className="stylists-container">
-          {filteredStylists.length === 0 ? (
-            <div className="no-results">
-              <div className="no-results-icon">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="11" cy="11" r="8"></circle>
-                  <path d="m21 21-4.35-4.35"></path>
-                </svg>
+        {viewMode === 'products' ? (
+          <div className="products-container">
+            {(() => {
+              // Aggregate all products from all stylists
+              const allProducts = [];
+              stylists.forEach(stylist => {
+                if (stylist.products && stylist.products.length > 0) {
+                  stylist.products.forEach(product => {
+                    allProducts.push({
+                      ...product,
+                      stylistId: stylist.id,
+                      stylistName: stylist.name,
+                      stylistProfilePicture: stylist.profilePicture
+                    });
+                  });
+                }
+              });
+
+              // Filter products by search query
+              const filteredProducts = allProducts.filter(product => {
+                if (!searchQuery) return true;
+                const query = searchQuery.toLowerCase();
+                return (
+                  product.title?.toLowerCase().includes(query) ||
+                  product.price?.toLowerCase().includes(query) ||
+                  product.stylistName?.toLowerCase().includes(query)
+                );
+              });
+
+              return filteredProducts.length === 0 ? (
+                <div className="no-results">
+                  <div className="no-results-icon">
+                    <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path>
+                      <line x1="3" y1="6" x2="21" y2="6"></line>
+                      <path d="M16 10a4 4 0 0 1-8 0"></path>
+                    </svg>
+                  </div>
+                  <h3 className="no-results-title">No products found</h3>
+                  <p className="no-results-message">Try adjusting your search terms or browse all stylists</p>
+                </div>
+              ) : (
+                <div className="products-grid">
+                  {filteredProducts.map((product, index) => {
+                    const stylist = stylists.find(s => s.id === product.stylistId);
+                    return (
+                      <div
+                        key={`${product.stylistId}-${index}`}
+                        className="product-card"
+                        onClick={() => {
+                          if (stylist) {
+                            setSelectedStylistId(stylist.id);
+                          }
+                        }}
+                      >
+                        <div className="product-card-image-container">
+                          <img
+                            src={product.image || 'https://via.placeholder.com/300'}
+                            alt={product.title || 'Product'}
+                            className="product-card-image"
+                            loading="lazy"
+                          />
+                          <div className="product-card-stylist-info">
+                            <img
+                              src={product.stylistProfilePicture || 'https://i.pravatar.cc/50'}
+                              alt={product.stylistName}
+                              className="product-card-stylist-avatar"
+                            />
+                            <span className="product-card-stylist-name">{product.stylistName}</span>
+                          </div>
+                        </div>
+                        <div className="product-card-content">
+                          <h3 className="product-card-title">{product.title || 'Untitled Product'}</h3>
+                          <p className="product-card-price">
+                            {product.price && product.price.startsWith('$') ? product.price : `$${product.price || '0'}`}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        ) : (
+          <div className="stylists-container">
+            {filteredStylists.length === 0 ? (
+              <div className="no-results">
+                <div className="no-results-icon">
+                  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                </div>
+                <h3 className="no-results-title">No stylists found</h3>
+                <p className="no-results-message">Try adjusting your search terms or browse all stylists</p>
               </div>
-              <h3 className="no-results-title">No stylists found</h3>
-              <p className="no-results-message">Try adjusting your search terms or browse all stylists</p>
-            </div>
-          ) : (
-            filteredStylists.map((stylist) => {
+            ) : (
+              filteredStylists.map((stylist) => {
               const isFavorited = loggedInUser && (loggedInUser.favorites || []).includes(stylist.id);
               // Check availability: if neither date nor time is applied, all stylists are available
               // Otherwise, check availability (handles date-only, time-only, or both)
@@ -4251,8 +4362,9 @@ function App() {
             </div>
             );
             })
-          )}
-        </div>
+            )}
+          </div>
+        )}
 
         {/* Get in Touch Footer */}
         <footer className="get-in-touch-footer">
