@@ -57,6 +57,11 @@ function App() {
   const [selectedServices, setSelectedServices] = React.useState([]);
   const [userAppointments, setUserAppointments] = React.useState([]);
   const [userAppointmentsLoading, setUserAppointmentsLoading] = React.useState(false);
+  const [stylistAppointments, setStylistAppointments] = React.useState([]);
+  const [stylistAppointmentsLoading, setStylistAppointmentsLoading] = React.useState(false);
+  const [suggestingDateTime, setSuggestingDateTime] = React.useState(null);
+  const [suggestedDate, setSuggestedDate] = React.useState('');
+  const [suggestedTime, setSuggestedTime] = React.useState('');
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
   const [showReviewForm, setShowReviewForm] = React.useState(false);
   const [reviewRating, setReviewRating] = React.useState(0);
@@ -638,6 +643,32 @@ function App() {
     
     fetchUserAppointments();
   }, [loggedInUser?.id, showUserProfile]);
+  
+  // Fetch stylist appointments when profile is shown
+  React.useEffect(() => {
+    const fetchStylistAppointments = async () => {
+      if (!showProfile || !loggedInStylist || !loggedInStylist.id) return;
+      
+      try {
+        setStylistAppointmentsLoading(true);
+        const response = await fetch(`http://localhost:3001/api/appointments?stylistId=${loggedInStylist.id}`);
+        if (!response.ok) {
+          throw new Error('Failed to fetch appointments');
+        }
+        const result = await response.json();
+        if (result.success && result.data) {
+          setStylistAppointments(result.data);
+        }
+      } catch (error) {
+        console.error('Error fetching stylist appointments:', error);
+        setStylistAppointments([]);
+      } finally {
+        setStylistAppointmentsLoading(false);
+      }
+    };
+    
+    fetchStylistAppointments();
+  }, [loggedInStylist?.id, showProfile]);
   
   // Find similar stylists based on shared services
   const getSimilarStylists = (stylist) => {
@@ -1831,6 +1862,18 @@ function App() {
                                     </svg>
                                     <span>{appointment.time}</span>
                                   </div>
+                                  {appointment.suggestedDate && appointment.suggestedTime && (
+                                    <div className="appointment-suggestion-notice">
+                                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                      </svg>
+                                      <span className="suggestion-label">New Time Suggested:</span>
+                                      <span className="suggestion-value">
+                                        {new Date(appointment.suggestedDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} at {appointment.suggestedTime}
+                                      </span>
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                               <div className="appointment-purpose">
@@ -1844,6 +1887,74 @@ function App() {
                                       <span key={index} className="appointment-service-tag">{service}</span>
                                     ))}
                                   </div>
+                                </div>
+                              )}
+                              {appointment.suggestedDate && appointment.suggestedTime && (
+                                <div className="appointment-suggestion-actions">
+                                  <button
+                                    className="accept-suggestion-button"
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (!confirm('Are you sure you want to accept the new date/time suggested by the stylist?')) return;
+                                      try {
+                                        const response = await fetch(`http://localhost:3001/api/appointments/${appointment.id}/accept-suggestion`, {
+                                          method: 'PUT',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                          }
+                                        });
+                                        const result = await response.json();
+                                        if (result.success) {
+                                          alert('Appointment date/time updated successfully!');
+                                          // Refresh appointments
+                                          const refreshResponse = await fetch(`http://localhost:3001/api/appointments?userId=${loggedInUser.id}`);
+                                          const refreshResult = await refreshResponse.json();
+                                          if (refreshResult.success && refreshResult.data) {
+                                            setUserAppointments(refreshResult.data);
+                                          }
+                                        } else {
+                                          alert(result.message || 'Failed to accept suggestion');
+                                        }
+                                      } catch (error) {
+                                        console.error('Error accepting suggestion:', error);
+                                        alert('Failed to accept suggestion. Please try again.');
+                                      }
+                                    }}
+                                  >
+                                    Accept New Date/Time
+                                  </button>
+                                  <button
+                                    className="reject-suggestion-button"
+                                    onClick={async (e) => {
+                                      e.stopPropagation();
+                                      if (!confirm('Are you sure you want to reject the suggested date/time? The original appointment time will remain.')) return;
+                                      try {
+                                        const response = await fetch(`http://localhost:3001/api/appointments/${appointment.id}/reject-suggestion`, {
+                                          method: 'PUT',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                          }
+                                        });
+                                        const result = await response.json();
+                                        if (result.success) {
+                                          alert('Suggestion rejected. Original appointment time remains.');
+                                          // Refresh appointments
+                                          const refreshResponse = await fetch(`http://localhost:3001/api/appointments?userId=${loggedInUser.id}`);
+                                          const refreshResult = await refreshResponse.json();
+                                          if (refreshResult.success && refreshResult.data) {
+                                            setUserAppointments(refreshResult.data);
+                                          }
+                                        } else {
+                                          alert(result.message || 'Failed to reject suggestion');
+                                        }
+                                      } catch (error) {
+                                        console.error('Error rejecting suggestion:', error);
+                                        alert('Failed to reject suggestion. Please try again.');
+                                      }
+                                    }}
+                                  >
+                                    Reject Suggestion
+                                  </button>
                                 </div>
                               )}
                             </div>
@@ -2172,16 +2283,20 @@ function App() {
                         className="edit-input"
                         placeholder="e.g., Available this week"
                       />
-                      <label><span className="label">Available Now:</span></label>
-                      <select 
-                        value={editedProfile?.availableNow === true ? 'yes' : (editedProfile?.availableNow === false ? 'no' : '')} 
-                        onChange={(e) => setEditedProfile({...editedProfile, availableNow: e.target.value === 'yes'})}
-                        className="edit-select"
-                      >
-                        <option value="">Select an option</option>
-                        <option value="yes">Yes - Available Now</option>
-                        <option value="no">No - Not Available Now</option>
-                      </select>
+                      <label className="toggle-label">
+                        <span className="label">Available Now:</span>
+                        <div className="toggle-switch">
+                          <input
+                            type="checkbox"
+                            checked={editedProfile?.availableNow === true}
+                            onChange={(e) => setEditedProfile({...editedProfile, availableNow: e.target.checked})}
+                            className="toggle-input"
+                            id="available-now-toggle"
+                          />
+                          <label htmlFor="available-now-toggle" className="toggle-slider"></label>
+                          <span className="toggle-text">{editedProfile?.availableNow ? 'Available Now' : 'Not Available'}</span>
+                        </div>
+                      </label>
                       <label><span className="label">Willing to Travel:</span></label>
                       <select 
                         value={editedProfile?.willingToTravel || ''} 
@@ -2629,6 +2744,264 @@ function App() {
               )}
             </div>
           </div>
+          
+          {!isEditingProfile && (
+            <div className="detail-info-card">
+              <h2 className="detail-section-title">Appointments</h2>
+              {stylistAppointmentsLoading ? (
+                <p>Loading appointments...</p>
+              ) : stylistAppointments.length > 0 ? (
+                <div className="stylist-appointments-list">
+                  {stylistAppointments.map((appointment) => {
+                    const appointmentDate = new Date(appointment.date);
+                    const isPast = appointmentDate < new Date();
+                    const isPending = appointment.status === 'pending';
+                    
+                    return (
+                      <div 
+                        key={appointment.id} 
+                        className={`stylist-appointment-item ${isPast ? 'past' : ''} ${appointment.status}`}
+                      >
+                        <div className="stylist-appointment-header">
+                          <div className="stylist-appointment-customer">
+                            <div className="stylist-appointment-customer-info">
+                              <h3 className="stylist-appointment-customer-name">
+                                {appointment.customerName || 'Guest Customer'}
+                              </h3>
+                              {appointment.customerEmail && (
+                                <p className="stylist-appointment-customer-email">
+                                  <a href={`mailto:${appointment.customerEmail}`}>{appointment.customerEmail}</a>
+                                </p>
+                              )}
+                              {appointment.customerPhone && (
+                                <p className="stylist-appointment-customer-phone">
+                                  <a href={`tel:${appointment.customerPhone}`}>{appointment.customerPhone}</a>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <div className="stylist-appointment-date-time">
+                            <div className="stylist-appointment-date">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                                <line x1="16" y1="2" x2="16" y2="6"></line>
+                                <line x1="8" y1="2" x2="8" y2="6"></line>
+                                <line x1="3" y1="10" x2="21" y2="10"></line>
+                              </svg>
+                              <span>{appointmentDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                            </div>
+                            <div className="stylist-appointment-time">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                              </svg>
+                              <span>{appointment.time}</span>
+                            </div>
+                            {appointment.suggestedDate && appointment.suggestedTime && (
+                              <div className="stylist-appointment-suggested">
+                                <span className="suggested-label">Suggested:</span>
+                                <span>{new Date(appointment.suggestedDate).toLocaleDateString()} at {appointment.suggestedTime}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="stylist-appointment-purpose">
+                          <span className="label">Service:</span> {appointment.purpose}
+                        </div>
+                        
+                        {appointment.services && appointment.services.length > 0 && (
+                          <div className="stylist-appointment-services">
+                            <span className="label">Services:</span>
+                            <div className="stylist-appointment-services-list">
+                              {appointment.services.map((service, index) => (
+                                <span key={index} className="stylist-appointment-service-tag">{service}</span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="stylist-appointment-status">
+                          <span className={`status-badge ${appointment.status}`}>
+                            {appointment.status}
+                          </span>
+                        </div>
+                        
+                        {isPending && !isPast && (
+                          <div className="stylist-appointment-actions">
+                            {appointment.suggestedDate && appointment.suggestedTime ? (
+                              <div className="waiting-for-response-message">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <circle cx="12" cy="12" r="10"></circle>
+                                  <polyline points="12 6 12 12 16 14"></polyline>
+                                </svg>
+                                <span>Waiting for customer to respond to your date/time suggestion...</span>
+                              </div>
+                            ) : suggestingDateTime === appointment.id ? (
+                              <div className="suggest-datetime-form">
+                                <div className="form-row">
+                                  <div className="form-group-inline">
+                                    <label>Suggested Date:</label>
+                                    <input
+                                      type="date"
+                                      value={suggestedDate}
+                                      onChange={(e) => setSuggestedDate(e.target.value)}
+                                      min={new Date().toISOString().split('T')[0]}
+                                      className="form-input-small"
+                                    />
+                                  </div>
+                                  <div className="form-group-inline">
+                                    <label>Suggested Time:</label>
+                                    <input
+                                      type="time"
+                                      value={suggestedTime}
+                                      onChange={(e) => setSuggestedTime(e.target.value)}
+                                      className="form-input-small"
+                                    />
+                                  </div>
+                                </div>
+                                <div className="form-actions-inline">
+                                  <button
+                                    type="button"
+                                    className="submit-suggestion-button"
+                                    onClick={async () => {
+                                      if (!suggestedDate || !suggestedTime) {
+                                        alert('Please enter both date and time');
+                                        return;
+                                      }
+                                      try {
+                                        const response = await fetch(`http://localhost:3001/api/appointments/${appointment.id}/suggest`, {
+                                          method: 'PUT',
+                                          headers: {
+                                            'Content-Type': 'application/json',
+                                          },
+                                          body: JSON.stringify({
+                                            suggestedDate,
+                                            suggestedTime
+                                          })
+                                        });
+                                        const result = await response.json();
+                                        if (result.success) {
+                                          alert('Date/time suggestion sent to customer');
+                                          // Refresh appointments
+                                          const refreshResponse = await fetch(`http://localhost:3001/api/appointments?stylistId=${loggedInStylist.id}`);
+                                          const refreshResult = await refreshResponse.json();
+                                          if (refreshResult.success && refreshResult.data) {
+                                            setStylistAppointments(refreshResult.data);
+                                          }
+                                          setSuggestingDateTime(null);
+                                          setSuggestedDate('');
+                                          setSuggestedTime('');
+                                        } else {
+                                          alert(result.message || 'Failed to suggest date/time');
+                                        }
+                                      } catch (error) {
+                                        console.error('Error suggesting date/time:', error);
+                                        alert('Failed to suggest date/time. Please try again.');
+                                      }
+                                    }}
+                                  >
+                                    Send Suggestion
+                                  </button>
+                                  <button
+                                    type="button"
+                                    className="cancel-suggestion-button"
+                                    onClick={() => {
+                                      setSuggestingDateTime(null);
+                                      setSuggestedDate('');
+                                      setSuggestedTime('');
+                                    }}
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              </div>
+                            ) : (
+                              <>
+                                <button
+                                  className="accept-appointment-button"
+                                  onClick={async () => {
+                                    try {
+                                      const response = await fetch(`http://localhost:3001/api/appointments/${appointment.id}/accept`, {
+                                        method: 'PUT',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                        }
+                                      });
+                                      const result = await response.json();
+                                      if (result.success) {
+                                        alert('Appointment accepted!');
+                                        // Refresh appointments
+                                        const refreshResponse = await fetch(`http://localhost:3001/api/appointments?stylistId=${loggedInStylist.id}`);
+                                        const refreshResult = await refreshResponse.json();
+                                        if (refreshResult.success && refreshResult.data) {
+                                          setStylistAppointments(refreshResult.data);
+                                        }
+                                      } else {
+                                        alert(result.message || 'Failed to accept appointment');
+                                      }
+                                    } catch (error) {
+                                      console.error('Error accepting appointment:', error);
+                                      alert('Failed to accept appointment. Please try again.');
+                                    }
+                                  }}
+                                >
+                                  Accept
+                                </button>
+                                <button
+                                  className="reject-appointment-button"
+                                  onClick={async () => {
+                                    if (!confirm('Are you sure you want to reject this appointment?')) return;
+                                    try {
+                                      const response = await fetch(`http://localhost:3001/api/appointments/${appointment.id}/reject`, {
+                                        method: 'PUT',
+                                        headers: {
+                                          'Content-Type': 'application/json',
+                                        }
+                                      });
+                                      const result = await response.json();
+                                      if (result.success) {
+                                        alert('Appointment rejected');
+                                        // Refresh appointments
+                                        const refreshResponse = await fetch(`http://localhost:3001/api/appointments?stylistId=${loggedInStylist.id}`);
+                                        const refreshResult = await refreshResponse.json();
+                                        if (refreshResult.success && refreshResult.data) {
+                                          setStylistAppointments(refreshResult.data);
+                                        }
+                                      } else {
+                                        alert(result.message || 'Failed to reject appointment');
+                                      }
+                                    } catch (error) {
+                                      console.error('Error rejecting appointment:', error);
+                                      alert('Failed to reject appointment. Please try again.');
+                                    }
+                                  }}
+                                >
+                                  Reject
+                                </button>
+                                <button
+                                  className="suggest-datetime-button"
+                                  onClick={() => {
+                                    setSuggestingDateTime(appointment.id);
+                                    setSuggestedDate('');
+                                    setSuggestedTime('');
+                                  }}
+                                >
+                                  Suggest New Date/Time
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="no-appointments">No appointments yet.</p>
+              )}
+            </div>
+          )}
           
           {similarStylists.length > 0 && (
             <div className="similar-stylists-section">
@@ -3711,7 +4084,7 @@ function App() {
               return (
               <div 
                 key={stylist.id}
-                className={`stylist-card ${!isAvailableAtDateTime ? 'not-available' : ''}`}
+                className={`stylist-card ${!isAvailableAtDateTime ? 'not-available' : ''} ${stylist.availableNow ? 'available-now-card' : ''}`}
                 onClick={() => setSelectedStylistId(stylist.id)}
               >
                 <div className="stylist-header">
