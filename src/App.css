@@ -3750,6 +3750,33 @@
   border-top: 2px solid #e0e0e0;
 }
 
+.products-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  user-select: none;
+}
+
+.products-section-header:hover {
+  opacity: 0.8;
+}
+
+.products-carousel {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .products-carousel {
   display: flex;
   gap: 20px;

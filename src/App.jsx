@@ -64,6 +64,9 @@ function App() {
   const [suggestedTime, setSuggestedTime] = React.useState('');
   const [viewMode, setViewMode] = React.useState('stylists'); // 'stylists' or 'products'
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
+  const [scrollToProducts, setScrollToProducts] = React.useState(false);
+  const [productsSectionExpanded, setProductsSectionExpanded] = React.useState(false);
+  const productsSectionRef = React.useRef(null);
   const [showReviewForm, setShowReviewForm] = React.useState(false);
   const [reviewRating, setReviewRating] = React.useState(0);
   const [reviewComment, setReviewComment] = React.useState('');
@@ -671,6 +674,30 @@ function App() {
     fetchStylistAppointments();
   }, [loggedInStylist?.id, showProfile]);
   
+  // Reset products section expanded state when stylist changes (expanded by default)
+  React.useEffect(() => {
+    if (selectedStylistId) {
+      // If not coming from product click, expand by default
+      if (!scrollToProducts) {
+        setProductsSectionExpanded(true);
+      }
+    }
+  }, [selectedStylistId, scrollToProducts]);
+
+  // Scroll to products section when navigating from product click
+  React.useEffect(() => {
+    if (scrollToProducts && selectedStylist && productsSectionRef.current) {
+      // Small delay to ensure the DOM has updated
+      setTimeout(() => {
+        productsSectionRef.current?.scrollIntoView({ 
+          behavior: 'smooth', 
+          block: 'start' 
+        });
+        setScrollToProducts(false);
+      }, 100);
+    }
+  }, [scrollToProducts, selectedStylist]);
+
   // Find similar stylists based on shared services
   const getSimilarStylists = (stylist) => {
     if (!stylist) return [];
@@ -970,24 +997,48 @@ function App() {
             )}
             
             {selectedStylist.products && selectedStylist.products.length > 0 && (
-              <div className="products-section">
-                <h2 className="detail-section-title portfolio-title">Products</h2>
-                <div className="products-carousel">
-                  {selectedStylist.products.map((product, index) => (
-                    <div key={index} className="product-item">
-                      <img 
-                        src={product.image || 'https://via.placeholder.com/200'} 
-                        alt={product.title || 'Product'}
-                        className="product-image"
-                        loading="lazy"
-                      />
-                      <div className="product-info">
-                        <h3 className="product-title">{product.title}</h3>
-                        <p className="product-price">{product.price && product.price.startsWith('$') ? product.price : `$${product.price}`}</p>
-                      </div>
-                    </div>
-                  ))}
+              <div className="products-section" ref={productsSectionRef}>
+                <div 
+                  className="products-section-header"
+                  onClick={() => setProductsSectionExpanded(!productsSectionExpanded)}
+                  style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                >
+                  <h2 className="detail-section-title portfolio-title">Products</h2>
+                  <svg 
+                    width="20" 
+                    height="20" 
+                    viewBox="0 0 24 24" 
+                    fill="none" 
+                    stroke="currentColor" 
+                    strokeWidth="2" 
+                    strokeLinecap="round" 
+                    strokeLinejoin="round"
+                    style={{ 
+                      transform: productsSectionExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                      transition: 'transform 0.3s ease'
+                    }}
+                  >
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
                 </div>
+                {productsSectionExpanded && (
+                  <div className="products-carousel">
+                    {selectedStylist.products.map((product, index) => (
+                      <div key={index} className="product-item">
+                        <img 
+                          src={product.image || 'https://via.placeholder.com/200'} 
+                          alt={product.title || 'Product'}
+                          className="product-image"
+                          loading="lazy"
+                        />
+                        <div className="product-info">
+                          <h3 className="product-title">{product.title}</h3>
+                          <p className="product-price">{product.price && product.price.startsWith('$') ? product.price : `$${product.price}`}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -4129,6 +4180,8 @@ function App() {
                         className="product-card"
                         onClick={() => {
                           if (stylist) {
+                            setScrollToProducts(true);
+                            setProductsSectionExpanded(true);
                             setSelectedStylistId(stylist.id);
                           }
                         }}
