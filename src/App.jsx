@@ -152,6 +152,225 @@ function App() {
   const [selectedHairTextureTypes, setSelectedHairTextureTypes] = React.useState([]);
   const [currentAvailability, setCurrentAvailability] = React.useState('');
   const [customAvailability, setCustomAvailability] = React.useState('');
+  
+  // Work schedule state - each day can have different hours or be closed
+  const [workSchedule, setWorkSchedule] = React.useState({
+    Monday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Tuesday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Wednesday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Thursday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Friday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Saturday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Sunday: { enabled: false, startTime: '09:00', endTime: '17:00' }
+  });
+  
+  // Edit profile work schedule state
+  const [editWorkSchedule, setEditWorkSchedule] = React.useState({
+    Monday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Tuesday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Wednesday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Thursday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Friday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Saturday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+    Sunday: { enabled: false, startTime: '09:00', endTime: '17:00' }
+  });
+  
+  // Function to format schedule for display (converts JSON to readable string)
+  const formatScheduleForDisplay = (schedule) => {
+    if (!schedule) return '';
+    
+    // If it's already a string (old format), return as is
+    if (typeof schedule === 'string') {
+      // Check if it's JSON
+      try {
+        const parsed = JSON.parse(schedule);
+        schedule = parsed;
+      } catch (e) {
+        // It's a formatted string, return it
+        return schedule;
+      }
+    }
+    
+    // If it's an object (JSON format), format it
+    if (typeof schedule === 'object') {
+      const formatTime = (time) => {
+        const [hours, minutes] = time.split(':');
+        const hour = parseInt(hours);
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const displayHour = hour % 12 || 12;
+        return `${displayHour}:${minutes} ${ampm}`;
+      };
+      
+      const enabledDays = Object.entries(schedule)
+        .filter(([_, daySchedule]) => daySchedule && daySchedule.enabled)
+        .map(([day, daySchedule]) => ({
+          day,
+          dayAbbr: day.substring(0, 3),
+          schedule: daySchedule
+        }));
+      
+      if (enabledDays.length === 0) return '';
+      
+      // Group consecutive days with same hours
+      const groups = [];
+      let currentGroup = null;
+      
+      enabledDays.forEach(({ day, dayAbbr, schedule: daySchedule }) => {
+        const timeStr = `${formatTime(daySchedule.startTime)} - ${formatTime(daySchedule.endTime)}`;
+        
+        if (currentGroup && currentGroup.timeStr === timeStr) {
+          currentGroup.endDay = dayAbbr;
+        } else {
+          if (currentGroup) {
+            groups.push(currentGroup);
+          }
+          currentGroup = {
+            startDay: dayAbbr,
+            endDay: dayAbbr,
+            timeStr
+          };
+        }
+      });
+      
+      if (currentGroup) {
+        groups.push(currentGroup);
+      }
+      
+      return groups.map(group => {
+        if (group.startDay === group.endDay) {
+          return `${group.startDay}: ${group.timeStr}`;
+        } else {
+          return `${group.startDay}-${group.endDay}: ${group.timeStr}`;
+        }
+      }).join(', ');
+    }
+    
+    return '';
+  };
+  
+  // Function to parse hours string into schedule format
+  const parseHoursString = (hoursString) => {
+    const defaultSchedule = {
+      Monday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+      Tuesday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+      Wednesday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+      Thursday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+      Friday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+      Saturday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+      Sunday: { enabled: false, startTime: '09:00', endTime: '17:00' }
+    };
+    
+    if (!hoursString || !hoursString.trim()) {
+      return defaultSchedule;
+    }
+    
+    // First, try to parse as JSON (new format)
+    try {
+      const parsed = JSON.parse(hoursString);
+      // Validate it's the correct structure
+      if (parsed && typeof parsed === 'object' && parsed.Monday !== undefined) {
+        return parsed;
+      }
+    } catch (e) {
+      // Not JSON, continue with string parsing (backward compatibility)
+    }
+    
+    const dayMap = {
+      'mon': 'Monday',
+      'tue': 'Tuesday',
+      'wed': 'Wednesday',
+      'thu': 'Thursday',
+      'fri': 'Friday',
+      'sat': 'Saturday',
+      'sun': 'Sunday'
+    };
+    
+    const schedule = { ...defaultSchedule };
+    
+    // Convert time to 24-hour format
+    const parseTime = (hour, minute, ampm) => {
+      let h = parseInt(hour);
+      if (ampm && ampm.toLowerCase() === 'pm' && h !== 12) h += 12;
+      if (ampm && ampm.toLowerCase() === 'am' && h === 12) h = 0;
+      return `${String(h).padStart(2, '0')}:${minute}`;
+    };
+    
+    // Split by comma to handle multiple entries
+    const entries = hoursString.split(',').map(e => e.trim()).filter(e => e);
+    
+    entries.forEach(entry => {
+      // Try to match patterns like:
+      // "Mon-Fri: 9:00 AM - 5:00 PM"
+      // "Mon: 9:00 AM - 5:00 PM"
+      // "Mon-Fri: 9:00AM - 5:00PM" (no spaces)
+      // "Mon: 9:00AM-5:00PM" (no spaces)
+      
+      // Match day range or single day (with optional colon)
+      const dayPattern = /(mon|tue|wed|thu|fri|sat|sun)(?:\s*-\s*(mon|tue|wed|thu|fri|sat|sun))?\s*:?\s*/i;
+      const dayMatch = entry.match(dayPattern);
+      
+      if (dayMatch) {
+        const startDay = dayMatch[1].toLowerCase();
+        const endDay = dayMatch[2] ? dayMatch[2].toLowerCase() : startDay;
+        
+        // Extract time part (everything after day pattern)
+        const timePart = entry.substring(dayMatch[0].length).trim();
+        
+        // Match time patterns - flexible with spacing
+        // Matches: "9:00 AM - 5:00 PM", "9:00AM-5:00PM", "9:00 AM-5:00 PM", etc.
+        const timePatterns = [
+          /(\d{1,2}):(\d{2})\s*(am|pm)\s*-\s*(\d{1,2}):(\d{2})\s*(am|pm)/i,
+          /(\d{1,2}):(\d{2})(am|pm)\s*-\s*(\d{1,2}):(\d{2})(am|pm)/i,
+          /(\d{1,2}):(\d{2})(am|pm)-(\d{1,2}):(\d{2})(am|pm)/i
+        ];
+        
+        let timeMatch = null;
+        for (const pattern of timePatterns) {
+          timeMatch = timePart.match(pattern);
+          if (timeMatch) break;
+        }
+        
+        if (timeMatch) {
+          // Extract time components from match groups
+          // Pattern 1: "9:00 AM - 5:00 PM" -> groups: [full, 9, 00, AM, 5, 00, PM] (7 groups)
+          // Pattern 2: "9:00AM-5:00PM" -> groups: [full, 9, 00, AM, 5, 00, PM] (7 groups)
+          // Pattern 3: "9:00AM - 5:00PM" -> groups: [full, 9, 00, AM, 5, 00, PM] (7 groups)
+          const startHour = timeMatch[1];
+          const startMin = timeMatch[2];
+          const startAmpm = timeMatch[3];
+          const endHour = timeMatch[4];
+          const endMin = timeMatch[5];
+          const endAmpm = timeMatch[6];
+          
+          if (startHour && endHour) {
+            const startTime = parseTime(startHour, startMin, startAmpm);
+            const endTime = parseTime(endHour, endMin, endAmpm);
+            
+            // Get day indices
+            const dayNames = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+            const startIdx = dayNames.indexOf(startDay);
+            const endIdx = dayNames.indexOf(endDay);
+            
+            // Enable days in range
+            if (startIdx >= 0 && endIdx >= 0) {
+              for (let i = startIdx; i <= endIdx; i++) {
+                const dayName = dayMap[dayNames[i]];
+                if (dayName) {
+                  schedule[dayName] = {
+                    enabled: true,
+                    startTime,
+                    endTime
+                  };
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+    
+    return schedule;
+  };
   const [useCustomAvailability, setUseCustomAvailability] = React.useState(false);
   const [footerEmail, setFooterEmail] = React.useState('');
   const [emailSubmitted, setEmailSubmitted] = React.useState(false);
@@ -207,7 +426,7 @@ function App() {
     }
   }, [showStylistDropdown, showUserDropdown]);
 
-  // Initialize editedProfile when entering edit mode
+  // Initialize editedProfile when entering edit mode (fallback if button doesn't set it)
   React.useEffect(() => {
     if (isEditingProfile && loggedInStylist && !editedProfile) {
       setEditedProfile({ 
@@ -215,7 +434,23 @@ function App() {
         editedServices: [...loggedInStylist.services],
         editedPortfolio: [...(loggedInStylist.portfolio || [])]
       });
+      // Parse existing hours into schedule format - always parse, even if empty
+      const parsedSchedule = parseHoursString(loggedInStylist.hours || '');
+      setEditWorkSchedule(parsedSchedule);
     }
+  }, [isEditingProfile, loggedInStylist, editedProfile]);
+  
+  // Also ensure schedule is loaded when editedProfile changes (in case it was set before schedule)
+  React.useEffect(() => {
+    if (isEditingProfile && loggedInStylist && editedProfile && loggedInStylist.hours) {
+      // Check if schedule needs to be loaded (only if it's still default/empty)
+      const hasEnabledDays = Object.values(editWorkSchedule).some(schedule => schedule.enabled);
+      if (!hasEnabledDays) {
+        const parsedSchedule = parseHoursString(loggedInStylist.hours);
+        setEditWorkSchedule(parsedSchedule);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEditingProfile, loggedInStylist, editedProfile]);
 
   // Initialize editedUserProfile when entering edit mode
@@ -482,52 +717,62 @@ function App() {
       const selectedDayName = dayNames[dayIndex];
       const selectedDayAbbrev = dayAbbrev[dayIndex];
       
-      const hours = stylist.hours || '';
-      const hoursLower = hours.toLowerCase();
-      
-      // Check for day ranges (e.g., "Mon-Fri", "Tue-Sat")
-      const dayMap = { mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6, sun: 0 };
-      const dayRangePattern = /(mon|tue|wed|thu|fri|sat|sun)\s*-\s*(mon|tue|wed|thu|fri|sat|sun)/gi;
-      const dayRangeMatches = [...hoursLower.matchAll(dayRangePattern)];
-      
+      // Check if day is enabled in schedule (works with both JSON and string formats)
       let dayInHours = false;
       
-      if (dayRangeMatches.length > 0) {
-        // Check if selected day falls within any range
-        for (const match of dayRangeMatches) {
-          const startDay = match[1].toLowerCase();
-          const endDay = match[2].toLowerCase();
-          const startIndex = dayMap[startDay];
-          const endIndex = dayMap[endDay];
-          
-          // Check if selected day falls within the range
-          if (startIndex <= endIndex) {
-            // Normal range (e.g., Mon-Fri)
-            if (dayIndex >= startIndex && dayIndex <= endIndex) {
-              dayInHours = true;
-              break;
-            }
-          } else {
-            // Wrapping range (e.g., Sat-Mon)
-            if (dayIndex >= startIndex || dayIndex <= endIndex) {
-              dayInHours = true;
-              break;
+      // First, try to parse as JSON (new format)
+      try {
+        const schedule = parseHoursString(stylist.hours || '');
+        if (schedule && schedule[selectedDayName] && schedule[selectedDayName].enabled) {
+          dayInHours = true;
+        }
+      } catch (e) {
+        // Not JSON or parse failed, use string matching (backward compatibility)
+        const hours = formatScheduleForDisplay(stylist.hours || '');
+        const hoursLower = hours.toLowerCase();
+        
+        // Check for day ranges (e.g., "Mon-Fri", "Tue-Sat")
+        const dayMap = { mon: 1, tue: 2, wed: 3, thu: 4, fri: 5, sat: 6, sun: 0 };
+        const dayRangePattern = /(mon|tue|wed|thu|fri|sat|sun)\s*-\s*(mon|tue|wed|thu|fri|sat|sun)/gi;
+        const dayRangeMatches = [...hoursLower.matchAll(dayRangePattern)];
+        
+        if (dayRangeMatches.length > 0) {
+          // Check if selected day falls within any range
+          for (const match of dayRangeMatches) {
+            const startDay = match[1].toLowerCase();
+            const endDay = match[2].toLowerCase();
+            const startIndex = dayMap[startDay];
+            const endIndex = dayMap[endDay];
+            
+            // Check if selected day falls within the range
+            if (startIndex <= endIndex) {
+              // Normal range (e.g., Mon-Fri)
+              if (dayIndex >= startIndex && dayIndex <= endIndex) {
+                dayInHours = true;
+                break;
+              }
+            } else {
+              // Wrapping range (e.g., Sat-Mon)
+              if (dayIndex >= startIndex || dayIndex <= endIndex) {
+                dayInHours = true;
+                break;
+              }
             }
           }
         }
-      }
-      
-      // If day range didn't match, check if the selected day is mentioned directly in the hours
-      if (!dayInHours) {
-        dayInHours = hoursLower.includes(selectedDayName.toLowerCase().substring(0, 3)) ||
-                      hoursLower.includes(selectedDayAbbrev.toLowerCase()) ||
-                      (selectedDayName === 'Monday' && (hoursLower.includes('mon') || hoursLower.includes('weekday'))) ||
-                      (selectedDayName === 'Tuesday' && hoursLower.includes('tue')) ||
-                      (selectedDayName === 'Wednesday' && hoursLower.includes('wed')) ||
-                      (selectedDayName === 'Thursday' && (hoursLower.includes('thu') || hoursLower.includes('thur'))) ||
-                      (selectedDayName === 'Friday' && hoursLower.includes('fri')) ||
-                      (selectedDayName === 'Saturday' && hoursLower.includes('sat')) ||
-                      (selectedDayName === 'Sunday' && hoursLower.includes('sun'));
+        
+        // If day range didn't match, check if the selected day is mentioned directly in the hours
+        if (!dayInHours) {
+          dayInHours = hoursLower.includes(selectedDayName.toLowerCase().substring(0, 3)) ||
+                        hoursLower.includes(selectedDayAbbrev.toLowerCase()) ||
+                        (selectedDayName === 'Monday' && (hoursLower.includes('mon') || hoursLower.includes('weekday'))) ||
+                        (selectedDayName === 'Tuesday' && hoursLower.includes('tue')) ||
+                        (selectedDayName === 'Wednesday' && hoursLower.includes('wed')) ||
+                        (selectedDayName === 'Thursday' && (hoursLower.includes('thu') || hoursLower.includes('thur'))) ||
+                        (selectedDayName === 'Friday' && hoursLower.includes('fri')) ||
+                        (selectedDayName === 'Saturday' && hoursLower.includes('sat')) ||
+                        (selectedDayName === 'Sunday' && hoursLower.includes('sun'));
+        }
       }
       
       // If only date is provided, check day availability
@@ -538,22 +783,36 @@ function App() {
       // If only time is provided or both are provided, check day first
       if (!dayInHours) return false;
       
-      // Time checking is basic for now - return true if day matches
-      // (More sophisticated time parsing could be added here)
-      
-      // Try to parse the time (expecting HH:MM format)
-      const [hoursStr, minutesStr] = timeStr.split(':');
-      const selectedHour = parseInt(hoursStr);
-      const selectedMinute = parseInt(minutesStr || '0');
-      
-      // Extract time ranges from hours string (simple pattern matching)
-      // This is a basic check - in a real app, you'd want more sophisticated parsing
-      const timePatterns = hours.match(/\d{1,2}:\d{2}\s*(AM|PM)/gi);
-      if (timePatterns && timePatterns.length >= 2) {
-        // If we can parse opening and closing times, check if selected time falls within
-        // For now, just return true if day matches (more sophisticated logic could be added)
-        return true;
+      // If time is provided, check if it falls within the schedule
+      if (timeStr) {
+        // Try to parse the time (expecting HH:MM format)
+        const [hoursStr, minutesStr] = timeStr.split(':');
+        const selectedHour = parseInt(hoursStr);
+        const selectedMinute = parseInt(minutesStr || '0');
+        const selectedTime24 = `${String(selectedHour).padStart(2, '0')}:${String(selectedMinute).padStart(2, '0')}`;
+        
+        // Try to get schedule from JSON format
+        try {
+          const schedule = parseHoursString(stylist.hours || '');
+          if (schedule && schedule[selectedDayName] && schedule[selectedDayName].enabled) {
+            const daySchedule = schedule[selectedDayName];
+            const startTime = daySchedule.startTime;
+            const endTime = daySchedule.endTime;
+            
+            // Compare times (24-hour format)
+            if (selectedTime24 >= startTime && selectedTime24 <= endTime) {
+              return true;
+            }
+          }
+        } catch (e) {
+          // Not JSON format, fall back to basic check
+          // For string format, just return true if day matches
+          return true;
+        }
       }
+      
+      // If no time provided or time check passed, return true
+      return true;
       
       return true; // If we can't parse times, assume available if day matches
     } catch (e) {
@@ -579,7 +838,7 @@ function App() {
       stylist.phone.toLowerCase().includes(query) ||
       stylist.specialty.toLowerCase().includes(query) ||
       stylist.rate.toLowerCase().includes(query) ||
-      stylist.hours.toLowerCase().includes(query) ||
+      formatScheduleForDisplay(stylist.hours || '').toLowerCase().includes(query) ||
       stylist.currentAvailability.toLowerCase().includes(query) ||
       stylist.willingToTravel.toLowerCase().includes(query) ||
       stylist.yearsOfExperience.toLowerCase().includes(query) ||
@@ -778,7 +1037,7 @@ function App() {
                   <h2 className="detail-section-title">Pricing & Availability</h2>
                   <div className="detail-pricing-info">
                     <p><span className="label">Rate:</span> {selectedStylist.rate}</p>
-                    <p><span className="label">Hours:</span> {selectedStylist.hours}</p>
+                    <p><span className="label">Hours:</span> {formatScheduleForDisplay(selectedStylist.hours)}</p>
                     <p><span className="label">Current Availability:</span> {selectedStylist.currentAvailability}</p>
                     <p><span className="label">Willing to Travel:</span> {selectedStylist.willingToTravel}</p>
                     {selectedStylist.accommodations && (
@@ -2083,6 +2342,16 @@ function App() {
           return;
         }
         
+        // Validate that at least one day is selected
+        const hasEnabledDay = Object.values(editWorkSchedule).some(schedule => schedule.enabled);
+        if (!hasEnabledDay) {
+          alert('Please select at least one working day and set your hours.');
+          return;
+        }
+        
+        // Store hours as JSON for easy editing
+        const hoursJson = JSON.stringify(editWorkSchedule);
+        
         // Prepare updated stylist data - keep only the fields we want to send
         const updatedStylist = {
           name: editedProfile.name || '',
@@ -2094,7 +2363,7 @@ function App() {
           hairTextureTypes: editedProfile.hairTextureTypes || '',
           yearsOfExperience: editedProfile.yearsOfExperience || '',
           rate: editedProfile.rate || '',
-          hours: editedProfile.hours || '',
+          hours: hoursJson,
           currentAvailability: editedProfile.currentAvailability || '',
           availableNow: editedProfile.availableNow !== undefined ? editedProfile.availableNow : false,
           willingToTravel: editedProfile.willingToTravel || '',
@@ -2176,6 +2445,16 @@ function App() {
     const handleCancelEdit = () => {
       setIsEditingProfile(false);
       setEditedProfile(null);
+      // Reset edit schedule to default
+      setEditWorkSchedule({
+        Monday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+        Tuesday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+        Wednesday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+        Thursday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+        Friday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+        Saturday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+        Sunday: { enabled: false, startTime: '09:00', endTime: '17:00' }
+      });
     };
 
     const similarStylists = stylists.filter(otherStylist => {
@@ -2211,6 +2490,9 @@ function App() {
                   editedPortfolio: loggedInStylist.portfolio || [],
                   editedProducts: loggedInStylist.products || []
                 });
+                // Parse existing hours into schedule format and pre-fill the schedule builder
+                const parsedSchedule = parseHoursString(loggedInStylist.hours || '');
+                setEditWorkSchedule(parsedSchedule);
                 setIsEditingProfile(true);
               }}
             >
@@ -2320,13 +2602,106 @@ function App() {
                         placeholder="e.g., $85/hour"
                       />
                       <label><span className="label">Hours:</span></label>
-                      <input 
-                        type="text" 
-                        value={editedProfile?.hours || ''} 
-                        onChange={(e) => setEditedProfile({...editedProfile, hours: e.target.value})}
-                        className="edit-input"
-                        placeholder="e.g., Mon-Fri: 9:00 AM - 6:00 PM"
-                      />
+                      <p className="form-hint" style={{ marginTop: '4px', marginBottom: '12px', fontSize: '0.9rem', color: '#666666' }}>Select your working days and set your hours</p>
+                      <div className="work-schedule-builder">
+                        {Object.entries(editWorkSchedule).map(([day, schedule]) => (
+                          <div key={day} className="schedule-day-row">
+                            <div className="schedule-day-toggle">
+                              <label className="day-toggle-label">
+                                <input
+                                  type="checkbox"
+                                  checked={schedule.enabled}
+                                  onChange={(e) => {
+                                    setEditWorkSchedule({
+                                      ...editWorkSchedule,
+                                      [day]: { ...schedule, enabled: e.target.checked }
+                                    });
+                                  }}
+                                />
+                                <span className="day-name">{day.substring(0, 3)}</span>
+                              </label>
+                            </div>
+                            {schedule.enabled && (
+                              <div className="schedule-time-inputs">
+                                <div className="time-input-group">
+                                  <label>From</label>
+                                  <input
+                                    type="time"
+                                    value={schedule.startTime}
+                                    onChange={(e) => {
+                                      setEditWorkSchedule({
+                                        ...editWorkSchedule,
+                                        [day]: { ...schedule, startTime: e.target.value }
+                                      });
+                                    }}
+                                    className="time-input"
+                                  />
+                                </div>
+                                <span className="time-separator">to</span>
+                                <div className="time-input-group">
+                                  <label>To</label>
+                                  <input
+                                    type="time"
+                                    value={schedule.endTime}
+                                    onChange={(e) => {
+                                      setEditWorkSchedule({
+                                        ...editWorkSchedule,
+                                        [day]: { ...schedule, endTime: e.target.value }
+                                      });
+                                    }}
+                                    className="time-input"
+                                  />
+                                </div>
+                              </div>
+                            )}
+                            {!schedule.enabled && (
+                              <span className="closed-label">Closed</span>
+                            )}
+                          </div>
+                        ))}
+                        <div className="schedule-quick-actions">
+                          <button
+                            type="button"
+                            className="quick-action-button"
+                            onClick={() => {
+                              const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+                              const updatedSchedule = { ...editWorkSchedule };
+                              weekdays.forEach(day => {
+                                updatedSchedule[day] = { ...updatedSchedule[day], enabled: true };
+                              });
+                              setEditWorkSchedule(updatedSchedule);
+                            }}
+                          >
+                            Set Weekdays
+                          </button>
+                          <button
+                            type="button"
+                            className="quick-action-button"
+                            onClick={() => {
+                              const updatedSchedule = { ...editWorkSchedule };
+                              Object.keys(updatedSchedule).forEach(day => {
+                                updatedSchedule[day] = { ...updatedSchedule[day], enabled: true };
+                              });
+                              setEditWorkSchedule(updatedSchedule);
+                            }}
+                          >
+                            Set All Days
+                          </button>
+                          <button
+                            type="button"
+                            className="quick-action-button"
+                            onClick={() => {
+                              const updatedSchedule = { ...editWorkSchedule };
+                              Object.keys(updatedSchedule).forEach(day => {
+                                updatedSchedule[day] = { ...updatedSchedule[day], enabled: false };
+                              });
+                              setEditWorkSchedule(updatedSchedule);
+                            }}
+                          >
+                            Clear All
+                          </button>
+                        </div>
+                      </div>
                       <label><span className="label">Current Availability:</span></label>
                       <input 
                         type="text" 
@@ -2411,7 +2786,7 @@ function App() {
                     ) : (
                       <div className="detail-pricing-info">
                         <p><span className="label">Rate:</span> {currentStylist.rate}</p>
-                        <p><span className="label">Hours:</span> {currentStylist.hours}</p>
+                        <p><span className="label">Hours:</span> {formatScheduleForDisplay(currentStylist.hours)}</p>
                         <p><span className="label">Current Availability:</span> {currentStylist.currentAvailability}</p>
                         {currentStylist.availableNow && (
                           <p><span className="label">Available Now:</span> <span className="available-now-status">Yes</span></p>
@@ -3385,6 +3760,13 @@ function App() {
             <form className="registration-form" onSubmit={async (e) => {
               e.preventDefault();
               
+              // Validate that at least one day is selected
+              const hasEnabledDay = Object.values(workSchedule).some(schedule => schedule.enabled);
+              if (!hasEnabledDay) {
+                alert('Please select at least one working day and set your hours.');
+                return;
+              }
+              
               try {
                 const formData = new FormData(e.target);
                 
@@ -3439,6 +3821,16 @@ function App() {
                   setRegistrationServices([{ name: '', duration: '', price: '' }]);
                   setSelectedPaymentTypes([]);
                   setSelectedHairTextureTypes([]);
+                  // Reset work schedule
+                  setWorkSchedule({
+                    Monday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+                    Tuesday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+                    Wednesday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+                    Thursday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+                    Friday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+                    Saturday: { enabled: false, startTime: '09:00', endTime: '17:00' },
+                    Sunday: { enabled: false, startTime: '09:00', endTime: '17:00' }
+                  });
                   e.target.reset();
                 } else {
                   alert(`Registration failed: ${result.message || 'Unknown error'}`);
@@ -3590,7 +3982,113 @@ function App() {
                 </div>
                 <div className="form-group">
                   <label htmlFor="hours">Business Hours *</label>
-                  <input type="text" id="hours" name="hours" required placeholder="e.g., Mon-Fri: 9:00 AM - 6:00 PM" />
+                  <p className="form-hint">Select your working days and set your hours</p>
+                  <div className="work-schedule-builder">
+                    {Object.entries(workSchedule).map(([day, schedule]) => (
+                      <div key={day} className="schedule-day-row">
+                        <div className="schedule-day-toggle">
+                          <label className="day-toggle-label">
+                            <input
+                              type="checkbox"
+                              checked={schedule.enabled}
+                              onChange={(e) => {
+                                setWorkSchedule({
+                                  ...workSchedule,
+                                  [day]: { ...schedule, enabled: e.target.checked }
+                                });
+                              }}
+                            />
+                            <span className="day-name">{day.substring(0, 3)}</span>
+                          </label>
+                        </div>
+                        {schedule.enabled && (
+                          <div className="schedule-time-inputs">
+                            <div className="time-input-group">
+                              <label>From</label>
+                              <input
+                                type="time"
+                                value={schedule.startTime}
+                                onChange={(e) => {
+                                  setWorkSchedule({
+                                    ...workSchedule,
+                                    [day]: { ...schedule, startTime: e.target.value }
+                                  });
+                                }}
+                                className="time-input"
+                              />
+                            </div>
+                            <span className="time-separator">to</span>
+                            <div className="time-input-group">
+                              <label>To</label>
+                              <input
+                                type="time"
+                                value={schedule.endTime}
+                                onChange={(e) => {
+                                  setWorkSchedule({
+                                    ...workSchedule,
+                                    [day]: { ...schedule, endTime: e.target.value }
+                                  });
+                                }}
+                                className="time-input"
+                              />
+                            </div>
+                          </div>
+                        )}
+                        {!schedule.enabled && (
+                          <span className="closed-label">Closed</span>
+                        )}
+                      </div>
+                    ))}
+                    <div className="schedule-quick-actions">
+                      <button
+                        type="button"
+                        className="quick-action-button"
+                        onClick={() => {
+                          const weekdays = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+                          const updatedSchedule = { ...workSchedule };
+                          weekdays.forEach(day => {
+                            updatedSchedule[day] = { ...updatedSchedule[day], enabled: true };
+                          });
+                          setWorkSchedule(updatedSchedule);
+                        }}
+                      >
+                        Set Weekdays
+                      </button>
+                      <button
+                        type="button"
+                        className="quick-action-button"
+                        onClick={() => {
+                          const updatedSchedule = { ...workSchedule };
+                          Object.keys(updatedSchedule).forEach(day => {
+                            updatedSchedule[day] = { ...updatedSchedule[day], enabled: true };
+                          });
+                          setWorkSchedule(updatedSchedule);
+                        }}
+                      >
+                        Set All Days
+                      </button>
+                      <button
+                        type="button"
+                        className="quick-action-button"
+                        onClick={() => {
+                          const updatedSchedule = { ...workSchedule };
+                          Object.keys(updatedSchedule).forEach(day => {
+                            updatedSchedule[day] = { ...updatedSchedule[day], enabled: false };
+                          });
+                          setWorkSchedule(updatedSchedule);
+                        }}
+                      >
+                        Clear All
+                      </button>
+                    </div>
+                  </div>
+                  {/* Hidden input for form submission - store as JSON for easy editing */}
+                  <input
+                    type="hidden"
+                    id="hours"
+                    name="hours"
+                    value={JSON.stringify(workSchedule)}
+                  />
                 </div>
                 <div className="form-group">
                   <label htmlFor="currentAvailability">Current Availability *</label>
@@ -4330,7 +4828,7 @@ function App() {
                   <span className="label">Rate:</span> {stylist.rate}
                 </p>
                 <p className="stylist-hours">
-                  <span className="label">Hours:</span> {stylist.hours}
+                  <span className="label">Hours:</span> {formatScheduleForDisplay(stylist.hours)}
                 </p>
                 <p className="stylist-availability">
                   <span className="label">Current Availability:</span> {stylist.currentAvailability}

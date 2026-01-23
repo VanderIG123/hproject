@@ -3548,6 +3548,168 @@
   }
 }
 
+/* Work Schedule Builder */
+.work-schedule-builder {
+  margin-top: 12px;
+  padding: 20px;
+  border: 2px solid #e0e0e0;
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.schedule-day-row {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.schedule-day-row:last-child {
+  border-bottom: none;
+}
+
+.schedule-day-toggle {
+  min-width: 100px;
+}
+
+.day-toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.day-toggle-label input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  accent-color: #000000;
+}
+
+.day-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #000000;
+  min-width: 50px;
+}
+
+.schedule-time-inputs {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1;
+}
+
+.time-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.time-input-group label {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #666666;
+  margin: 0;
+}
+
+.time-input {
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #000000;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  min-width: 120px;
+}
+
+.time-input:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.time-separator {
+  font-size: 0.9rem;
+  color: #666666;
+  font-weight: 500;
+  margin-top: 20px;
+}
+
+.closed-label {
+  font-size: 0.9rem;
+  color: #999999;
+  font-style: italic;
+  padding: 10px 0;
+}
+
+.schedule-quick-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #e0e0e0;
+  flex-wrap: wrap;
+}
+
+.quick-action-button {
+  padding: 10px 20px;
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+}
+
+.quick-action-button:hover {
+  background: #000000;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.quick-action-button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .schedule-day-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .schedule-time-inputs {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .time-separator {
+    display: none;
+  }
+
+  .time-input {
+    width: 100%;
+  }
+
+  .schedule-quick-actions {
+    flex-direction: column;
+  }
+
+  .quick-action-button {
+    width: 100%;
+  }
+}
+
 /* Get in Touch Footer Styles */
 .get-in-touch-footer {
   background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
