@@ -1832,7 +1832,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   padding: 16px 24px;
   background: #ffffff;
   border: 2px dashed #e0e0e0;
@@ -1854,6 +1854,7 @@
   flex-shrink: 0;
   color: #666666;
   transition: color 0.3s ease;
+  margin-right: 4px;
 }
 
 .file-upload-label:hover svg {
@@ -3449,13 +3450,14 @@
 .payment-type-checkbox {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
   padding: 8px 12px;
   border-radius: 6px;
   transition: all 0.2s ease;
   font-size: 0.9rem;
   user-select: none;
+  line-height: 1.5;
 }
 
 .payment-type-checkbox:hover {
@@ -3468,13 +3470,19 @@
   cursor: pointer;
   accent-color: #000000;
   margin: 0;
+  margin-right: 4px;
   flex-shrink: 0;
+  align-self: center;
+  vertical-align: middle;
 }
 
 .payment-type-checkbox span {
   color: #000000;
   font-weight: 500;
   margin-left: 0;
+  line-height: 1.5;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .hair-texture-types-grid {
@@ -3491,13 +3499,14 @@
 .hair-texture-checkbox {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   cursor: pointer;
   padding: 8px 12px;
   border-radius: 6px;
   transition: all 0.2s ease;
   font-size: 0.9rem;
   user-select: none;
+  line-height: 1.5;
 }
 
 .hair-texture-checkbox:hover {
@@ -3510,13 +3519,19 @@
   cursor: pointer;
   accent-color: #000000;
   margin: 0;
+  margin-right: 4px;
   flex-shrink: 0;
+  align-self: center;
+  vertical-align: middle;
 }
 
 .hair-texture-checkbox span {
   color: #000000;
   font-weight: 500;
   margin-left: 0;
+  line-height: 1.5;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .stylist-hair-texture {
@@ -3576,9 +3591,10 @@
 .day-toggle-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
   cursor: pointer;
   user-select: none;
+  line-height: 1.5;
 }
 
 .day-toggle-label input[type="checkbox"] {
@@ -3586,6 +3602,11 @@
   height: 20px;
   cursor: pointer;
   accent-color: #000000;
+  margin: 0;
+  margin-right: 4px;
+  flex-shrink: 0;
+  align-self: center;
+  vertical-align: middle;
 }
 
 .day-name {
@@ -3593,6 +3614,9 @@
   font-size: 1rem;
   color: #000000;
   min-width: 50px;
+  line-height: 1.5;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .schedule-time-inputs {
@@ -4038,6 +4062,155 @@
   border-radius: 12px;
   border: 2px solid #e8e8e8;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+/* Announcements Styles */
+.announcements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.announcement-item {
+  background: #f8f9fa;
+  border: 1px solid #e0e0e0;
+  border-left: 4px solid #000000;
+  border-radius: 8px;
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+.announcement-item:hover {
+  border-color: #000000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.announcement-content {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.announcement-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #000000;
+  margin: 0;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.announcement-date {
+  font-size: 0.85rem;
+  color: #666666;
+  font-style: italic;
+}
+
+.no-announcements-message {
+  color: #999999;
+  font-style: italic;
+  text-align: center;
+  padding: 20px;
+}
+
+/* Edit Announcements */
+.edit-announcements-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.edit-announcement-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 16px;
+  background: #fafafa;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.edit-announcement-item:hover {
+  border-color: #d0d0d0;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.edit-announcement-input {
+  flex: 1;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #000000;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+}
+
+.edit-announcement-input:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.remove-announcement-button {
+  padding: 10px 12px;
+  background: #ffffff;
+  color: #ff4444;
+  border: 2px solid #ff4444;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-announcement-button:hover {
+  background: #ff4444;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 68, 68, 0.3);
+}
+
+.add-announcement-button {
+  padding: 12px 24px;
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid #000000;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.add-announcement-button:hover {
+  background: #000000;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+  .edit-announcement-item {
+    flex-direction: column;
+  }
+
+  .remove-announcement-button {
+    width: 100%;
+  }
 }
 
 .edit-product-item {

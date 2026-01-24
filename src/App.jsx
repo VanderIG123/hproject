@@ -432,7 +432,8 @@ function App() {
       setEditedProfile({ 
         ...loggedInStylist, 
         editedServices: [...loggedInStylist.services],
-        editedPortfolio: [...(loggedInStylist.portfolio || [])]
+        editedPortfolio: [...(loggedInStylist.portfolio || [])],
+        editedAnnouncements: [...(loggedInStylist.announcements || [])]
       });
       // Parse existing hours into schedule format - always parse, even if empty
       const parsedSchedule = parseHoursString(loggedInStylist.hours || '');
@@ -1347,11 +1348,31 @@ function App() {
                     );
                   })()}
                 </div>
-              </div>
-            </div>
-            
-            {selectedStylist.portfolio && selectedStylist.portfolio.length > 0 && (
-              <div className="portfolio-section">
+                  </div>
+                </div>
+                
+                {selectedStylist.announcements && selectedStylist.announcements.length > 0 && (
+                  <div className="detail-info-card">
+                    <h2 className="detail-section-title">Announcements</h2>
+                    <div className="announcements-list">
+                      {selectedStylist.announcements.map((announcement, index) => (
+                        <div key={index} className="announcement-item">
+                          <div className="announcement-content">
+                            <p className="announcement-text">{announcement.text}</p>
+                            {announcement.date && (
+                              <span className="announcement-date">
+                                {new Date(announcement.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {selectedStylist.portfolio && selectedStylist.portfolio.length > 0 && (
+                  <div className="portfolio-section">
                 <h2 className="detail-section-title portfolio-title">Previous Work</h2>
                 <div className="portfolio-gallery">
                   {selectedStylist.portfolio.map((imageUrl, index) => (
@@ -2488,7 +2509,8 @@ function App() {
           services: editedProfile.editedServices || editedProfile.services || [],
           about: editedProfile.about || '',
           portfolio: editedProfile.editedPortfolio || editedProfile.portfolio || [],
-          products: editedProfile.editedProducts || editedProfile.products || []
+          products: editedProfile.editedProducts || editedProfile.products || [],
+          announcements: editedProfile.editedAnnouncements || editedProfile.announcements || []
         };
         
         // Log what we're sending
@@ -2601,7 +2623,8 @@ function App() {
                   ...loggedInStylist,
                   editedServices: loggedInStylist.services || [],
                   editedPortfolio: loggedInStylist.portfolio || [],
-                  editedProducts: loggedInStylist.products || []
+                  editedProducts: loggedInStylist.products || [],
+                  editedAnnouncements: loggedInStylist.announcements || []
                 });
                 // Parse existing hours into schedule format and pre-fill the schedule builder
                 const parsedSchedule = parseHoursString(loggedInStylist.hours || '');
@@ -3280,6 +3303,76 @@ function App() {
                   </div>
                 ) : (
                   <p className="no-products-message">No products added yet.</p>
+                )
+              )}
+            </div>
+            
+            {/* Announcements Section */}
+            <div className="form-section">
+              <h2 className="form-section-title">Announcements</h2>
+              {isEditingProfile ? (
+                <div className="edit-announcements-container">
+                  {(editedProfile?.editedAnnouncements || editedProfile?.announcements || []).map((announcement, index) => (
+                    <div key={index} className="edit-announcement-item">
+                      <textarea
+                        value={announcement.text || ''}
+                        onChange={(e) => {
+                          const updatedAnnouncements = [...(editedProfile?.editedAnnouncements || editedProfile?.announcements || [])];
+                          updatedAnnouncements[index] = { ...updatedAnnouncements[index], text: e.target.value };
+                          setEditedProfile({...editedProfile, editedAnnouncements: updatedAnnouncements});
+                        }}
+                        className="edit-announcement-input"
+                        placeholder="Enter your announcement..."
+                        rows="3"
+                      />
+                      <button 
+                        type="button"
+                        className="remove-announcement-button"
+                        onClick={() => {
+                          const updatedAnnouncements = (editedProfile?.editedAnnouncements || editedProfile?.announcements || []).filter((_, i) => i !== index);
+                          setEditedProfile({...editedProfile, editedAnnouncements: updatedAnnouncements});
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <line x1="18" y1="6" x2="6" y2="18"></line>
+                          <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                      </button>
+                    </div>
+                  ))}
+                  <button 
+                    type="button"
+                    className="add-announcement-button"
+                    onClick={() => {
+                      const updatedAnnouncements = [...(editedProfile?.editedAnnouncements || editedProfile?.announcements || []), { text: '', date: new Date().toISOString() }];
+                      setEditedProfile({...editedProfile, editedAnnouncements: updatedAnnouncements});
+                    }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '8px' }}>
+                      <line x1="12" y1="5" x2="12" y2="19"></line>
+                      <line x1="5" y1="12" x2="19" y2="12"></line>
+                    </svg>
+                    Add Announcement
+                  </button>
+                </div>
+              ) : (
+                currentStylist.announcements && currentStylist.announcements.length > 0 ? (
+                  <div className="announcements-list">
+                    {currentStylist.announcements.map((announcement, index) => (
+                      <div key={index} className="announcement-item">
+                        <div className="announcement-content">
+                          <p className="announcement-text">{announcement.text}</p>
+                          {announcement.date && (
+                            <span className="announcement-date">
+                              {new Date(announcement.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="no-announcements-message">No announcements yet.</p>
                 )
               )}
             </div>
