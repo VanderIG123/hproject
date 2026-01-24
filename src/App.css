@@ -1830,7 +1830,7 @@
 
 .file-upload-label {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   gap: 12px;
   padding: 16px 24px;
@@ -1843,6 +1843,7 @@
   cursor: pointer;
   transition: all 0.3s ease;
   text-align: center;
+  line-height: 1.5;
 }
 
 .file-upload-label:hover {
@@ -1855,10 +1856,18 @@
   color: #666666;
   transition: color 0.3s ease;
   margin-right: 4px;
+  align-self: flex-end;
+  vertical-align: bottom;
 }
 
 .file-upload-label:hover svg {
   color: #000000;
+}
+
+.file-upload-label > *:not(svg) {
+  display: inline-block;
+  vertical-align: bottom;
+  line-height: 1.5;
 }
 
 .file-preview {
@@ -2350,7 +2359,7 @@
 
 .portfolio-image-upload-button {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   padding: 12px 20px;
   background: #ffffff;
@@ -2363,6 +2372,8 @@
   transition: all 0.3s ease;
   width: 100%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  line-height: 1.5;
+  gap: 8px;
 }
 
 .portfolio-image-upload-button:hover {
@@ -2374,6 +2385,12 @@
 
 .portfolio-image-upload-button:active {
   transform: translateY(0);
+}
+
+.portfolio-image-upload-button svg {
+  flex-shrink: 0;
+  align-self: flex-end;
+  vertical-align: bottom;
 }
 
 .edit-name-input:focus,
@@ -4300,7 +4317,7 @@
 
 .product-image-upload-button {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
   padding: 12px 20px;
   background: #ffffff;
@@ -4313,6 +4330,8 @@
   transition: all 0.3s ease;
   width: 100%;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  line-height: 1.5;
+  gap: 8px;
 }
 
 .product-image-upload-button:hover {
@@ -4324,6 +4343,12 @@
 
 .product-image-upload-button:active {
   transform: translateY(0);
+}
+
+.product-image-upload-button svg {
+  flex-shrink: 0;
+  align-self: flex-end;
+  vertical-align: bottom;
 }
 
 .remove-product-button {
