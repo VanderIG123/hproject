@@ -50,7 +50,9 @@ function App() {
   const [appliedDate, setAppliedDate] = React.useState('');
   const [appliedTime, setAppliedTime] = React.useState('');
   const [showBookingPage, setShowBookingPage] = React.useState(false);
+  const [showBookingConfirmation, setShowBookingConfirmation] = React.useState(false);
   const [bookingStylistId, setBookingStylistId] = React.useState(null);
+  const userAppointmentsRef = React.useRef(null);
   const [appointmentPurpose, setAppointmentPurpose] = React.useState('');
   const [appointmentDate, setAppointmentDate] = React.useState('');
   const [appointmentTime, setAppointmentTime] = React.useState('');
@@ -1466,6 +1468,70 @@ function App() {
     );
   }
 
+  // Booking confirmation page
+  if (showBookingConfirmation) {
+    return (
+      <div className="app">
+        <header className="header">
+          <h1>Booking Confirmation</h1>
+        </header>
+        <main className="main-content">
+          <div className="booking-confirmation-container">
+            <div className="booking-confirmation-icon">
+              <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <h2 className="booking-confirmation-title">Booking Request Sent</h2>
+            <p className="booking-confirmation-message">
+              Your booking request has been successfully sent to the stylist. 
+              You will be notified once they confirm your appointment.
+            </p>
+            <button
+              className="check-booking-status-button"
+              onClick={async () => {
+                setShowBookingConfirmation(false);
+                setShowUserProfile(true);
+                // Refresh appointments to show the new booking
+                if (loggedInUser && loggedInUser.id) {
+                  try {
+                    setUserAppointmentsLoading(true);
+                    const response = await fetch(`http://localhost:3001/api/appointments?userId=${loggedInUser.id}`);
+                    const result = await response.json();
+                    if (result.success && result.data) {
+                      setUserAppointments(result.data);
+                    }
+                  } catch (error) {
+                    console.error('Error fetching appointments:', error);
+                  } finally {
+                    setUserAppointmentsLoading(false);
+                  }
+                }
+                // Scroll to appointments section after a short delay to ensure the profile is rendered
+                setTimeout(() => {
+                  if (userAppointmentsRef.current) {
+                    userAppointmentsRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                  }
+                }, 200);
+              }}
+            >
+              Check the status of your booking here
+            </button>
+            <button
+              className="back-to-home-button"
+              onClick={() => {
+                setShowBookingConfirmation(false);
+              }}
+            >
+              Back to Home
+            </button>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
   // Show booking page
   if (showBookingPage && bookingStylistId) {
     const bookingStylist = stylists.find(s => s.id === bookingStylistId);
@@ -1529,8 +1595,8 @@ function App() {
         const result = await response.json();
         
         if (result.success) {
-          alert('Appointment booked successfully!');
           setShowBookingPage(false);
+          setShowBookingConfirmation(true);
           setBookingStylistId(null);
           setAppointmentPurpose('');
           setAppointmentDate('');
@@ -2248,7 +2314,7 @@ function App() {
                 )}
                 
                 {!isEditingUserProfile && (
-                  <div className="detail-info-card">
+                  <div className="detail-info-card" ref={userAppointmentsRef}>
                     <h2 className="detail-section-title">Appointments</h2>
                     {userAppointmentsLoading ? (
                       <p>Loading appointments...</p>
