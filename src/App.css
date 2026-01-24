@@ -1612,6 +1612,100 @@
   padding: 20px;
 }
 
+.register-login-container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.register-login-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-top: 20px;
+}
+
+.register-login-card {
+  background: #ffffff;
+  border: 2px solid #e0e0e0;
+  border-radius: 16px;
+  padding: 40px 30px;
+  text-align: center;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.register-login-card:hover {
+  border-color: #000000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.register-login-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  margin-bottom: 10px;
+}
+
+.register-login-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+.register-login-description {
+  font-size: 1rem;
+  color: #666666;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.register-login-action-button {
+  width: 100%;
+  padding: 16px 32px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.register-login-action-button:hover {
+  background-color: #333333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.register-login-action-button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .register-login-options {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .register-login-card {
+    padding: 30px 20px;
+  }
+}
+
 .registration-form {
   background: #ffffff;
   border-radius: 12px;
@@ -1651,6 +1745,66 @@
   margin-bottom: 8px;
 }
 
+.label-with-help {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.help-tooltip-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.help-icon {
+  color: #666666;
+  cursor: help;
+  transition: color 0.3s ease;
+  flex-shrink: 0;
+}
+
+.help-icon:hover {
+  color: #000000;
+}
+
+.help-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-bottom: 8px;
+  padding: 10px 14px;
+  background: #000000;
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 400;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  transform: translateX(-50%) translateY(-5px);
+  z-index: 1000;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.help-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: #000000;
+}
+
+.help-tooltip-container:hover .help-tooltip {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) translateY(0);
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
@@ -1682,6 +1836,29 @@
   display: flex;
   flex-direction: column;
   gap: 15px;
+}
+
+.service-input-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 15px;
+  align-items: center;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 8px;
+}
+
+.service-header-item {
+  display: flex;
+  align-items: center;
+}
+
+.service-header-label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #666666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .service-input-row {
@@ -4456,7 +4633,8 @@
 }
 
 /* Book Appointment Button */
-.book-appointment-button {
+.book-appointment-button,
+.register-login-button {
   width: 100%;
   padding: 16px 24px;
   background-color: #000000;

@@ -77,6 +77,7 @@ function App() {
   const [showLogin, setShowLogin] = React.useState(false);
   const [showUserRegistration, setShowUserRegistration] = React.useState(false);
   const [showUserLogin, setShowUserLogin] = React.useState(false);
+  const [showRegisterOrLogin, setShowRegisterOrLogin] = React.useState(false);
   const [showStylistDropdown, setShowStylistDropdown] = React.useState(false);
   const [showUserDropdown, setShowUserDropdown] = React.useState(false);
   const [loggedInStylist, setLoggedInStylist] = React.useState(null);
@@ -1759,6 +1760,76 @@ function App() {
                 </button>
               </div>
             </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show register or login page
+  if (showRegisterOrLogin) {
+    return (
+      <div className="app">
+        <header className="header">
+          <button 
+            className="back-button"
+            onClick={() => setShowRegisterOrLogin(false)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back
+          </button>
+          <h1>Register or Login</h1>
+          <p className="subtitle">Create an account or sign in to book an appointment</p>
+        </header>
+        
+        <main className="main-content">
+          <div className="register-login-container">
+            <div className="register-login-options">
+              <div className="register-login-card">
+                <div className="register-login-icon">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="8.5" cy="7" r="4"></circle>
+                    <line x1="20" y1="8" x2="20" y2="14"></line>
+                    <line x1="23" y1="11" x2="17" y2="11"></line>
+                  </svg>
+                </div>
+                <h2 className="register-login-title">New User?</h2>
+                <p className="register-login-description">Create an account to book appointments with stylists</p>
+                <button
+                  className="register-login-action-button"
+                  onClick={() => {
+                    setShowRegisterOrLogin(false);
+                    setShowUserRegistration(true);
+                  }}
+                >
+                  Register
+                </button>
+              </div>
+              
+              <div className="register-login-card">
+                <div className="register-login-icon">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <polyline points="10 17 15 12 10 7"></polyline>
+                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                  </svg>
+                </div>
+                <h2 className="register-login-title">Already have an account?</h2>
+                <p className="register-login-description">Sign in to continue booking appointments</p>
+                <button
+                  className="register-login-action-button"
+                  onClick={() => {
+                    setShowRegisterOrLogin(false);
+                    setShowUserLogin(true);
+                  }}
+                >
+                  Login
+                </button>
+              </div>
+            </div>
           </div>
         </main>
       </div>
@@ -4245,12 +4316,56 @@ function App() {
                   />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="yearsOfExperience">Years of Experience *</label>
-                  <input type="text" id="yearsOfExperience" name="yearsOfExperience" required placeholder="e.g., 5 years" />
+                  <label htmlFor="yearsOfExperience" className="label-with-help">
+                    Years of Experience *
+                    <span className="help-tooltip-container">
+                      <svg 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                        className="help-icon"
+                      >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                      </svg>
+                      <span className="help-tooltip">
+                        Enter only the number (e.g., "5" not "5 years"). The system will format it automatically.
+                      </span>
+                    </span>
+                  </label>
+                  <input type="text" id="yearsOfExperience" name="yearsOfExperience" required placeholder="e.g., 5" />
                 </div>
                 <div className="form-group">
-                  <label htmlFor="rate">Rate per Hour *</label>
-                  <input type="text" id="rate" name="rate" required placeholder="e.g., $75/hour" />
+                  <label htmlFor="rate" className="label-with-help">
+                    Rate per Hour *
+                    <span className="help-tooltip-container">
+                      <svg 
+                        width="16" 
+                        height="16" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="2" 
+                        strokeLinecap="round" 
+                        strokeLinejoin="round"
+                        className="help-icon"
+                      >
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="16" x2="12" y2="12"></line>
+                        <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                      </svg>
+                      <span className="help-tooltip">
+                        Enter only the number (e.g., "75" not "$75/hour"). The system will format it automatically.
+                      </span>
+                    </span>
+                  </label>
+                  <input type="text" id="rate" name="rate" required placeholder="e.g., 75" />
                 </div>
                 <div className="form-group">
                   <label htmlFor="hours">Business Hours *</label>
@@ -4505,6 +4620,62 @@ function App() {
                 <div className="form-group">
                   <label>Services Offered (Add at least one service)</label>
                   <div className="services-input-container">
+                    <div className="service-input-header">
+                      <div className="service-header-item">
+                        <span className="service-header-label">Service Name</span>
+                      </div>
+                      <div className="service-header-item">
+                        <span className="service-header-label label-with-help">
+                          Duration
+                          <span className="help-tooltip-container">
+                            <svg 
+                              width="14" 
+                              height="14" 
+                              viewBox="0 0 24 24" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              strokeWidth="2" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round"
+                              className="help-icon"
+                            >
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <line x1="12" y1="16" x2="12" y2="12"></line>
+                              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span className="help-tooltip">
+                              Enter only the number (e.g., "45" not "45 minutes"). The system will format it automatically.
+                            </span>
+                          </span>
+                        </span>
+                      </div>
+                      <div className="service-header-item">
+                        <span className="service-header-label label-with-help">
+                          Price (optional)
+                          <span className="help-tooltip-container">
+                            <svg 
+                              width="14" 
+                              height="14" 
+                              viewBox="0 0 24 24" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              strokeWidth="2" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round"
+                              className="help-icon"
+                            >
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <line x1="12" y1="16" x2="12" y2="12"></line>
+                              <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                            </svg>
+                            <span className="help-tooltip">
+                              Enter only the number (e.g., "30" not "$30"). The system will format it automatically.
+                            </span>
+                          </span>
+                        </span>
+                      </div>
+                      <div className="service-header-item"></div>
+                    </div>
                     {registrationServices.map((service, index) => (
                       <div key={index} className="service-input-row">
                         <input 
@@ -4521,7 +4692,7 @@ function App() {
                         <input 
                           type="text" 
                           className="service-duration-input" 
-                          placeholder="Duration (e.g., 45 minutes)" 
+                          placeholder="e.g., 45" 
                           value={service.duration}
                           onChange={(e) => {
                             const newServices = [...registrationServices];
@@ -4532,7 +4703,7 @@ function App() {
                         <input 
                           type="text" 
                           className="service-price-input" 
-                          placeholder="Price (optional, e.g., $30)" 
+                          placeholder="e.g., 30" 
                           value={service.price || ''}
                           onChange={(e) => {
                             const newServices = [...registrationServices];
@@ -5170,7 +5341,7 @@ function App() {
                   <p className="about-text">{stylist.about}</p>
                 </div>
               </div>
-              {loggedInUser && (
+              {loggedInUser ? (
                 <button
                   className="book-appointment-button"
                   onClick={(e) => {
@@ -5180,6 +5351,16 @@ function App() {
                   }}
                 >
                   Book Appointment
+                </button>
+              ) : (
+                <button
+                  className="book-appointment-button register-login-button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowRegisterOrLogin(true);
+                  }}
+                >
+                  Register / Login to Book
                 </button>
               )}
             </div>
