@@ -614,6 +614,119 @@ function App() {
     const encodedAddress = encodeURIComponent(address);
     return `https://www.google.com/maps/search/?api=1&query=${encodedAddress}`;
   };
+  
+  // Format years of experience - add "years" if not present
+  const formatYearsOfExperience = (years) => {
+    if (!years || !years.toString().trim()) return '';
+    const yearsStr = years.toString().trim();
+    // Check if it already contains "year" or "years"
+    if (yearsStr.toLowerCase().includes('year')) {
+      return yearsStr;
+    }
+    // Extract just the number
+    const numberMatch = yearsStr.match(/\d+/);
+    if (numberMatch) {
+      const num = numberMatch[0];
+      return `${num} ${num === '1' ? 'year' : 'years'}`;
+    }
+    return yearsStr;
+  };
+  
+  // Format rate - add $ and /hr if not present
+  const formatRate = (rate) => {
+    if (!rate || !rate.toString().trim()) return '';
+    let rateStr = rate.toString().trim();
+    const hasDollar = rateStr.includes('$');
+    const hasHour = rateStr.toLowerCase().includes('/hr') || rateStr.toLowerCase().includes('/hour');
+    
+    // If already has both, return as is
+    if (hasDollar && hasHour) {
+      return rateStr;
+    }
+    
+    // Extract the number
+    const numberMatch = rateStr.match(/[\d.]+/);
+    if (numberMatch) {
+      const num = numberMatch[0];
+      // Remove $ and /hr if present to rebuild correctly
+      rateStr = num;
+      if (!hasDollar) rateStr = `$${rateStr}`;
+      if (!hasHour) rateStr = `${rateStr}/hr`;
+      return rateStr;
+    }
+    return rateStr;
+  };
+  
+  // Format service duration - add "min" if not present
+  const formatServiceDuration = (duration) => {
+    if (!duration || !duration.toString().trim()) return '';
+    const durationStr = duration.toString().trim();
+    // Check if it already contains "min" or "minute"
+    if (durationStr.toLowerCase().includes('min')) {
+      return durationStr;
+    }
+    // Extract the number
+    const numberMatch = durationStr.match(/\d+/);
+    if (numberMatch) {
+      const num = numberMatch[0];
+      return `${num} min`;
+    }
+    return durationStr;
+  };
+  
+  // Format service price - add $ if not present
+  const formatServicePrice = (price) => {
+    if (!price || !price.toString().trim()) return '';
+    const priceStr = price.toString().trim();
+    // Check if it already has $
+    if (priceStr.includes('$')) {
+      return priceStr;
+    }
+    // Extract the number
+    const numberMatch = priceStr.match(/[\d.]+/);
+    if (numberMatch) {
+      const num = numberMatch[0];
+      return `$${num}`;
+    }
+    return priceStr;
+  };
+  
+  // Format phone number - standardize to (XXX) XXX-XXXX format
+  const formatPhoneNumber = (phone) => {
+    if (!phone || !phone.toString().trim()) return '';
+    const phoneStr = phone.toString().trim();
+    
+    // Remove all non-digit characters
+    const digits = phoneStr.replace(/\D/g, '');
+    
+    // If it's already formatted nicely (has parentheses, dashes, etc.), check if it's valid
+    if (phoneStr.includes('(') || phoneStr.includes('-')) {
+      // If it looks like it's already formatted, return as is
+      if (phoneStr.match(/^[\d\s\-\(\)\+\.]+$/)) {
+        return phoneStr;
+      }
+    }
+    
+    // Format based on number of digits
+    if (digits.length === 10) {
+      // US format: (XXX) XXX-XXXX
+      return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6)}`;
+    } else if (digits.length === 11 && digits[0] === '1') {
+      // US with country code: 1 (XXX) XXX-XXXX
+      return `1 (${digits.slice(1, 4)}) ${digits.slice(4, 7)}-${digits.slice(7)}`;
+    } else if (digits.length > 0) {
+      // If it doesn't match standard formats, return with some formatting
+      // Try to format as (XXX) XXX-XXXX if possible
+      if (digits.length >= 10) {
+        return `(${digits.slice(0, 3)}) ${digits.slice(3, 6)}-${digits.slice(6, 10)}${digits.length > 10 ? ' ' + digits.slice(10) : ''}`;
+      }
+      // Otherwise return the digits with some spacing
+      return digits;
+    }
+    
+    // If we can't format it, return original
+    return phoneStr;
+  };
 
   // Parse payment types string into array
   const parsePaymentTypes = (paymentTypesString) => {
@@ -1031,12 +1144,12 @@ function App() {
                   <div className="detail-contact-info">
                     <p><span className="label">Address:</span> <a href={getGoogleMapsUrl(selectedStylist.address)} target="_blank" rel="noopener noreferrer">{selectedStylist.address}</a></p>
                     <p><span className="label">Email:</span> <a href={`mailto:${selectedStylist.email}`}>{selectedStylist.email}</a></p>
-                    <p><span className="label">Phone:</span> <a href={`tel:${selectedStylist.phone}`}>{selectedStylist.phone}</a></p>
+                    <p><span className="label">Phone:</span> <a href={`tel:${selectedStylist.phone}`}>{formatPhoneNumber(selectedStylist.phone)}</a></p>
                   </div>
                   
                   <h2 className="detail-section-title">Pricing & Availability</h2>
                   <div className="detail-pricing-info">
-                    <p><span className="label">Rate:</span> {selectedStylist.rate}</p>
+                    <p><span className="label">Rate:</span> {formatRate(selectedStylist.rate)}</p>
                     <p><span className="label">Hours:</span> {formatScheduleForDisplay(selectedStylist.hours)}</p>
                     <p><span className="label">Current Availability:</span> {selectedStylist.currentAvailability}</p>
                     <p><span className="label">Willing to Travel:</span> {selectedStylist.willingToTravel}</p>
@@ -1058,7 +1171,7 @@ function App() {
                   </div>
                   
                   <h2 className="detail-section-title">Experience</h2>
-                  <p><span className="label">Years of Experience:</span> {selectedStylist.yearsOfExperience}</p>
+                  <p><span className="label">Years of Experience:</span> {formatYearsOfExperience(selectedStylist.yearsOfExperience)}</p>
                   {selectedStylist.hairTextureTypes && (
                     <p><span className="label">Hair Texture Types:</span> {selectedStylist.hairTextureTypes}</p>
                   )}
@@ -1070,9 +1183,9 @@ function App() {
                     {selectedStylist.services.map((service, index) => (
                       <div key={index} className="detail-service-item">
                         <span className="service-name">
-                          {service.name}{service.price ? ` (${service.price})` : ''}
+                          {service.name}{service.price ? ` (${formatServicePrice(service.price)})` : ''}
                         </span>
-                        <span className="service-duration">{service.duration}</span>
+                        <span className="service-duration">{formatServiceDuration(service.duration)}</span>
                       </div>
                     ))}
                   </div>
@@ -1320,7 +1433,7 @@ function App() {
                     <div className="similar-item-info">
                       <h3 className="similar-item-name">{similarStylist.name}</h3>
                       <p className="similar-item-specialty">{similarStylist.specialty}</p>
-                      <p className="similar-item-rate">{similarStylist.rate}</p>
+                      <p className="similar-item-rate">{formatRate(similarStylist.rate)}</p>
                     </div>
                   </div>
                 ))}
@@ -1351,7 +1464,7 @@ function App() {
       // If services are selected, use them; otherwise require purpose text
       const finalPurpose = selectedServices.length > 0 
         ? selectedServices.map(s => {
-            const serviceText = s.name + (s.price ? ` (${s.price})` : '') + (s.duration ? ` - ${s.duration}` : '');
+            const serviceText = s.name + (s.price ? ` (${formatServicePrice(s.price)})` : '') + (s.duration ? ` - ${formatServiceDuration(s.duration)}` : '');
             return serviceText;
           }).join(', ') + (appointmentPurpose.trim() ? ` - ${appointmentPurpose.trim()}` : '')
         : appointmentPurpose.trim();
@@ -1446,7 +1559,7 @@ function App() {
                 <div className="booking-stylist-details">
                   <h2>{bookingStylist.name}</h2>
                   <p className="booking-stylist-specialty">{bookingStylist.specialty}</p>
-                  <p className="booking-stylist-rate">{bookingStylist.rate}</p>
+                  <p className="booking-stylist-rate">{formatRate(bookingStylist.rate)}</p>
                   <p className="booking-stylist-address">{bookingStylist.address}</p>
                 </div>
               </div>
@@ -1478,9 +1591,9 @@ function App() {
                           <div className="booking-service-info">
                             <div className="booking-service-name">{service.name}</div>
                             <div className="booking-service-details">
-                              {service.price && <span className="booking-service-price">{service.price}</span>}
+                              {service.price && <span className="booking-service-price">{formatServicePrice(service.price)}</span>}
                               {service.price && service.duration && <span className="booking-service-separator"> • </span>}
-                              {service.duration && <span className="booking-service-duration">{service.duration}</span>}
+                              {service.duration && <span className="booking-service-duration">{formatServiceDuration(service.duration)}</span>}
                             </div>
                           </div>
                         </button>
@@ -1897,7 +2010,7 @@ function App() {
                     <div className="detail-contact-info">
                       <p><span className="label">Name:</span> {currentUser.name}</p>
                       <p><span className="label">Email:</span> <a href={`mailto:${currentUser.email}`}>{currentUser.email}</a></p>
-                      <p><span className="label">Phone:</span> <a href={`tel:${currentUser.phone}`}>{currentUser.phone}</a></p>
+                      <p><span className="label">Phone:</span> <a href={`tel:${currentUser.phone}`}>{formatPhoneNumber(currentUser.phone)}</a></p>
                       <p><span className="label">Address:</span> <a href={getGoogleMapsUrl(currentUser.address)} target="_blank" rel="noopener noreferrer">{currentUser.address}</a></p>
                     </div>
                   )}
@@ -2105,7 +2218,7 @@ function App() {
                           <div className="recently-viewed-info">
                             <h3 className="recently-viewed-name">{stylist.name}</h3>
                             <p className="recently-viewed-specialty">{stylist.specialty}</p>
-                            <p className="recently-viewed-rate">{stylist.rate}</p>
+                            <p className="recently-viewed-rate">{formatRate(stylist.rate)}</p>
                           </div>
                         </div>
                       ))}
@@ -2299,7 +2412,7 @@ function App() {
                           <div className="favorite-stylist-info">
                             <h3 className="favorite-stylist-name">{stylist.name}</h3>
                             <p className="favorite-stylist-specialty">{stylist.specialty}</p>
-                            <p className="favorite-stylist-rate">{stylist.rate}</p>
+                            <p className="favorite-stylist-rate">{formatRate(stylist.rate)}</p>
                           </div>
                           <button
                             className="remove-favorite-button"
@@ -2586,7 +2699,7 @@ function App() {
                     <div className="detail-contact-info">
                       <p><span className="label">Address:</span> <a href={getGoogleMapsUrl(currentStylist.address)} target="_blank" rel="noopener noreferrer">{currentStylist.address}</a></p>
                       <p><span className="label">Email:</span> <a href={`mailto:${currentStylist.email}`}>{currentStylist.email}</a></p>
-                      <p><span className="label">Phone:</span> <a href={`tel:${currentStylist.phone}`}>{currentStylist.phone}</a></p>
+                      <p><span className="label">Phone:</span> <a href={`tel:${currentStylist.phone}`}>{formatPhoneNumber(currentStylist.phone)}</a></p>
                     </div>
                   )}
                   
@@ -2785,7 +2898,7 @@ function App() {
                       </div>
                     ) : (
                       <div className="detail-pricing-info">
-                        <p><span className="label">Rate:</span> {currentStylist.rate}</p>
+                        <p><span className="label">Rate:</span> {formatRate(currentStylist.rate)}</p>
                         <p><span className="label">Hours:</span> {formatScheduleForDisplay(currentStylist.hours)}</p>
                         <p><span className="label">Current Availability:</span> {currentStylist.currentAvailability}</p>
                         {currentStylist.availableNow && (
@@ -2840,7 +2953,7 @@ function App() {
                     </div>
                   ) : (
                     <>
-                      <p><span className="label">Years of Experience:</span> {currentStylist.yearsOfExperience}</p>
+                      <p><span className="label">Years of Experience:</span> {formatYearsOfExperience(currentStylist.yearsOfExperience)}</p>
                       <p><span className="label">Specialty:</span> {currentStylist.specialty}</p>
                       {currentStylist.hairTextureTypes && (
                         <p><span className="label">Hair Texture Types:</span> {currentStylist.hairTextureTypes}</p>
@@ -2923,7 +3036,7 @@ function App() {
                       {currentStylist.services.map((service, index) => (
                         <div key={index} className="detail-service-item">
                           <span className="service-name">
-                            {service.name}{service.price ? ` (${service.price})` : ''}
+                            {service.name}{service.price ? ` (${formatServicePrice(service.price)})` : ''}
                           </span>
                           <span className="service-duration">{service.duration}</span>
                         </div>
@@ -3451,7 +3564,7 @@ function App() {
                     <div className="similar-item-info">
                       <h3 className="similar-item-name">{similarStylist.name}</h3>
                       <p className="similar-item-specialty">{similarStylist.specialty}</p>
-                      <p className="similar-item-rate">{similarStylist.rate}</p>
+                      <p className="similar-item-rate">{formatRate(similarStylist.rate)}</p>
                     </div>
                   </div>
                 ))}
@@ -4820,12 +4933,12 @@ function App() {
                       <span className="contact-label">Email:</span> <a href={`mailto:${stylist.email}`} onClick={(e) => e.stopPropagation()}>{stylist.email}</a>
                     </p>
                     <p className="stylist-phone">
-                      <span className="contact-label">Phone:</span> <a href={`tel:${stylist.phone}`} onClick={(e) => e.stopPropagation()}>{stylist.phone}</a>
+                      <span className="contact-label">Phone:</span> <a href={`tel:${stylist.phone}`} onClick={(e) => e.stopPropagation()}>{formatPhoneNumber(stylist.phone)}</a>
                     </p>
                   </div>
                 </div>
                 <p className="stylist-rate">
-                  <span className="label">Rate:</span> {stylist.rate}
+                  <span className="label">Rate:</span> {formatRate(stylist.rate)}
                 </p>
                 <p className="stylist-hours">
                   <span className="label">Hours:</span> {formatScheduleForDisplay(stylist.hours)}
@@ -4837,7 +4950,7 @@ function App() {
                   <span className="label">Willing to travel to customer:</span> {stylist.willingToTravel}
                 </p>
                 <p className="stylist-experience">
-                  <span className="label">Years of Experience:</span> {stylist.yearsOfExperience}
+                  <span className="label">Years of Experience:</span> {formatYearsOfExperience(stylist.yearsOfExperience)}
                 </p>
                 {stylist.accommodations && (
                   <p className="stylist-accommodations">
@@ -4886,9 +4999,9 @@ function App() {
                     {stylist.services.map((service, index) => (
                       <div key={index} className="service-item">
                         <span className="service-name">
-                          {service.name}{service.price ? ` (${service.price})` : ''}
+                          {service.name}{service.price ? ` (${formatServicePrice(service.price)})` : ''}
                         </span>
-                        <span className="service-duration">{service.duration}</span>
+                        <span className="service-duration">{formatServiceDuration(service.duration)}</span>
                       </div>
                     ))}
                   </div>
