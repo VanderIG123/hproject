@@ -37,6 +37,12 @@ function App() {
 
     // Fetch immediately when component mounts (home page opens)
     fetchStylists();
+
+    // Check if user has seen mission statement before
+    const hasSeenMissionStatement = localStorage.getItem('hasSeenMissionStatement');
+    if (!hasSeenMissionStatement) {
+      setShowMissionStatement(true);
+    }
   }, []); // Empty dependency array ensures this runs once on mount
 
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -78,6 +84,8 @@ function App() {
   const [showUserRegistration, setShowUserRegistration] = React.useState(false);
   const [showUserLogin, setShowUserLogin] = React.useState(false);
   const [showRegisterOrLogin, setShowRegisterOrLogin] = React.useState(false);
+  const [showMissionStatement, setShowMissionStatement] = React.useState(false);
+  const [communityEmail, setCommunityEmail] = React.useState('');
   const [showStylistDropdown, setShowStylistDropdown] = React.useState(false);
   const [showUserDropdown, setShowUserDropdown] = React.useState(false);
   const [loggedInStylist, setLoggedInStylist] = React.useState(null);
@@ -5424,6 +5432,78 @@ function App() {
             </div>
           </div>
         </footer>
+
+        {/* Mission Statement Modal for First-Time Users */}
+        {showMissionStatement && (
+          <div className="mission-statement-overlay" onClick={() => {
+            localStorage.setItem('hasSeenMissionStatement', 'true');
+            setShowMissionStatement(false);
+          }}>
+            <div className="mission-statement-modal" onClick={(e) => e.stopPropagation()}>
+              <button
+                className="mission-statement-close"
+                onClick={() => {
+                  localStorage.setItem('hasSeenMissionStatement', 'true');
+                  setShowMissionStatement(false);
+                }}
+              >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+              <div className="mission-statement-content">
+                <div className="mission-statement-icon">
+                  <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                  </svg>
+                </div>
+                <h2 className="mission-statement-title">Our Mission</h2>
+                <div className="mission-statement-text">
+                  <p>At <strong>Stylists Near Me</strong>, our mission is to do one thing and one thing well. To make the search for a hair stylist as easy and pain-free as possible. To eliminate the need for platforms like Instagram or Google Maps. To be the Uber of beauty services.</p>
+                </div>
+                <form 
+                  className="mission-statement-form"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (communityEmail && communityEmail.includes('@')) {
+                      // Here you can add API call to save the email
+                      console.log('Community email submitted:', communityEmail);
+                      alert('Thank you for joining our community!');
+                      setCommunityEmail('');
+                      localStorage.setItem('hasSeenMissionStatement', 'true');
+                      setShowMissionStatement(false);
+                    } else {
+                      alert('Please enter a valid email address.');
+                    }
+                  }}
+                >
+                  <div className="mission-statement-email-group">
+                    <label htmlFor="community-email" className="mission-statement-email-label">Join our community</label>
+                    <div className="mission-statement-input-wrapper">
+                      <svg className="mission-statement-email-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                        <polyline points="22,6 12,13 2,6"></polyline>
+                      </svg>
+                      <input
+                        type="email"
+                        id="community-email"
+                        className="mission-statement-email-input"
+                        placeholder="Enter your email"
+                        value={communityEmail}
+                        onChange={(e) => setCommunityEmail(e.target.value)}
+                        required
+                      />
+                    </div>
+                  </div>
+                  <button type="submit" className="mission-statement-submit-button">
+                    Join
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )
