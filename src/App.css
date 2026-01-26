@@ -13,6 +13,29 @@
   position: relative;
 }
 
+.mission-statement-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: transparent;
+  border: 2px solid #e0e0e0;
+  border-radius: 25px;
+  color: #666666;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mission-statement-link:hover {
+  border-color: #000000;
+  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 .header-buttons-container {
   position: absolute;
   right: 20px;
@@ -5852,4 +5875,214 @@
   font-weight: 600;
   color: #000000;
   min-width: 140px;
+}
+
+.mission-statement-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: transparent;
+  border: 2px solid #e0e0e0;
+  border-radius: 25px;
+  color: #666666;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mission-statement-link:hover {
+  border-color: #000000;
+  color: #000000;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Mission Statement Page */
+.mission-statement-page-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 60px 20px;
+}
+
+.mission-statement-page-content {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 60px 50px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border: 1px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 40px;
+  text-align: center;
+}
+
+.mission-statement-page-icon {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+}
+
+.mission-statement-page-text {
+  font-size: 1.25rem;
+  line-height: 1.9;
+  color: #333333;
+  max-width: 700px;
+}
+
+.mission-statement-page-text p {
+  margin: 0;
+}
+
+.mission-statement-page-text strong {
+  color: #000000;
+  font-weight: 700;
+}
+
+.mission-statement-page-divider {
+  width: 100%;
+  max-width: 200px;
+  height: 2px;
+  background: #e0e0e0;
+  margin: 20px 0;
+}
+
+.mission-statement-page-story {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  text-align: center;
+}
+
+.mission-statement-page-story-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+.mission-statement-page-story-text {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: #333333;
+  text-align: left;
+}
+
+.mission-statement-page-story-text p {
+  margin: 0;
+}
+
+.mission-statement-page-cta {
+  width: 100%;
+  max-width: 500px;
+  padding-top: 40px;
+  border-top: 2px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+}
+
+.mission-statement-page-cta h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #000000;
+  margin: 0;
+}
+
+.mission-statement-page-cta > p {
+  font-size: 1rem;
+  color: #666666;
+  margin: 0;
+}
+
+.mission-statement-page-form {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.mission-statement-page-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.mission-statement-page-email-icon {
+  position: absolute;
+  left: 16px;
+  color: #666666;
+  pointer-events: none;
+}
+
+.mission-statement-page-email-input {
+  width: 100%;
+  padding: 14px 16px 14px 48px;
+  font-size: 1rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #000000;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.mission-statement-page-email-input:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.mission-statement-page-submit-button {
+  width: 100%;
+  padding: 16px 32px;
+  background-color: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 50px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.mission-statement-page-submit-button:hover {
+  background-color: #333333;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.mission-statement-page-submit-button:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .mission-statement-page-container {
+    padding: 40px 15px;
+  }
+
+  .mission-statement-page-content {
+    padding: 40px 30px;
+    gap: 30px;
+  }
+
+  .mission-statement-page-text {
+    font-size: 1.1rem;
+  }
+
+  .mission-statement-page-cta h3 {
+    font-size: 1.5rem;
+  }
 }

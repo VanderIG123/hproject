@@ -85,6 +85,7 @@ function App() {
   const [showUserLogin, setShowUserLogin] = React.useState(false);
   const [showRegisterOrLogin, setShowRegisterOrLogin] = React.useState(false);
   const [showMissionStatement, setShowMissionStatement] = React.useState(false);
+  const [showMissionStatementPage, setShowMissionStatementPage] = React.useState(false);
   const [communityEmail, setCommunityEmail] = React.useState('');
   const [showStylistDropdown, setShowStylistDropdown] = React.useState(false);
   const [showUserDropdown, setShowUserDropdown] = React.useState(false);
@@ -1768,6 +1769,85 @@ function App() {
                 </button>
               </div>
             </form>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  // Show mission statement page
+  if (showMissionStatementPage) {
+    return (
+      <div className="app">
+        <header className="header">
+          <button 
+            className="back-button"
+            onClick={() => setShowMissionStatementPage(false)}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Back to Home
+          </button>
+          <h1>Our Mission</h1>
+          <p className="subtitle">What drives us at Stylists Near Me</p>
+        </header>
+        
+        <main className="main-content">
+          <div className="mission-statement-page-container">
+            <div className="mission-statement-page-content">
+              <div className="mission-statement-page-icon">
+                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </div>
+              <div className="mission-statement-page-text">
+                <p>At <strong>Stylists Near Me</strong>, our mission is to do one thing and one thing well. To make the search for a hair stylist as easy and pain-free as possible. To eliminate the need for platforms like Instagram or Google Maps. To be the Uber of beauty services.</p>
+              </div>
+              <div className="mission-statement-page-divider"></div>
+              <div className="mission-statement-page-story">
+                <h3 className="mission-statement-page-story-title">Our Story</h3>
+                <div className="mission-statement-page-story-text">
+                  <p>Stylists Near Me came from the realization that there is a lack of a marketplace dedicated to stylists. In this day and age the best we've managed to do when it comes to beauty needs is Instagram or word of mouth. Stylists Near Me incorporates the strengths of platforms like Instagram and the trust factor of word of mouth in your next stylist search.</p>
+                </div>
+              </div>
+              <div className="mission-statement-page-cta">
+                <h3>Join Our Community</h3>
+                <p>Stay updated with the latest stylists and exclusive offers</p>
+                <form 
+                  className="mission-statement-page-form"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (communityEmail && communityEmail.includes('@')) {
+                      // Here you can add API call to save the email
+                      console.log('Community email submitted:', communityEmail);
+                      alert('Thank you for joining our community!');
+                      setCommunityEmail('');
+                    } else {
+                      alert('Please enter a valid email address.');
+                    }
+                  }}
+                >
+                  <div className="mission-statement-page-input-wrapper">
+                    <svg className="mission-statement-page-email-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                      <polyline points="22,6 12,13 2,6"></polyline>
+                    </svg>
+                    <input
+                      type="email"
+                      className="mission-statement-page-email-input"
+                      placeholder="Enter your email"
+                      value={communityEmail}
+                      onChange={(e) => setCommunityEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <button type="submit" className="mission-statement-page-submit-button">
+                    Join
+                  </button>
+                </form>
+              </div>
+            </div>
           </div>
         </main>
       </div>
@@ -4915,6 +4995,17 @@ function App() {
         </div>
         <h1>{viewMode === 'stylists' ? 'Hair Stylists' : 'Products'}</h1>
         <p className="subtitle">{viewMode === 'stylists' ? 'Find your perfect stylist' : 'Browse products from all stylists'}</p>
+        <button
+          className="mission-statement-link"
+          onClick={() => setShowMissionStatementPage(true)}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="16" x2="12" y2="12"></line>
+            <line x1="12" y1="8" x2="12.01" y2="8"></line>
+          </svg>
+          Our Mission
+        </button>
       </header>
       
       <main className="main-content">
