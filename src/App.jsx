@@ -1818,13 +1818,14 @@ function App() {
                   className="mission-statement-page-form"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (communityEmail && communityEmail.includes('@')) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (communityEmail && emailRegex.test(communityEmail.trim())) {
                       // Here you can add API call to save the email
                       console.log('Community email submitted:', communityEmail);
                       alert('Thank you for joining our community!');
                       setCommunityEmail('');
                     } else {
-                      alert('Please enter a valid email address.');
+                      alert('Please enter a valid email address (e.g., example@domain.com)');
                     }
                   }}
                 >
@@ -1952,6 +1953,13 @@ function App() {
                 const email = formData.get('email');
                 const password = formData.get('password');
                 
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!email || !emailRegex.test(email.trim())) {
+                  alert('Please enter a valid email address (e.g., example@domain.com)');
+                  return;
+                }
+                
                 // Call backend login endpoint
                 const response = await fetch('http://localhost:3001/api/users/login', {
                   method: 'POST',
@@ -2026,6 +2034,13 @@ function App() {
                 const email = formData.get('email');
                 const password = formData.get('password');
                 
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!email || !emailRegex.test(email.trim())) {
+                  alert('Please enter a valid email address (e.g., example@domain.com)');
+                  return;
+                }
+                
                 // Call backend login endpoint
                 const response = await fetch('http://localhost:3001/api/stylists/login', {
                   method: 'POST',
@@ -2089,6 +2104,22 @@ function App() {
         if (!loggedInUser || !loggedInUser.id) {
           alert('Unable to identify user. Please log in again.');
           return;
+        }
+        
+        // Validate phone number format if provided
+        if (editedUserProfile.phone && editedUserProfile.phone.trim()) {
+          const phoneRegex = /^[\d\s\-\(\)\.\+]+$/;
+          if (!phoneRegex.test(editedUserProfile.phone.trim())) {
+            alert('Phone number can only contain numbers and formatting characters (spaces, hyphens, parentheses, dots, or +). Letters are not allowed.');
+            return;
+          }
+          
+          // Check if phone has at least 7 digits
+          const phoneDigits = editedUserProfile.phone.replace(/\D/g, '');
+          if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+            alert('Phone number must be between 7 and 15 digits.');
+            return;
+          }
         }
         
         // Prepare updated user data
@@ -2706,6 +2737,22 @@ function App() {
         if (!hasEnabledDay) {
           alert('Please select at least one working day and set your hours.');
           return;
+        }
+        
+        // Validate phone number format if provided
+        if (editedProfile.phone && editedProfile.phone.trim()) {
+          const phoneRegex = /^[\d\s\-\(\)\.\+]+$/;
+          if (!phoneRegex.test(editedProfile.phone.trim())) {
+            alert('Phone number can only contain numbers and formatting characters (spaces, hyphens, parentheses, dots, or +). Letters are not allowed.');
+            return;
+          }
+          
+          // Check if phone has at least 7 digits
+          const phoneDigits = editedProfile.phone.replace(/\D/g, '');
+          if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+            alert('Phone number must be between 7 and 15 digits.');
+            return;
+          }
         }
         
         // Store hours as JSON for easy editing
@@ -3926,6 +3973,27 @@ function App() {
                 const phone = formData.get('phone');
                 const address = formData.get('address');
                 
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!email || !emailRegex.test(email.trim())) {
+                  alert('Please enter a valid email address (e.g., example@domain.com)');
+                  return;
+                }
+                
+                // Validate phone number format (only digits, spaces, hyphens, parentheses, dots, and plus sign)
+                const phoneRegex = /^[\d\s\-\(\)\.\+]+$/;
+                if (!phone || !phoneRegex.test(phone.trim())) {
+                  alert('Phone number can only contain numbers and formatting characters (spaces, hyphens, parentheses, dots, or +). Letters are not allowed.');
+                  return;
+                }
+                
+                // Check if phone has at least 7 digits
+                const phoneDigits = phone.replace(/\D/g, '');
+                if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+                  alert('Phone number must be between 7 and 15 digits.');
+                  return;
+                }
+                
                 // Validate password match
                 if (password !== confirmPassword) {
                   alert('Passwords do not match. Please try again.');
@@ -4200,6 +4268,29 @@ function App() {
               
               try {
                 const formData = new FormData(e.target);
+                
+                // Validate email format
+                const email = formData.get('email');
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!email || !emailRegex.test(email.trim())) {
+                  alert('Please enter a valid email address (e.g., example@domain.com)');
+                  return;
+                }
+                
+                // Validate phone number format (only digits, spaces, hyphens, parentheses, dots, and plus sign)
+                const phone = formData.get('phone');
+                const phoneRegex = /^[\d\s\-\(\)\.\+]+$/;
+                if (!phone || !phoneRegex.test(phone.trim())) {
+                  alert('Phone number can only contain numbers and formatting characters (spaces, hyphens, parentheses, dots, or +). Letters are not allowed.');
+                  return;
+                }
+                
+                // Check if phone has at least 7 digits
+                const phoneDigits = phone.replace(/\D/g, '');
+                if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+                  alert('Phone number must be between 7 and 15 digits.');
+                  return;
+                }
                 
                 // Add profile picture file if selected
                 if (profilePhoto) {
@@ -5490,10 +5581,13 @@ function App() {
                   className="footer-email-form"
                   onSubmit={(e) => {
                     e.preventDefault();
-                    if (footerEmail && footerEmail.includes('@')) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (footerEmail && emailRegex.test(footerEmail.trim())) {
                       setEmailSubmitted(true);
                       setFooterEmail('');
                       setTimeout(() => setEmailSubmitted(false), 5000);
+                    } else {
+                      alert('Please enter a valid email address (e.g., example@domain.com)');
                     }
                   }}
                 >
