@@ -102,6 +102,12 @@ function App() {
   const [portfolioPhotos, setPortfolioPhotos] = React.useState([]);
   const [selectedHairStyles, setSelectedHairStyles] = React.useState([]);
   
+  // Field error states for user registration
+  const [userRegistrationErrors, setUserRegistrationErrors] = React.useState({});
+  
+  // Field error states for stylist registration
+  const [stylistRegistrationErrors, setStylistRegistrationErrors] = React.useState({});
+  
   // Initialize recommendations from localStorage or use empty object
   const [recommendations, setRecommendations] = React.useState(() => {
     try {
@@ -3964,6 +3970,9 @@ function App() {
             <form className="registration-form" onSubmit={async (e) => {
               e.preventDefault();
               
+              // Clear previous errors
+              setUserRegistrationErrors({});
+              
               try {
                 const formData = new FormData(e.target);
                 const email = formData.get('email');
@@ -3973,30 +3982,89 @@ function App() {
                 const phone = formData.get('phone');
                 const address = formData.get('address');
                 
+                const errors = {};
+                let hasErrors = false;
+                const missingFields = [];
+                
+                // Check for missing required fields
+                if (!name || !name.trim()) {
+                  missingFields.push('Full Name');
+                  errors.name = 'Full name is required.';
+                  hasErrors = true;
+                }
+                
+                if (!email || !email.trim()) {
+                  missingFields.push('Email');
+                  errors.email = 'Email is required.';
+                  hasErrors = true;
+                }
+                
+                if (!password || !password.trim()) {
+                  missingFields.push('Password');
+                  errors.password = 'Password is required.';
+                  hasErrors = true;
+                }
+                
+                if (!confirmPassword || !confirmPassword.trim()) {
+                  missingFields.push('Confirm Password');
+                  errors.confirmPassword = 'Please confirm your password.';
+                  hasErrors = true;
+                }
+                
+                if (!phone || !phone.trim()) {
+                  missingFields.push('Phone Number');
+                  errors.phone = 'Phone number is required.';
+                  hasErrors = true;
+                }
+                
+                // If there are missing required fields, show a general message
+                if (missingFields.length > 0) {
+                  errors.general = `Please fill in all required fields: ${missingFields.join(', ')}`;
+                  setUserRegistrationErrors(errors);
+                  return;
+                }
+                
                 // Validate email format
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!email || !emailRegex.test(email.trim())) {
-                  alert('Please enter a valid email address (e.g., example@domain.com)');
-                  return;
+                  errors.email = 'Please enter a valid email address (e.g., example@domain.com)';
+                  hasErrors = true;
                 }
                 
-                // Validate phone number format (only digits, spaces, hyphens, parentheses, dots, and plus sign)
+                // Validate phone number format
                 const phoneRegex = /^[\d\s\-\(\)\.\+]+$/;
                 if (!phone || !phoneRegex.test(phone.trim())) {
-                  alert('Phone number can only contain numbers and formatting characters (spaces, hyphens, parentheses, dots, or +). Letters are not allowed.');
-                  return;
+                  errors.phone = 'Phone number can only contain numbers and formatting characters (spaces, hyphens, parentheses, dots, or +). Letters are not allowed.';
+                  hasErrors = true;
+                } else {
+                  // Check if phone has at least 7 digits
+                  const phoneDigits = phone.replace(/\D/g, '');
+                  if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+                    errors.phone = 'Phone number must be between 7 and 15 digits.';
+                    hasErrors = true;
+                  }
                 }
                 
-                // Check if phone has at least 7 digits
-                const phoneDigits = phone.replace(/\D/g, '');
-                if (phoneDigits.length < 7 || phoneDigits.length > 15) {
-                  alert('Phone number must be between 7 and 15 digits.');
-                  return;
+                // Validate password
+                if (!password || password.length < 6) {
+                  errors.password = 'Password must be at least 6 characters long.';
+                  hasErrors = true;
                 }
                 
                 // Validate password match
                 if (password !== confirmPassword) {
-                  alert('Passwords do not match. Please try again.');
+                  errors.confirmPassword = 'Passwords do not match. Please try again.';
+                  hasErrors = true;
+                }
+                
+                // Validate name
+                if (!name || !name.trim()) {
+                  errors.name = 'Full name is required.';
+                  hasErrors = true;
+                }
+                
+                if (hasErrors) {
+                  setUserRegistrationErrors(errors);
                   return;
                 }
                 
@@ -4021,42 +4089,132 @@ function App() {
                   body: JSON.stringify(userData)
                 });
                 
-                if (!response.ok) {
-                  const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-                  throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-                }
-                
                 const result = await response.json();
+                
+                if (!response.ok || !result.success) {
+                  // Parse backend errors
+                  const backendErrors = {};
+                  const errorMessage = result.message || 'Registration failed. Please try again.';
+                  
+                  // Try to identify which field the error relates to
+                  if (errorMessage.toLowerCase().includes('email')) {
+                    backendErrors.email = errorMessage;
+                  } else if (errorMessage.toLowerCase().includes('phone')) {
+                    backendErrors.phone = errorMessage;
+                  } else if (errorMessage.toLowerCase().includes('password')) {
+                    backendErrors.password = errorMessage;
+                  } else if (errorMessage.toLowerCase().includes('name')) {
+                    backendErrors.name = errorMessage;
+                  } else {
+                    // If we can't identify the field, show general error
+                    backendErrors.general = errorMessage;
+                  }
+                  
+                  setUserRegistrationErrors(backendErrors);
+                  
+                  // Also check for validation errors array from express-validator
+                  if (result.errors && Array.isArray(result.errors)) {
+                    result.errors.forEach(err => {
+                      if (err.field) {
+                        backendErrors[err.field] = err.message;
+                      }
+                    });
+                    setUserRegistrationErrors(backendErrors);
+                  }
+                  
+                  return;
+                }
                 
                 if (result.success && result.data) {
                   alert('Registration successful! You can now log in.');
                   setShowUserRegistration(false);
+                  setUserRegistrationErrors({});
                   // Reset form state
                   setSelectedHairStyles([]);
                   setHairStyleSearchQuery('');
                   setCustomHairStyleInput('');
                   e.target.reset();
-                } else {
-                  alert(result.message || 'Registration failed. Please try again.');
                 }
               } catch (error) {
                 console.error('Error registering user:', error);
-                alert(`Registration failed: ${error.message}. Please try again.`);
+                setUserRegistrationErrors({ general: `Registration failed: ${error.message}. Please try again.` });
               }
             }}>
+              {userRegistrationErrors.general && (
+                <div className="form-error-message general-error">
+                  {userRegistrationErrors.general}
+                </div>
+              )}
+              
               <div className="form-section">
                 <h2 className="form-section-title">Account Information</h2>
                 <div className="form-group">
                   <label htmlFor="user-email">Email *</label>
-                  <input type="email" id="user-email" name="email" required />
+                  <input 
+                    type="email" 
+                    id="user-email" 
+                    name="email" 
+                    required 
+                    className={userRegistrationErrors.email ? 'input-error' : ''}
+                    onChange={() => {
+                      if (userRegistrationErrors.email) {
+                        setUserRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.email;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {userRegistrationErrors.email && (
+                    <span className="field-error-message">{userRegistrationErrors.email}</span>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="user-password">Password *</label>
-                  <input type="password" id="user-password" name="password" required minLength="6" />
+                  <input 
+                    type="password" 
+                    id="user-password" 
+                    name="password" 
+                    required 
+                    minLength="6"
+                    className={userRegistrationErrors.password ? 'input-error' : ''}
+                    onChange={() => {
+                      if (userRegistrationErrors.password) {
+                        setUserRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.password;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {userRegistrationErrors.password && (
+                    <span className="field-error-message">{userRegistrationErrors.password}</span>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="user-confirm-password">Confirm Password *</label>
-                  <input type="password" id="user-confirm-password" name="confirmPassword" required minLength="6" />
+                  <input 
+                    type="password" 
+                    id="user-confirm-password" 
+                    name="confirmPassword" 
+                    required 
+                    minLength="6"
+                    className={userRegistrationErrors.confirmPassword ? 'input-error' : ''}
+                    onChange={() => {
+                      if (userRegistrationErrors.confirmPassword) {
+                        setUserRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.confirmPassword;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {userRegistrationErrors.confirmPassword && (
+                    <span className="field-error-message">{userRegistrationErrors.confirmPassword}</span>
+                  )}
                 </div>
               </div>
 
@@ -4064,11 +4222,47 @@ function App() {
                 <h2 className="form-section-title">Personal Information</h2>
                 <div className="form-group">
                   <label htmlFor="user-name">Full Name *</label>
-                  <input type="text" id="user-name" name="name" required />
+                  <input 
+                    type="text" 
+                    id="user-name" 
+                    name="name" 
+                    required 
+                    className={userRegistrationErrors.name ? 'input-error' : ''}
+                    onChange={() => {
+                      if (userRegistrationErrors.name) {
+                        setUserRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.name;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {userRegistrationErrors.name && (
+                    <span className="field-error-message">{userRegistrationErrors.name}</span>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="user-phone">Phone Number *</label>
-                  <input type="tel" id="user-phone" name="phone" required />
+                  <input 
+                    type="tel" 
+                    id="user-phone" 
+                    name="phone" 
+                    required 
+                    className={userRegistrationErrors.phone ? 'input-error' : ''}
+                    onChange={() => {
+                      if (userRegistrationErrors.phone) {
+                        setUserRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.phone;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {userRegistrationErrors.phone && (
+                    <span className="field-error-message">{userRegistrationErrors.phone}</span>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="user-address">Address</label>
@@ -4259,11 +4453,17 @@ function App() {
             <form className="registration-form" onSubmit={async (e) => {
               e.preventDefault();
               
+              // Clear previous errors
+              setStylistRegistrationErrors({});
+              
+              const errors = {};
+              let hasErrors = false;
+              
               // Validate that at least one day is selected
               const hasEnabledDay = Object.values(workSchedule).some(schedule => schedule.enabled);
               if (!hasEnabledDay) {
-                alert('Please select at least one working day and set your hours.');
-                return;
+                errors.workSchedule = 'Please select at least one working day and set your hours.';
+                hasErrors = true;
               }
               
               try {
@@ -4273,22 +4473,48 @@ function App() {
                 const email = formData.get('email');
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
                 if (!email || !emailRegex.test(email.trim())) {
-                  alert('Please enter a valid email address (e.g., example@domain.com)');
-                  return;
+                  errors.email = 'Please enter a valid email address (e.g., example@domain.com)';
+                  hasErrors = true;
                 }
                 
-                // Validate phone number format (only digits, spaces, hyphens, parentheses, dots, and plus sign)
+                // Validate phone number format
                 const phone = formData.get('phone');
                 const phoneRegex = /^[\d\s\-\(\)\.\+]+$/;
                 if (!phone || !phoneRegex.test(phone.trim())) {
-                  alert('Phone number can only contain numbers and formatting characters (spaces, hyphens, parentheses, dots, or +). Letters are not allowed.');
-                  return;
+                  errors.phone = 'Phone number can only contain numbers and formatting characters (spaces, hyphens, parentheses, dots, or +). Letters are not allowed.';
+                  hasErrors = true;
+                } else {
+                  // Check if phone has at least 7 digits
+                  const phoneDigits = phone.replace(/\D/g, '');
+                  if (phoneDigits.length < 7 || phoneDigits.length > 15) {
+                    errors.phone = 'Phone number must be between 7 and 15 digits.';
+                    hasErrors = true;
+                  }
                 }
                 
-                // Check if phone has at least 7 digits
-                const phoneDigits = phone.replace(/\D/g, '');
-                if (phoneDigits.length < 7 || phoneDigits.length > 15) {
-                  alert('Phone number must be between 7 and 15 digits.');
+                // Validate password
+                const password = formData.get('password');
+                if (!password || password.length < 6) {
+                  errors.password = 'Password must be at least 6 characters long.';
+                  hasErrors = true;
+                }
+                
+                // Validate name
+                const name = formData.get('name');
+                if (!name || !name.trim()) {
+                  errors.name = 'Full name is required.';
+                  hasErrors = true;
+                }
+                
+                // Validate required fields
+                const specialty = formData.get('specialty');
+                if (!specialty || !specialty.trim()) {
+                  errors.specialty = 'Specialty is required.';
+                  hasErrors = true;
+                }
+                
+                if (hasErrors) {
+                  setStylistRegistrationErrors(errors);
                   return;
                 }
                 
@@ -4362,15 +4588,58 @@ function App() {
                 alert(`Registration failed: ${error.message}`);
               }
             }}>
+              {stylistRegistrationErrors.general && (
+                <div className="form-error-message general-error">
+                  {stylistRegistrationErrors.general}
+                </div>
+              )}
+              
               <div className="form-section">
                 <h2 className="form-section-title">Account Information</h2>
                 <div className="form-group">
                   <label htmlFor="email">Email *</label>
-                  <input type="email" id="email" name="email" required />
+                  <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    className={stylistRegistrationErrors.email ? 'input-error' : ''}
+                    onChange={() => {
+                      if (stylistRegistrationErrors.email) {
+                        setStylistRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.email;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {stylistRegistrationErrors.email && (
+                    <span className="field-error-message">{stylistRegistrationErrors.email}</span>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="password">Password *</label>
-                  <input type="password" id="password" name="password" required minLength="6" />
+                  <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    minLength="6"
+                    className={stylistRegistrationErrors.password ? 'input-error' : ''}
+                    onChange={() => {
+                      if (stylistRegistrationErrors.password) {
+                        setStylistRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.password;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {stylistRegistrationErrors.password && (
+                    <span className="field-error-message">{stylistRegistrationErrors.password}</span>
+                  )}
                 </div>
               </div>
 
@@ -4378,7 +4647,25 @@ function App() {
                 <h2 className="form-section-title">Personal Information</h2>
                 <div className="form-group">
                   <label htmlFor="name">Full Name *</label>
-                  <input type="text" id="name" name="name" required />
+                  <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    required 
+                    className={stylistRegistrationErrors.name ? 'input-error' : ''}
+                    onChange={() => {
+                      if (stylistRegistrationErrors.name) {
+                        setStylistRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.name;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {stylistRegistrationErrors.name && (
+                    <span className="field-error-message">{stylistRegistrationErrors.name}</span>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="profilePicture">Profile Picture *</label>
@@ -4421,11 +4708,47 @@ function App() {
                 </div>
                 <div className="form-group">
                   <label htmlFor="address">Address *</label>
-                  <input type="text" id="address" name="address" required />
+                  <input 
+                    type="text" 
+                    id="address" 
+                    name="address" 
+                    required 
+                    className={stylistRegistrationErrors.address ? 'input-error' : ''}
+                    onChange={() => {
+                      if (stylistRegistrationErrors.address) {
+                        setStylistRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.address;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {stylistRegistrationErrors.address && (
+                    <span className="field-error-message">{stylistRegistrationErrors.address}</span>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="phone">Phone Number *</label>
-                  <input type="tel" id="phone" name="phone" required />
+                  <input 
+                    type="tel" 
+                    id="phone" 
+                    name="phone" 
+                    required 
+                    className={stylistRegistrationErrors.phone ? 'input-error' : ''}
+                    onChange={() => {
+                      if (stylistRegistrationErrors.phone) {
+                        setStylistRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.phone;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {stylistRegistrationErrors.phone && (
+                    <span className="field-error-message">{stylistRegistrationErrors.phone}</span>
+                  )}
                 </div>
               </div>
 
@@ -4433,12 +4756,36 @@ function App() {
                 <h2 className="form-section-title">Professional Details</h2>
                 <div className="form-group">
                   <label htmlFor="specialty">Specialty *</label>
-                  <input type="text" id="specialty" name="specialty" required placeholder="e.g., Modern cuts and color techniques" />
+                  <input 
+                    type="text" 
+                    id="specialty" 
+                    name="specialty" 
+                    required 
+                    placeholder="e.g., Modern cuts and color techniques"
+                    className={stylistRegistrationErrors.specialty ? 'input-error' : ''}
+                    onChange={() => {
+                      if (stylistRegistrationErrors.specialty) {
+                        setStylistRegistrationErrors(prev => {
+                          const newErrors = { ...prev };
+                          delete newErrors.specialty;
+                          return newErrors;
+                        });
+                      }
+                    }}
+                  />
+                  {stylistRegistrationErrors.specialty && (
+                    <span className="field-error-message">{stylistRegistrationErrors.specialty}</span>
+                  )}
                 </div>
                 <div className="form-group">
                   <label htmlFor="hairTextureTypes">Hair Texture Types *</label>
                   <p className="form-hint">Select all hair texture types you work with</p>
-                  <div className="hair-texture-types-grid">
+                  {stylistRegistrationErrors.hairTextureTypes && (
+                    <span className="field-error-message" style={{ display: 'block', marginBottom: '10px' }}>
+                      {stylistRegistrationErrors.hairTextureTypes}
+                    </span>
+                  )}
+                  <div className={`hair-texture-types-grid ${stylistRegistrationErrors.hairTextureTypes ? 'has-error' : ''}`}>
                     <label className="hair-texture-checkbox">
                       <input 
                         type="checkbox" 
