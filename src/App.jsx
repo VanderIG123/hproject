@@ -72,7 +72,7 @@ function App() {
   const [suggestingDateTime, setSuggestingDateTime] = React.useState(null);
   const [suggestedDate, setSuggestedDate] = React.useState('');
   const [suggestedTime, setSuggestedTime] = React.useState('');
-  const [viewMode, setViewMode] = React.useState('stylists'); // 'stylists' or 'products'
+  const [viewMode, setViewMode] = React.useState('stylists'); // 'stylists', 'products', or 'bookings'
   const [selectedStylistId, setSelectedStylistId] = React.useState(null);
   const [scrollToProducts, setScrollToProducts] = React.useState(false);
   const [productsSectionExpanded, setProductsSectionExpanded] = React.useState(false);
@@ -1026,10 +1026,10 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStylistId, loggedInUser?.id]);
   
-  // Fetch user appointments when profile is shown
+  // Fetch user appointments when profile is shown or when bookings view is active
   React.useEffect(() => {
     const fetchUserAppointments = async () => {
-      if (!showUserProfile || !loggedInUser || !loggedInUser.id) return;
+      if ((!showUserProfile && viewMode !== 'bookings') || !loggedInUser || !loggedInUser.id) return;
       
       try {
         setUserAppointmentsLoading(true);
@@ -1050,7 +1050,7 @@ function App() {
     };
     
     fetchUserAppointments();
-  }, [loggedInUser?.id, showUserProfile]);
+  }, [loggedInUser?.id, showUserProfile, viewMode]);
   
   // Fetch stylist appointments when profile is shown
   React.useEffect(() => {
@@ -5462,9 +5462,37 @@ function App() {
             </svg>
             Products
           </button>
+          {loggedInUser && (
+            <button
+              className={`view-toggle-button ${viewMode === 'bookings' ? 'active' : ''}`}
+              onClick={() => setViewMode('bookings')}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+                <path d="M8 14h.01"></path>
+                <path d="M12 14h.01"></path>
+                <path d="M16 14h.01"></path>
+                <path d="M8 18h.01"></path>
+                <path d="M12 18h.01"></path>
+                <path d="M16 18h.01"></path>
+              </svg>
+              Bookings
+            </button>
+          )}
         </div>
-        <h1>{viewMode === 'stylists' ? 'Hair Stylists' : 'Products'}</h1>
-        <p className="subtitle">{viewMode === 'stylists' ? 'Find your perfect stylist' : 'Browse products from all stylists'}</p>
+        <h1>
+          {viewMode === 'stylists' ? 'Hair Stylists' : 
+           viewMode === 'products' ? 'Products' : 
+           'My Bookings'}
+        </h1>
+        <p className="subtitle">
+          {viewMode === 'stylists' ? 'Find your perfect stylist' : 
+           viewMode === 'products' ? 'Browse products from all stylists' : 
+           'View and manage your appointments'}
+        </p>
         <button
           className="mission-statement-link"
           onClick={() => setShowMissionStatementPage(true)}
@@ -5639,7 +5667,195 @@ function App() {
           )}
         </div>
         
-        {viewMode === 'products' ? (
+        {viewMode === 'bookings' ? (
+          <div className="bookings-container">
+            {userAppointmentsLoading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+                <p>Loading your bookings...</p>
+              </div>
+            ) : userAppointments.length === 0 ? (
+              <div className="no-results">
+                <div className="no-results-icon">
+                  <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                </div>
+                <h3 className="no-results-title">No bookings yet</h3>
+                <p className="no-results-message">Start browsing stylists to book your first appointment</p>
+                <button
+                  className="primary-button"
+                  onClick={() => setViewMode('stylists')}
+                  style={{ marginTop: '20px' }}
+                >
+                  Browse Stylists
+                </button>
+              </div>
+            ) : (
+              <div className="appointments-list">
+                {userAppointments.map((appointment) => {
+                  const stylist = stylists.find(s => s.id === appointment.stylistId);
+                  const appointmentDate = new Date(appointment.date);
+                  const isPast = appointmentDate < new Date();
+                  
+                  return (
+                    <div 
+                      key={appointment.id} 
+                      className={`appointment-item ${isPast ? 'past' : 'upcoming'}`}
+                      onClick={() => {
+                        if (stylist) {
+                          setSelectedStylistId(stylist.id);
+                        }
+                      }}
+                    >
+                      <div className="appointment-header">
+                        <div className="appointment-stylist-info">
+                          {stylist && (
+                            <img 
+                              src={stylist.profilePicture} 
+                              alt={stylist.name}
+                              className="appointment-stylist-photo"
+                            />
+                          )}
+                          <div className="appointment-stylist-details">
+                            <h3 className="appointment-stylist-name">
+                              {stylist ? stylist.name : 'Unknown Stylist'}
+                            </h3>
+                            <p className="appointment-status">
+                              <span className={`status-badge ${appointment.status}`}>
+                                {appointment.status}
+                              </span>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="appointment-date-time">
+                          <div className="appointment-date">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                              <line x1="16" y1="2" x2="16" y2="6"></line>
+                              <line x1="8" y1="2" x2="8" y2="6"></line>
+                              <line x1="3" y1="10" x2="21" y2="10"></line>
+                            </svg>
+                            <span>{appointmentDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                          </div>
+                          <div className="appointment-time">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <circle cx="12" cy="12" r="10"></circle>
+                              <polyline points="12 6 12 12 16 14"></polyline>
+                            </svg>
+                            <span>{appointment.time}</span>
+                          </div>
+                          {appointment.suggestedDate && appointment.suggestedTime && (
+                            <div className="appointment-suggestion-notice">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <polyline points="12 6 12 12 16 14"></polyline>
+                              </svg>
+                              <span className="suggestion-label">New Time Suggested:</span>
+                              <span className="suggestion-value">
+                                {new Date(appointment.suggestedDate).toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })} at {appointment.suggestedTime}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="appointment-purpose">
+                        <span className="label">Service:</span> {appointment.purpose}
+                      </div>
+                      {appointment.services && appointment.services.length > 0 && (
+                        <div className="appointment-services">
+                          <span className="label">Services:</span>
+                          <div className="appointment-services-list">
+                            {appointment.services.map((service, index) => (
+                              <span key={index} className="appointment-service-tag">{service}</span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {appointment.suggestedDate && appointment.suggestedTime && (
+                        <div className="appointment-suggestion-actions">
+                          <button
+                            className="accept-suggestion-button"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (!confirm('Are you sure you want to accept the new date/time suggested by the stylist?')) return;
+                              try {
+                                const response = await fetch(`http://localhost:3001/api/appointments/${appointment.id}/accept-suggestion`, {
+                                  method: 'PUT',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  }
+                                });
+                                if (!response.ok) {
+                                  throw new Error('Failed to accept suggestion');
+                                }
+                                const result = await response.json();
+                                if (result.success) {
+                                  // Refresh appointments
+                                  const refreshResponse = await fetch(`http://localhost:3001/api/appointments?userId=${loggedInUser.id}`);
+                                  if (refreshResponse.ok) {
+                                    const refreshResult = await refreshResponse.json();
+                                    if (refreshResult.success && refreshResult.data) {
+                                      setUserAppointments(refreshResult.data);
+                                    }
+                                  }
+                                  alert('Suggestion accepted! Your appointment has been updated.');
+                                }
+                              } catch (error) {
+                                console.error('Error accepting suggestion:', error);
+                                alert('Failed to accept suggestion. Please try again.');
+                              }
+                            }}
+                          >
+                            Accept New Time
+                          </button>
+                          <button
+                            className="reject-suggestion-button"
+                            onClick={async (e) => {
+                              e.stopPropagation();
+                              if (!confirm('Are you sure you want to reject the new date/time suggested by the stylist?')) return;
+                              try {
+                                const response = await fetch(`http://localhost:3001/api/appointments/${appointment.id}/reject-suggestion`, {
+                                  method: 'PUT',
+                                  headers: {
+                                    'Content-Type': 'application/json',
+                                  }
+                                });
+                                if (!response.ok) {
+                                  throw new Error('Failed to reject suggestion');
+                                }
+                                const result = await response.json();
+                                if (result.success) {
+                                  // Refresh appointments
+                                  const refreshResponse = await fetch(`http://localhost:3001/api/appointments?userId=${loggedInUser.id}`);
+                                  if (refreshResponse.ok) {
+                                    const refreshResult = await refreshResponse.json();
+                                    if (refreshResult.success && refreshResult.data) {
+                                      setUserAppointments(refreshResult.data);
+                                    }
+                                  }
+                                  alert('Suggestion rejected. Your original appointment time remains.');
+                                }
+                              } catch (error) {
+                                console.error('Error rejecting suggestion:', error);
+                                alert('Failed to reject suggestion. Please try again.');
+                              }
+                            }}
+                          >
+                            Reject New Time
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        ) : viewMode === 'products' ? (
           <div className="products-container">
             {(() => {
               // Aggregate all products from all stylists
