@@ -51,6 +51,8 @@ function App() {
   const [selectedTravel, setSelectedTravel] = React.useState('all');
   const [selectedHairTextureType, setSelectedHairTextureType] = React.useState('all');
   const [selectedAvailableNow, setSelectedAvailableNow] = React.useState('all');
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const [itemsPerPage] = React.useState(12);
   const [selectedDate, setSelectedDate] = React.useState('');
   const [selectedTime, setSelectedTime] = React.useState('');
   const [appliedDate, setAppliedDate] = React.useState('');
@@ -996,6 +998,17 @@ function App() {
 
     return matchesSearch && matchesSpecialty && matchesRate && matchesTravel && matchesHairTextureType && matchesAvailableNow;
   });
+
+  // Pagination logic
+  const totalPages = Math.ceil(filteredStylists.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const paginatedStylists = filteredStylists.slice(startIndex, endIndex);
+
+  // Reset to page 1 when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, selectedSpecialty, selectedRate, selectedTravel, selectedHairTextureType, selectedAvailableNow, appliedDate, appliedTime]);
 
   const selectedStylist = stylists.find(s => s.id === selectedStylistId);
   
@@ -5347,6 +5360,7 @@ function App() {
             })()}
           </div>
         ) : (
+          <div>
           <div className="stylists-container">
             {filteredStylists.length === 0 ? (
               <div className="no-results">
@@ -5360,7 +5374,7 @@ function App() {
                 <p className="no-results-message">Try adjusting your search terms or browse all stylists</p>
               </div>
             ) : (
-              filteredStylists.map((stylist) => {
+              paginatedStylists.map((stylist) => {
               const isFavorited = loggedInUser && (loggedInUser.favorites || []).includes(stylist.id);
               // Check availability: if neither date nor time is applied, all stylists are available
               // Otherwise, check availability (handles date-only, time-only, or both)
@@ -5557,6 +5571,73 @@ function App() {
             );
             })
             )}
+          </div>
+          
+          {/* Pagination Controls */}
+          {filteredStylists.length > 0 && totalPages > 1 && (
+            <div className="pagination-container">
+              <div className="pagination-info">
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredStylists.length)} of {filteredStylists.length} stylists
+              </div>
+              <div className="pagination-controls">
+                <button
+                  className="pagination-button"
+                  onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  aria-label="Previous page"
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                  </svg>
+                  Previous
+                </button>
+                
+                <div className="pagination-pages">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first page, last page, current page, and pages around current
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          className={`pagination-page-button ${currentPage === page ? 'active' : ''}`}
+                          onClick={() => setCurrentPage(page)}
+                          aria-label={`Go to page ${page}`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    } else if (
+                      page === currentPage - 2 ||
+                      page === currentPage + 2
+                    ) {
+                      return (
+                        <span key={page} className="pagination-ellipsis">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+                
+                <button
+                  className="pagination-button"
+                  onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                  aria-label="Next page"
+                >
+                  Next
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </button>
+              </div>
+            </div>
+          )}
           </div>
         )}
 
