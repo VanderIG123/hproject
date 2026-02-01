@@ -4109,21 +4109,35 @@ function App() {
                   const backendErrors = {};
                   const errorMessage = result.message || 'Registration failed. Please try again.';
                   
-                  // Try to identify which field the error relates to
-                  if (errorMessage.toLowerCase().includes('email')) {
-                    backendErrors.email = errorMessage;
-                  } else if (errorMessage.toLowerCase().includes('phone')) {
-                    backendErrors.phone = errorMessage;
-                  } else if (errorMessage.toLowerCase().includes('password')) {
-                    backendErrors.password = errorMessage;
-                  } else if (errorMessage.toLowerCase().includes('name')) {
-                    backendErrors.name = errorMessage;
-                  } else {
-                    // If we can't identify the field, show general error
+                  // Check if there's a specific field mentioned in the error
+                  if (result.field) {
+                    backendErrors[result.field] = errorMessage;
+                  } else if (result.missingFields && Array.isArray(result.missingFields)) {
+                    // Handle missing fields array
                     backendErrors.general = errorMessage;
+                    result.missingFields.forEach(field => {
+                      const fieldKey = field.toLowerCase().replace(/\s+/g, '');
+                      if (fieldKey.includes('name')) backendErrors.name = `${field} is required.`;
+                      else if (fieldKey.includes('email')) backendErrors.email = `${field} is required.`;
+                      else if (fieldKey.includes('password')) backendErrors.password = `${field} is required.`;
+                      else if (fieldKey.includes('phone')) backendErrors.phone = `${field} is required.`;
+                    });
+                  } else {
+                    // Try to identify which field the error relates to
+                    const errorLower = errorMessage.toLowerCase();
+                    if (errorLower.includes('email') || errorLower.includes('already registered')) {
+                      backendErrors.email = errorMessage;
+                    } else if (errorLower.includes('phone')) {
+                      backendErrors.phone = errorMessage;
+                    } else if (errorLower.includes('password')) {
+                      backendErrors.password = errorMessage;
+                    } else if (errorLower.includes('name')) {
+                      backendErrors.name = errorMessage;
+                    } else {
+                      // If we can't identify the field, show general error
+                      backendErrors.general = errorMessage;
+                    }
                   }
-                  
-                  setUserRegistrationErrors(backendErrors);
                   
                   // Also check for validation errors array from express-validator
                   if (result.errors && Array.isArray(result.errors)) {
@@ -4132,9 +4146,14 @@ function App() {
                         backendErrors[err.field] = err.message;
                       }
                     });
-                    setUserRegistrationErrors(backendErrors);
                   }
                   
+                  // Check for fieldErrors object from improved validation handler
+                  if (result.fieldErrors && typeof result.fieldErrors === 'object') {
+                    Object.assign(backendErrors, result.fieldErrors);
+                  }
+                  
+                  setUserRegistrationErrors(backendErrors);
                   return;
                 }
                 
