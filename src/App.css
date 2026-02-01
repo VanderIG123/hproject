@@ -5375,6 +5375,72 @@
   font-style: italic;
 }
 
+/* Conversation Preference Styles */
+.conversation-preference-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.conversation-preference-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #ffffff;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.conversation-preference-option:hover {
+  border-color: #000000;
+  background: #f9f9f9;
+}
+
+.conversation-preference-option input[type="radio"] {
+  margin-top: 2px;
+  cursor: pointer;
+  width: 20px;
+  height: 20px;
+  accent-color: #000000;
+}
+
+.conversation-preference-option input[type="radio"]:checked + .preference-content {
+  color: #000000;
+}
+
+.conversation-preference-option:has(input[type="radio"]:checked) {
+  border-color: #000000;
+  background: #f5f5f5;
+}
+
+.preference-content {
+  flex: 1;
+}
+
+.preference-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #000000;
+  margin-bottom: 4px;
+}
+
+.preference-description {
+  font-size: 0.875rem;
+  color: #666666;
+  line-height: 1.4;
+}
+
+.conversation-preference-option:has(input[type="radio"]:checked) .preference-title {
+  color: #000000;
+}
+
+.conversation-preference-option:has(input[type="radio"]:checked) .preference-description {
+  color: #333333;
+}
+
 .booking-service-separator {
   color: #cccccc;
 }
@@ -5569,10 +5635,42 @@
   display: inline-block;
   padding: 4px 10px;
   background: #f0f0f0;
-  border-radius: 6px;
-  font-size: 0.85rem;
+}
+
+.appointment-conversation-preference {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.95rem;
   color: #000000;
-  font-weight: 500;
+}
+
+.appointment-conversation-preference .label {
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.appointment-conversation-preference .preference-value {
+  color: #666666;
+  font-style: italic;
+}
+
+.stylist-appointment-conversation-preference {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e0e0e0;
+  font-size: 0.95rem;
+  color: #000000;
+}
+
+.stylist-appointment-conversation-preference .label {
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.stylist-appointment-conversation-preference .preference-value {
+  color: #666666;
+  font-style: italic;
 }
 
 .no-appointments {
@@ -5739,6 +5837,34 @@
 .stylist-appointment-customer-email a:hover,
 .stylist-appointment-customer-phone a:hover {
   border-bottom-color: #000000;
+}
+
+.stylist-appointment-conversation-preference-inline {
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.9rem;
+  color: #000000;
+}
+
+.stylist-appointment-conversation-preference-inline svg {
+  color: #666666;
+  flex-shrink: 0;
+}
+
+.stylist-appointment-conversation-preference-inline .preference-label-inline {
+  font-weight: 600;
+  margin-right: 6px;
+  color: #000000;
+}
+
+.stylist-appointment-conversation-preference-inline .preference-value-inline {
+  color: #666666;
+  font-style: italic;
 }
 
 .stylist-appointment-date-time {

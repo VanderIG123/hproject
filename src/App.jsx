@@ -65,6 +65,7 @@ function App() {
   const [appointmentDate, setAppointmentDate] = React.useState('');
   const [appointmentTime, setAppointmentTime] = React.useState('');
   const [selectedServices, setSelectedServices] = React.useState([]);
+  const [conversationPreference, setConversationPreference] = React.useState('no-preference'); // 'quiet', 'chat', 'no-preference'
   const [userAppointments, setUserAppointments] = React.useState([]);
   const [userAppointmentsLoading, setUserAppointmentsLoading] = React.useState(false);
   const [stylistAppointments, setStylistAppointments] = React.useState([]);
@@ -713,6 +714,16 @@ function App() {
   };
   
   // Format phone number - standardize to (XXX) XXX-XXXX format
+  const formatConversationPreference = (preference) => {
+    if (!preference) return null;
+    const preferenceMap = {
+      'quiet': 'Quiet preferred',
+      'chat': 'Happy to chat',
+      'no-preference': 'No preference'
+    };
+    return preferenceMap[preference] || preference;
+  };
+
   const formatPhoneNumber = (phone) => {
     if (!phone || !phone.toString().trim()) return '';
     const phoneStr = phone.toString().trim();
@@ -1601,6 +1612,11 @@ function App() {
       }
       
       try {
+        // Ensure conversationPreference is always set
+        const finalConversationPreference = conversationPreference && ['quiet', 'chat', 'no-preference'].includes(conversationPreference) 
+          ? conversationPreference 
+          : 'no-preference';
+        
         const bookingData = {
           stylistId: bookingStylistId,
           userId: loggedInUser ? loggedInUser.id : null,
@@ -1610,7 +1626,8 @@ function App() {
           time: appointmentTime,
           customerName: loggedInUser ? loggedInUser.name : '',
           customerEmail: loggedInUser ? loggedInUser.email : '',
-          customerPhone: loggedInUser ? loggedInUser.phone : ''
+          customerPhone: loggedInUser ? loggedInUser.phone : '',
+          conversationPreference: finalConversationPreference
         };
         
         const response = await fetch('http://localhost:3001/api/appointments', {
@@ -1631,6 +1648,7 @@ function App() {
           setAppointmentDate('');
           setAppointmentTime('');
           setSelectedServices([]);
+          setConversationPreference('no-preference');
         } else {
           alert(result.message || 'Failed to book appointment. Please try again.');
         }
@@ -1652,6 +1670,7 @@ function App() {
           setAppointmentDate('');
           setAppointmentTime('');
           setSelectedServices([]);
+          setConversationPreference('no-preference');
             }}
           >
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1765,6 +1784,56 @@ function App() {
                 />
               </div>
               
+              <div className="form-group">
+                <label className="form-label">
+                  Conversation Preference
+                </label>
+                <p className="form-hint" style={{ marginBottom: '12px', fontSize: '0.9rem', color: '#666' }}>
+                  Let your stylist know your preference for conversation during the appointment
+                </p>
+                <div className="conversation-preference-options">
+                  <label className="conversation-preference-option">
+                    <input
+                      type="radio"
+                      name="conversation-preference"
+                      value="quiet"
+                      checked={conversationPreference === 'quiet'}
+                      onChange={(e) => setConversationPreference(e.target.value)}
+                    />
+                    <div className="preference-content">
+                      <div className="preference-title">Quiet preferred</div>
+                      <div className="preference-description">You'd rather not have conversation during the appointment</div>
+                    </div>
+                  </label>
+                  <label className="conversation-preference-option">
+                    <input
+                      type="radio"
+                      name="conversation-preference"
+                      value="chat"
+                      checked={conversationPreference === 'chat'}
+                      onChange={(e) => setConversationPreference(e.target.value)}
+                    />
+                    <div className="preference-content">
+                      <div className="preference-title">Happy to chat</div>
+                      <div className="preference-description">You're open to friendly conversation</div>
+                    </div>
+                  </label>
+                  <label className="conversation-preference-option">
+                    <input
+                      type="radio"
+                      name="conversation-preference"
+                      value="no-preference"
+                      checked={conversationPreference === 'no-preference'}
+                      onChange={(e) => setConversationPreference(e.target.value)}
+                    />
+                    <div className="preference-content">
+                      <div className="preference-title">No preference</div>
+                      <div className="preference-description">You're okay either way; you'll let the appointment unfold naturally</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+              
               <div className="booking-actions">
                 <button 
                   type="button"
@@ -1776,6 +1845,7 @@ function App() {
                     setAppointmentDate('');
                     setAppointmentTime('');
                     setSelectedServices([]);
+                    setConversationPreference('no-preference');
                   }}
                 >
                   Cancel
@@ -2607,6 +2677,12 @@ function App() {
                                       <span key={index} className="appointment-service-tag">{service}</span>
                                     ))}
                                   </div>
+                                </div>
+                              )}
+                              {appointment.conversationPreference && (
+                                <div className="appointment-conversation-preference">
+                                  <span className="label">Conversation Preference:</span>
+                                  <span className="preference-value">{formatConversationPreference(appointment.conversationPreference)}</span>
                                 </div>
                               )}
                               {appointment.suggestedDate && appointment.suggestedTime && (
@@ -3702,6 +3778,13 @@ function App() {
                                   <a href={`tel:${appointment.customerPhone}`}>{appointment.customerPhone}</a>
                                 </p>
                               )}
+                              <div className="stylist-appointment-conversation-preference-inline">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ marginRight: '6px' }}>
+                                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                                </svg>
+                                <span className="preference-label-inline">Conversation:</span>
+                                <span className="preference-value-inline">{formatConversationPreference(appointment.conversationPreference || 'no-preference')}</span>
+                              </div>
                             </div>
                           </div>
                           <div className="stylist-appointment-date-time">
@@ -3744,7 +3827,6 @@ function App() {
                             </div>
                           </div>
                         )}
-                        
                         <div className="stylist-appointment-status">
                           <span className={`status-badge ${appointment.status}`}>
                             {appointment.status}
@@ -5773,6 +5855,12 @@ function App() {
                               <span key={index} className="appointment-service-tag">{service}</span>
                             ))}
                           </div>
+                        </div>
+                      )}
+                      {appointment.conversationPreference && (
+                        <div className="appointment-conversation-preference">
+                          <span className="label">Conversation Preference:</span>
+                          <span className="preference-value">{formatConversationPreference(appointment.conversationPreference)}</span>
                         </div>
                       )}
                       {appointment.suggestedDate && appointment.suggestedTime && (
