@@ -92,8 +92,76 @@ function App() {
   const [communityEmail, setCommunityEmail] = React.useState('');
   const [showStylistDropdown, setShowStylistDropdown] = React.useState(false);
   const [showUserDropdown, setShowUserDropdown] = React.useState(false);
-  const [loggedInStylist, setLoggedInStylist] = React.useState(null);
-  const [loggedInUser, setLoggedInUser] = React.useState(null);
+  // JWT token state
+  const [authToken, setAuthToken] = React.useState(() => {
+    // Load token from localStorage on mount
+    return localStorage.getItem('authToken') || null;
+  });
+  
+  const [loggedInStylist, setLoggedInStylist] = React.useState(() => {
+    // Load stylist from localStorage on mount
+    try {
+      const saved = localStorage.getItem('loggedInStylist');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+  const [loggedInUser, setLoggedInUser] = React.useState(() => {
+    // Load user from localStorage on mount
+    try {
+      const saved = localStorage.getItem('loggedInUser');
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
+  
+  // Helper function to get auth headers
+  const getAuthHeaders = () => {
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (authToken) {
+      headers['Authorization'] = `Bearer ${authToken}`;
+    }
+    return headers;
+  };
+  
+  // Helper function to handle logout
+  const handleLogout = () => {
+    setAuthToken(null);
+    setLoggedInUser(null);
+    setLoggedInStylist(null);
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('loggedInUser');
+    localStorage.removeItem('loggedInStylist');
+  };
+  
+  // Save token and user/stylist to localStorage when they change
+  React.useEffect(() => {
+    if (authToken) {
+      localStorage.setItem('authToken', authToken);
+    } else {
+      localStorage.removeItem('authToken');
+    }
+  }, [authToken]);
+  
+  React.useEffect(() => {
+    if (loggedInUser) {
+      localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+    } else {
+      localStorage.removeItem('loggedInUser');
+    }
+  }, [loggedInUser]);
+  
+  React.useEffect(() => {
+    if (loggedInStylist) {
+      localStorage.setItem('loggedInStylist', JSON.stringify(loggedInStylist));
+    } else {
+      localStorage.removeItem('loggedInStylist');
+    }
+  }, [loggedInStylist]);
   const [showProfile, setShowProfile] = React.useState(false);
   const [showUserProfile, setShowUserProfile] = React.useState(false);
   const [isEditingProfile, setIsEditingProfile] = React.useState(false);
@@ -1044,7 +1112,9 @@ function App() {
       
       try {
         setUserAppointmentsLoading(true);
-        const response = await fetch(`http://localhost:3001/api/appointments?userId=${loggedInUser.id}`);
+        const response = await fetch(`http://localhost:3001/api/appointments?userId=${loggedInUser.id}`, {
+          headers: getAuthHeaders()
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch appointments');
         }
@@ -1070,7 +1140,9 @@ function App() {
       
       try {
         setStylistAppointmentsLoading(true);
-        const response = await fetch(`http://localhost:3001/api/appointments?stylistId=${loggedInStylist.id}`);
+        const response = await fetch(`http://localhost:3001/api/appointments?stylistId=${loggedInStylist.id}`, {
+          headers: getAuthHeaders()
+        });
         if (!response.ok) {
           throw new Error('Failed to fetch appointments');
         }
@@ -1537,7 +1609,9 @@ function App() {
                 if (loggedInUser && loggedInUser.id) {
                   try {
                     setUserAppointmentsLoading(true);
-                    const response = await fetch(`http://localhost:3001/api/appointments?userId=${loggedInUser.id}`);
+                    const response = await fetch(`http://localhost:3001/api/appointments?userId=${loggedInUser.id}`, {
+          headers: getAuthHeaders()
+        });
                     const result = await response.json();
                     if (result.success && result.data) {
                       setUserAppointments(result.data);
@@ -1632,9 +1706,7 @@ function App() {
         
         const response = await fetch('http://localhost:3001/api/appointments', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify(bookingData)
         });
         
@@ -2060,9 +2132,10 @@ function App() {
                 
                 const result = await response.json();
                 
-                if (result.success && result.data) {
-                  // Login successful - set logged in user
+                if (result.success && result.data && result.token) {
+                  // Login successful - set logged in user and token
                   setLoggedInUser(result.data);
+                  setAuthToken(result.token);
                   setShowUserLogin(false);
                   alert('Login successful! Welcome back.');
                 } else {
@@ -2141,9 +2214,10 @@ function App() {
                 
                 const result = await response.json();
                 
-                if (result.success && result.data) {
-                  // Login successful - set logged in stylist
+                if (result.success && result.data && result.token) {
+                  // Login successful - set logged in stylist and token
                   setLoggedInStylist(result.data);
+                  setAuthToken(result.token);
                   setShowLogin(false);
                   alert('Login successful! Welcome back.');
                 } else {
@@ -2225,9 +2299,7 @@ function App() {
         // Send update to backend API
         const response = await fetch(`http://localhost:3001/api/users/${loggedInUser.id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify(updatedUser)
         });
         
@@ -2695,9 +2767,7 @@ function App() {
                                       try {
                                         const response = await fetch(`http://localhost:3001/api/appointments/${appointment.id}/accept-suggestion`, {
                                           method: 'PUT',
-                                          headers: {
-                                            'Content-Type': 'application/json',
-                                          }
+                                          headers: getAuthHeaders()
                                         });
                                         const result = await response.json();
                                         if (result.success) {
@@ -2727,9 +2797,7 @@ function App() {
                                       try {
                                         const response = await fetch(`http://localhost:3001/api/appointments/${appointment.id}/reject-suggestion`, {
                                           method: 'PUT',
-                                          headers: {
-                                            'Content-Type': 'application/json',
-                                          }
+                                          headers: getAuthHeaders()
                                         });
                                         const result = await response.json();
                                         if (result.success) {
@@ -2887,9 +2955,7 @@ function App() {
         // Send update to backend API
         const response = await fetch(`http://localhost:3001/api/stylists/${loggedInStylist.id}`, {
           method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: getAuthHeaders(),
           body: JSON.stringify(updatedStylist)
         });
         
@@ -3878,9 +3944,7 @@ function App() {
                                       try {
                                         const response = await fetch(`http://localhost:3001/api/appointments/${appointment.id}/suggest`, {
                                           method: 'PUT',
-                                          headers: {
-                                            'Content-Type': 'application/json',
-                                          },
+                                          headers: getAuthHeaders(),
                                           body: JSON.stringify({
                                             suggestedDate,
                                             suggestedTime
@@ -5408,7 +5472,7 @@ function App() {
               <button 
                 className="logout-button"
                 onClick={() => {
-                  setLoggedInStylist(null);
+                  handleLogout();
                   setShowProfile(false);
                   setIsEditingProfile(false);
                   setEditedProfile(null);
@@ -5437,7 +5501,7 @@ function App() {
               <button 
                 className="logout-button"
                 onClick={() => {
-                  setLoggedInUser(null);
+                  handleLogout();
                   setShowUserProfile(false);
                 }}
               >
