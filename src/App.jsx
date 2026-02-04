@@ -1953,7 +1953,7 @@ function App() {
             Back to Home
           </button>
           <h1>Our Mission</h1>
-          <p className="subtitle">What drives us at Stylists Near Me</p>
+          <p className="subtitle">What drives us at Grwmglow</p>
         </header>
         
         <main className="main-content">
@@ -1965,13 +1965,13 @@ function App() {
                 </svg>
               </div>
               <div className="mission-statement-page-text">
-                <p>At <strong>Stylists Near Me</strong>, our mission is to do one thing and one thing well. To make the search for a hair stylist as easy and pain-free as possible. To eliminate the need for platforms like Instagram or Google Maps. To be the Uber of beauty services.</p>
+                <p>At <strong>Grwmglow</strong>, our mission is to do one thing and one thing well. To make the search for a hair stylist as easy and pain-free as possible. To eliminate the need for platforms like Instagram or Google Maps. To be the Uber of beauty services.</p>
               </div>
               <div className="mission-statement-page-divider"></div>
               <div className="mission-statement-page-story">
                 <h3 className="mission-statement-page-story-title">Our Story</h3>
                 <div className="mission-statement-page-story-text">
-                  <p>Stylists Near Me came from the realization that there is a lack of a marketplace dedicated to stylists. In this day and age the best we've managed to do when it comes to beauty needs is Instagram or word of mouth. Stylists Near Me incorporates the strengths of platforms like Instagram and the trust factor of word of mouth in your next stylist search.</p>
+                  <p>Grwmglow came from the realization that there is a lack of a marketplace dedicated to stylists. In this day and age the best we've managed to do when it comes to beauty needs is Instagram or word of mouth. Grwmglow incorporates the strengths of platforms like Instagram and the trust factor of word of mouth in your next stylist search.</p>
                 </div>
               </div>
               <div className="mission-statement-page-cta">
@@ -5632,7 +5632,7 @@ function App() {
           )}
         </div>
         <h1>
-          {viewMode === 'stylists' ? 'Hair Stylists' : 
+          {viewMode === 'stylists' ? 'Grwmglow' : 
            viewMode === 'products' ? 'Products' : 
            'My Bookings'}
         </h1>
@@ -6464,7 +6464,7 @@ function App() {
                 </div>
                 <h2 className="mission-statement-title">Our Mission</h2>
                 <div className="mission-statement-text">
-                  <p>At <strong>Stylists Near Me</strong>, our mission is to do one thing and one thing well. To make the search for a hair stylist as easy and pain-free as possible. To eliminate the need for platforms like Instagram or Google Maps. To be the Uber of beauty services.</p>
+                  <p>At <strong>Grwmglow</strong>, our mission is to do one thing and one thing well. To make the search for a hair stylist as easy and pain-free as possible. To eliminate the need for platforms like Instagram or Google Maps. To be the Uber of beauty services.</p>
                 </div>
                 <form 
                   className="mission-statement-form"

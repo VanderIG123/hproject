@@ -1,6 +1,6 @@
-# Hair Stylists App
+# Grwmglow
 
-A simple React website displaying a list of hair stylists with their information.
+A React application for finding and booking hair stylists, browsing products, and managing appointments.
 
 ## Getting Started
 
