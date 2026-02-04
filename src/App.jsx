@@ -754,28 +754,79 @@ function App() {
   };
 
   // Helper function to add a stylist to recently viewed
-  const addToRecentlyViewed = (stylistId) => {
+  const addToRecentlyViewed = async (stylistId) => {
     if (!loggedInUser || !stylistId) return;
     
     const userId = loggedInUser.id;
-    const userRecentlyViewed = recentlyViewed[userId] || [];
     
-    // Remove if already in list (to move to front)
-    const filtered = userRecentlyViewed.filter(id => id !== stylistId);
-    
-    // Add to front and limit to 20 most recent
-    const updated = [stylistId, ...filtered].slice(0, 20);
-    
-    setRecentlyViewed({
-      ...recentlyViewed,
-      [userId]: updated
-    });
+    try {
+      // Call backend API to add to recently viewed
+      const response = await fetch(`${API_BASE_URL}/api/users/${userId}/recently-viewed`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ stylistId })
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          // Update local state with backend response
+          setRecentlyViewed({
+            ...recentlyViewed,
+            [userId]: result.data
+          });
+        }
+      } else {
+        // If backend fails, fall back to localStorage
+        const userRecentlyViewed = recentlyViewed[userId] || [];
+        const filtered = userRecentlyViewed.filter(id => id !== stylistId);
+        const updated = [stylistId, ...filtered].slice(0, 20);
+        setRecentlyViewed({
+          ...recentlyViewed,
+          [userId]: updated
+        });
+      }
+    } catch (error) {
+      console.error('Error adding to recently viewed:', error);
+      // Fall back to localStorage on error
+      const userRecentlyViewed = recentlyViewed[userId] || [];
+      const filtered = userRecentlyViewed.filter(id => id !== stylistId);
+      const updated = [stylistId, ...filtered].slice(0, 20);
+      setRecentlyViewed({
+        ...recentlyViewed,
+        [userId]: updated
+      });
+    }
   };
 
   // Helper function to get recently viewed stylists for current user
-  const getRecentlyViewed = () => {
+  const getRecentlyViewed = async () => {
     if (!loggedInUser) return [];
     const userId = loggedInUser.id;
+    
+    try {
+      // Try to fetch from backend first
+      const response = await fetch(`${API_BASE_URL}/api/users/${userId}/recently-viewed`, {
+        headers: getAuthHeaders()
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success && result.data) {
+          // Update local state with backend data
+          const viewedIds = result.data.map(s => s.id);
+          setRecentlyViewed({
+            ...recentlyViewed,
+            [userId]: viewedIds
+          });
+          return result.data;
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching recently viewed:', error);
+    }
+    
+    // Fall back to localStorage if backend fails
     const viewedIds = recentlyViewed[userId] || [];
     return viewedIds.map(id => stylists.find(s => s.id === id)).filter(Boolean);
   };
@@ -1186,6 +1237,10 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedStylistId, loggedInUser?.id]);
   
+  // State for recently viewed stylists
+  const [recentlyViewedStylists, setRecentlyViewedStylists] = React.useState([]);
+  const [recentlyViewedLoading, setRecentlyViewedLoading] = React.useState(false);
+
   // Fetch user appointments when profile is shown or when bookings view is active
   React.useEffect(() => {
     const fetchUserAppointments = async () => {
@@ -1213,6 +1268,29 @@ function App() {
     
     fetchUserAppointments();
   }, [loggedInUser?.id, showUserProfile, viewMode]);
+
+  // Fetch recently viewed stylists when user profile is shown
+  React.useEffect(() => {
+    const fetchRecentlyViewed = async () => {
+      if (!showUserProfile || !loggedInUser || !loggedInUser.id) {
+        setRecentlyViewedStylists([]);
+        return;
+      }
+      
+      try {
+        setRecentlyViewedLoading(true);
+        const viewed = await getRecentlyViewed();
+        setRecentlyViewedStylists(viewed || []);
+      } catch (error) {
+        console.error('Error fetching recently viewed:', error);
+        setRecentlyViewedStylists([]);
+      } finally {
+        setRecentlyViewedLoading(false);
+      }
+    };
+    
+    fetchRecentlyViewed();
+  }, [showUserProfile, loggedInUser?.id]);
   
   // Fetch stylist appointments when profile is shown
   React.useEffect(() => {
@@ -2338,7 +2416,6 @@ function App() {
     const currentUser = isEditingUserProfile && editedUserProfile ? editedUserProfile : loggedInUser;
     const userFavorites = currentUser.favorites || [];
     const favoriteStylists = stylists.filter(s => userFavorites.includes(s.id));
-    const recentlyViewedStylists = getRecentlyViewed();
     
     const handleSaveUserProfile = async () => {
       try {
