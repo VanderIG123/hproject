@@ -422,6 +422,11 @@
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
+/* Filter toggle button (mobile only) */
+.filters-toggle-button {
+  display: none; /* Hidden on desktop */
+}
+
 /* Desktop: Date and time filters behave normally (stacked) */
 .date-time-filter-row {
   display: contents; /* On desktop, wrapper doesn't affect layout */
@@ -1663,6 +1668,40 @@
     height: 18px;
   }
 
+  /* Mobile filter toggle button */
+  .filters-toggle-button {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 14px 18px;
+    margin: 0 10px 15px 10px;
+    background: #ffffff;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #000000;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .filters-toggle-button:hover {
+    border-color: #000000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+
+  .filters-toggle-button:active {
+    transform: scale(0.98);
+  }
+
+  .filters-toggle-button svg {
+    flex-shrink: 0;
+    margin-left: 8px;
+  }
+
+  /* Collapsible filters container on mobile */
   .filters-container {
     flex-direction: column;
     align-items: stretch;
@@ -1673,6 +1712,42 @@
     border-radius: 16px;
     padding: 16px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                padding 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                margin 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                opacity 0.3s ease;
+  }
+
+  .filters-container.filters-collapsed {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .filters-container.filters-expanded {
+    max-height: 3000px;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .filters-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    margin-left: 8px;
+    background: #000000;
+    color: #ffffff;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
   }
 
   .filter-group {
