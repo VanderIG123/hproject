@@ -1827,33 +1827,35 @@ function App() {
                 )}
               </div>
               
-              <div className="form-group">
-                <label htmlFor="appointment-date" className="form-label">
-                  Date <span className="required">*</span>
-                </label>
-                <input
-                  type="date"
-                  id="appointment-date"
-                  className="form-input"
-                  value={appointmentDate}
-                  onChange={(e) => setAppointmentDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  required
-                />
-              </div>
-              
-              <div className="form-group">
-                <label htmlFor="appointment-time" className="form-label">
-                  Time <span className="required">*</span>
-                </label>
-                <input
-                  type="time"
-                  id="appointment-time"
-                  className="form-input"
-                  value={appointmentTime}
-                  onChange={(e) => setAppointmentTime(e.target.value)}
-                  required
-                />
+              <div className="form-row date-time-row">
+                <div className="form-group">
+                  <label htmlFor="appointment-date" className="form-label">
+                    Date <span className="required">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="appointment-date"
+                    className="form-input"
+                    value={appointmentDate}
+                    onChange={(e) => setAppointmentDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    required
+                  />
+                </div>
+                
+                <div className="form-group">
+                  <label htmlFor="appointment-time" className="form-label">
+                    Time <span className="required">*</span>
+                  </label>
+                  <input
+                    type="time"
+                    id="appointment-time"
+                    className="form-input"
+                    value={appointmentTime}
+                    onChange={(e) => setAppointmentTime(e.target.value)}
+                    required
+                  />
+                </div>
               </div>
               
               <div className="form-group">
@@ -5762,35 +5764,37 @@ function App() {
             </select>
           </div>
 
-          <div className="filter-group">
-            <label htmlFor="date-filter" className="filter-label">Desired Date</label>
-            <input
-              type="date"
-              id="date-filter"
-              className="filter-input"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              onBlur={(e) => {
-                if (selectedDate) {
-                  setAppliedDate(selectedDate);
-                }
-              }}
-            />
-          </div>
+          <div className="filter-row date-time-filter-row">
+            <div className="filter-group">
+              <label htmlFor="date-filter" className="filter-label">Desired Date</label>
+              <input
+                type="date"
+                id="date-filter"
+                className="filter-input"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                onBlur={(e) => {
+                  if (selectedDate) {
+                    setAppliedDate(selectedDate);
+                  }
+                }}
+              />
+            </div>
 
-          <div className="filter-group">
-            <label htmlFor="time-filter" className="filter-label">Desired Time</label>
-            <input
-              type="time"
-              id="time-filter"
-              className="filter-input"
-              value={selectedTime}
-              onChange={(e) => setSelectedTime(e.target.value)}
-              onBlur={(e) => {
-                // Update appliedTime when user clicks outside, using current input value
-                setAppliedTime(e.target.value || '');
-              }}
-            />
+            <div className="filter-group">
+              <label htmlFor="time-filter" className="filter-label">Desired Time</label>
+              <input
+                type="time"
+                id="time-filter"
+                className="filter-input"
+                value={selectedTime}
+                onChange={(e) => setSelectedTime(e.target.value)}
+                onBlur={(e) => {
+                  // Update appliedTime when user clicks outside, using current input value
+                  setAppliedTime(e.target.value || '');
+                }}
+              />
+            </div>
           </div>
 
           {(selectedSpecialty !== 'all' || selectedRate !== 'all' || selectedTravel !== 'all' || selectedHairTextureType !== 'all' || selectedAvailableNow !== 'all' || selectedDate || selectedTime || appliedDate || appliedTime) && (

@@ -422,6 +422,11 @@
   box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
 }
 
+/* Desktop: Date and time filters behave normally (stacked) */
+.date-time-filter-row {
+  display: contents; /* On desktop, wrapper doesn't affect layout */
+}
+
 .clear-filters-button {
   padding: 12px 24px;
   font-size: 1rem;
@@ -702,13 +707,21 @@
 
 @media (max-width: 768px) {
   .view-toggle-container {
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     padding: 0 10px;
+    margin-bottom: 20px;
+    gap: 10px;
+    justify-content: center;
+    order: 2;
   }
 
   .view-toggle-button {
-    width: 100%;
+    flex: 1;
+    min-width: calc(33.333% - 7px);
     justify-content: center;
+    padding: 12px 16px;
+    font-size: 0.85rem;
   }
 
   .products-grid {
@@ -1578,71 +1591,341 @@
 }
 
 @media (max-width: 768px) {
+  .app {
+    padding: 10px;
+  }
+
+  .header {
+    padding: 20px 0;
+    margin-bottom: 25px;
+    border-bottom: 2px solid #f0f0f0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+
   .header h1 {
-    font-size: 2rem;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    margin: 0;
+    order: 3;
+  }
+
+  .header .subtitle {
+    order: 4;
+    margin: 0;
+  }
+
+  .header .mission-statement-link {
+    order: 5;
+    margin-top: 0;
   }
   
   .search-container {
-    margin-bottom: 30px;
-    padding: 0 15px;
+    margin-bottom: 25px;
+    padding: 0 10px;
+  }
+
+  .search-wrapper {
+    max-width: 100%;
   }
   
   .search-input {
-    padding: 12px 18px;
-    font-size: 0.95rem;
+    padding: 14px 50px 14px 50px;
+    font-size: 1rem;
+    border-radius: 30px;
+    border-width: 2px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .search-input:focus {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+  }
+
+  .search-button {
+    left: 18px;
+  }
+
+  .search-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .clear-button {
+    right: 18px;
+    padding: 6px;
+  }
+
+  .clear-button svg {
+    width: 18px;
+    height: 18px;
   }
 
   .filters-container {
     flex-direction: column;
     align-items: stretch;
-    gap: 15px;
-    margin-bottom: 30px;
-    padding: 0 15px;
+    gap: 12px;
+    margin-bottom: 25px;
+    padding: 0 10px;
+    background: #fafafa;
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
   }
 
   .filter-group {
     min-width: 100%;
   }
 
+  .filter-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .filter-group select {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    border-radius: 12px;
+    border: 2px solid #e0e0e0;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+    transition: all 0.2s ease;
+  }
+
+  .filter-group select:focus {
+    border-color: #000000;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    outline: none;
+  }
+
   .clear-filters-button {
     width: 100%;
     align-self: stretch;
+    padding: 14px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 12px;
+    margin-top: 4px;
+  }
+
+  /* Mobile: Date and time filters in the same row */
+  .date-time-filter-row {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    width: 100%;
+  }
+
+  .date-time-filter-row .filter-group {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .date-time-filter-row .filter-label {
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+  }
+
+  .date-time-filter-row .filter-input {
+    font-size: 0.9rem;
+    padding: 12px;
+    width: 100%;
   }
   
   .stylists-container {
     grid-template-columns: 1fr;
+    gap: 20px;
     padding: 10px;
   }
   
   .stylist-card {
     padding: 20px;
+    border-radius: 16px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e8e8e8;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .stylist-card:active {
+    transform: scale(0.98);
   }
   
   .stylist-header {
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+    flex-direction: row;
+    align-items: flex-start;
+    text-align: left;
     gap: 15px;
+    padding-bottom: 18px;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 18px;
   }
   
   .stylist-profile-picture {
-    width: 100px;
-    height: 100px;
+    width: 80px;
+    height: 80px;
+    border: 3px solid #ffffff;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   }
   
   .stylist-name-container {
-    justify-content: center;
+    justify-content: flex-start;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px;
+    flex: 1;
   }
   
   .stylist-name {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .stylist-badges {
+    gap: 6px;
   }
 
   .products-indicator {
-    padding: 5px 10px;
+    padding: 6px 12px;
     font-size: 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .stylist-info {
+    font-size: 0.9rem;
+    line-height: 1.6;
+  }
+
+  .stylist-info-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f5f5f5;
+  }
+
+  .stylist-info-item:last-child {
+    border-bottom: none;
+  }
+
+  .stylist-info-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 4px;
+  }
+
+  .stylist-info-value {
+    font-size: 0.95rem;
+    color: #000;
+    font-weight: 500;
+  }
+
+  .availability-badge {
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    border-radius: 20px;
+    font-weight: 600;
+  }
+
+  .book-appointment-button {
+    width: 100%;
+    padding: 16px;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 12px;
+    margin-top: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .book-appointment-button:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .pagination-container {
+    padding: 25px 10px;
+    gap: 16px;
+  }
+
+  .pagination-controls {
+    gap: 8px;
+  }
+
+  .pagination-button {
+    min-width: 44px;
+    height: 44px;
+    padding: 0 16px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+  }
+
+  .pagination-info {
+    font-size: 0.85rem;
+  }
+
+
+  .header-buttons-container {
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    margin-top: 15px;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .looking-for-stylist-button,
+  .register-stylist-button {
+    padding: 10px 18px;
+    font-size: 0.85rem;
+    border-radius: 10px;
+    min-height: 44px;
+  }
+
+  .logged-in-buttons {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  .profile-button,
+  .logout-button {
+    width: 100%;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    border-radius: 10px;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .profile-button:active,
+  .logout-button:active,
+  .looking-for-stylist-button:active,
+  .register-stylist-button:active {
+    transform: scale(0.97);
+  }
+
+  .no-results {
+    padding: 40px 20px;
+  }
+
+  .no-results-icon {
+    margin-bottom: 20px;
+  }
+
+  .no-results-title {
+    font-size: 1.3rem;
+    margin-bottom: 10px;
+  }
+
+  .no-results-message {
+    font-size: 0.9rem;
+    max-width: 100%;
   }
 
   .back-button {
@@ -1697,33 +1980,68 @@
     right: auto;
     top: auto;
     transform: none;
+    margin-top: 0;
     margin-bottom: 20px;
     width: 100%;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
     gap: 10px;
+    justify-content: center;
+    order: 1;
   }
 
   .user-menu-container,
   .stylist-menu-container {
-    width: 100%;
+    flex: 1;
+    min-width: calc(50% - 5px);
+    max-width: calc(50% - 5px);
   }
 
   .looking-for-stylist-button {
     width: 100%;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    border-radius: 12px;
+    min-height: 44px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .register-stylist-button {
     width: 100%;
+    padding: 12px 16px;
+    font-size: 0.85rem;
+    border-radius: 12px;
+    min-height: 44px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   .logged-in-buttons {
     width: 100%;
     flex-direction: column;
+    gap: 10px;
   }
 
   .profile-button,
   .logout-button {
     width: 100%;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+    border-radius: 12px;
+    min-height: 44px;
+    justify-content: center;
+  }
+
+  .profile-button:active,
+  .logout-button:active,
+  .looking-for-stylist-button:active,
+  .register-stylist-button:active {
+    transform: scale(0.97);
   }
 
   .stylist-dropdown,
@@ -6113,11 +6431,37 @@
   }
 
   .form-row {
-    flex-direction: column;
+    flex-direction: row;
+    gap: 12px;
   }
 
   .form-group-inline {
-    min-width: 100%;
+    min-width: calc(50% - 6px);
+    flex: 1;
+  }
+
+  /* Put date and time inputs in the same row on mobile */
+  .booking-form .date-time-row {
+    display: flex;
+    flex-direction: row;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .booking-form .date-time-row .form-group {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .booking-form .date-time-row .form-group label {
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+  }
+
+  .booking-form .date-time-row .form-input {
+    font-size: 0.9rem;
+    padding: 12px;
+    width: 100%;
   }
 }
 
