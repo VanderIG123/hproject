@@ -178,8 +178,87 @@ function App() {
   // Field error states for user registration
   const [userRegistrationErrors, setUserRegistrationErrors] = React.useState({});
   
+  // Refs for user registration form fields (for scrolling to errors on mobile)
+  const userRegistrationFieldRefs = {
+    name: React.useRef(null),
+    email: React.useRef(null),
+    password: React.useRef(null),
+    confirmPassword: React.useRef(null),
+    phone: React.useRef(null),
+    address: React.useRef(null)
+  };
+
+  // Function to scroll to first error field on mobile
+  const scrollToFirstError = (errors, fieldRefs) => {
+    // Only scroll on mobile (screen width <= 768px)
+    if (window.innerWidth > 768) return;
+    
+    // Priority order: name, email, password, confirmPassword, phone, address
+    const fieldOrder = ['name', 'email', 'password', 'confirmPassword', 'phone', 'address'];
+    
+    for (const field of fieldOrder) {
+      if (errors[field] && fieldRefs[field]?.current) {
+        setTimeout(() => {
+          fieldRefs[field].current.scrollIntoView({ 
+            behavior: 'smooth', 
+            block: 'center',
+            inline: 'nearest'
+          });
+          // Focus the field for better UX
+          fieldRefs[field].current.focus();
+        }, 100);
+        break;
+      }
+    }
+  };
+
+  // Scroll to error when userRegistrationErrors change
+  React.useEffect(() => {
+    if (Object.keys(userRegistrationErrors).length > 0) {
+      scrollToFirstError(userRegistrationErrors, userRegistrationFieldRefs);
+    }
+  }, [userRegistrationErrors]);
+  
   // Field error states for stylist registration
   const [stylistRegistrationErrors, setStylistRegistrationErrors] = React.useState({});
+  
+  // Refs for stylist registration form fields (for scrolling to errors on mobile)
+  const stylistRegistrationFieldRefs = {
+    name: React.useRef(null),
+    email: React.useRef(null),
+    password: React.useRef(null),
+    phone: React.useRef(null),
+    address: React.useRef(null),
+    specialty: React.useRef(null)
+  };
+
+  // Scroll to error when stylistRegistrationErrors change
+  React.useEffect(() => {
+    if (Object.keys(stylistRegistrationErrors).length > 0) {
+      // Update field order for stylist form
+      const stylistFieldOrder = ['name', 'email', 'password', 'phone', 'address', 'specialty'];
+      const stylistErrors = stylistRegistrationErrors;
+      const stylistRefs = stylistRegistrationFieldRefs;
+      
+      // Only scroll on mobile (screen width <= 768px)
+      if (window.innerWidth <= 768) {
+        for (const field of stylistFieldOrder) {
+          if (stylistErrors[field] && stylistRefs[field]?.current) {
+            setTimeout(() => {
+              stylistRefs[field].current.scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'center',
+                inline: 'nearest'
+              });
+              // Focus the field for better UX
+              stylistRefs[field].current.focus();
+            }, 100);
+            break;
+          }
+        }
+      }
+    }
+  }, [stylistRegistrationErrors]);
   
   // Initialize recommendations from localStorage or use empty object
   const [recommendations, setRecommendations] = React.useState(() => {
@@ -2126,7 +2205,7 @@ function App() {
                 }
                 
                 // Call backend login endpoint
-                const response = await fetch('${API_BASE_URL}/api/users/login', {
+                const response = await fetch(`${API_BASE_URL}/api/users/login`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -2208,7 +2287,7 @@ function App() {
                 }
                 
                 // Call backend login endpoint
-                const response = await fetch('${API_BASE_URL}/api/stylists/login', {
+                const response = await fetch(`${API_BASE_URL}/api/stylists/login`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -4244,7 +4323,7 @@ function App() {
                 };
                 
                 // Submit to backend API
-                const response = await fetch('${API_BASE_URL}/api/users', {
+                const response = await fetch(`${API_BASE_URL}/api/users`, {
                   method: 'POST',
                   headers: {
                     'Content-Type': 'application/json',
@@ -4333,6 +4412,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="user-email">Email *</label>
                   <input 
+                    ref={userRegistrationFieldRefs.email}
                     type="email" 
                     id="user-email" 
                     name="email" 
@@ -4355,6 +4435,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="user-password">Password *</label>
                   <input 
+                    ref={userRegistrationFieldRefs.password}
                     type="password" 
                     id="user-password" 
                     name="password" 
@@ -4378,6 +4459,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="user-confirm-password">Confirm Password *</label>
                   <input 
+                    ref={userRegistrationFieldRefs.confirmPassword}
                     type="password" 
                     id="user-confirm-password" 
                     name="confirmPassword" 
@@ -4405,6 +4487,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="user-name">Full Name *</label>
                   <input 
+                    ref={userRegistrationFieldRefs.name}
                     type="text" 
                     id="user-name" 
                     name="name" 
@@ -4427,6 +4510,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="user-phone">Phone Number *</label>
                   <input 
+                    ref={userRegistrationFieldRefs.phone}
                     type="tel" 
                     id="user-phone" 
                     name="phone" 
@@ -4727,7 +4811,7 @@ function App() {
                 }
                 
                 // Submit to backend API with FormData (includes files)
-                const response = await fetch('${API_BASE_URL}/api/stylists', {
+                const response = await fetch(`${API_BASE_URL}/api/stylists`, {
                   method: 'POST',
                   // Don't set Content-Type header - let browser set it with boundary for multipart/form-data
                   body: formData
@@ -4781,6 +4865,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="email">Email *</label>
                   <input 
+                    ref={stylistRegistrationFieldRefs.email}
                     type="email" 
                     id="email" 
                     name="email" 
@@ -4803,6 +4888,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="password">Password *</label>
                   <input 
+                    ref={stylistRegistrationFieldRefs.password}
                     type="password" 
                     id="password" 
                     name="password" 
@@ -4830,6 +4916,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="name">Full Name *</label>
                   <input 
+                    ref={stylistRegistrationFieldRefs.name}
                     type="text" 
                     id="name" 
                     name="name" 
@@ -4891,6 +4978,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="address">Address *</label>
                   <input 
+                    ref={stylistRegistrationFieldRefs.address}
                     type="text" 
                     id="address" 
                     name="address" 
@@ -4913,6 +5001,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="phone">Phone Number *</label>
                   <input 
+                    ref={stylistRegistrationFieldRefs.phone}
                     type="tel" 
                     id="phone" 
                     name="phone" 
@@ -4939,6 +5028,7 @@ function App() {
                 <div className="form-group">
                   <label htmlFor="specialty">Specialty *</label>
                   <input 
+                    ref={stylistRegistrationFieldRefs.specialty}
                     type="text" 
                     id="specialty" 
                     name="specialty" 
