@@ -2,6 +2,17 @@ import React from 'react'
 import './App.css'
 import { API_BASE_URL } from './config.js'
 
+// Helper function to fix image URLs for mobile (replace localhost with current API base)
+const fixImageUrl = (url) => {
+  if (!url) return url;
+  // If URL contains localhost, replace it with current API base URL
+  if (url.includes('localhost:3001') || url.includes('127.0.0.1:3001')) {
+    const apiBase = API_BASE_URL.replace(/\/api$/, ''); // Remove /api if present
+    return url.replace(/https?:\/\/[^/]+/, apiBase);
+  }
+  return url;
+};
+
 // Stylists data will now be fetched from the backend API
 
 function App() {
@@ -1381,7 +1392,7 @@ function App() {
               <div className="detail-image-section">
                 <div className="detail-image-wrapper">
                   <img 
-                    src={selectedStylist.profilePicture} 
+                    src={fixImageUrl(selectedStylist.profilePicture)} 
                     alt={selectedStylist.name}
                     className="detail-profile-picture"
                   />
@@ -1651,7 +1662,7 @@ function App() {
                   {selectedStylist.portfolio.map((imageUrl, index) => (
                     <div key={index} className="portfolio-item">
                       <img 
-                        src={imageUrl} 
+                        src={fixImageUrl(imageUrl)} 
                         alt={`Previous work ${index + 1}`}
                         className="portfolio-image"
                         loading="lazy"
@@ -1692,7 +1703,7 @@ function App() {
                     {selectedStylist.products.map((product, index) => (
                       <div key={index} className="product-item">
                         <img 
-                          src={product.image || 'https://via.placeholder.com/200'} 
+                          src={fixImageUrl(product.image) || 'https://via.placeholder.com/200'} 
                           alt={product.title || 'Product'}
                           className="product-image"
                           loading="lazy"
@@ -1720,7 +1731,7 @@ function App() {
                     onClick={() => setSelectedStylistId(similarStylist.id)}
                   >
                     <img 
-                      src={similarStylist.profilePicture} 
+                      src={fixImageUrl(similarStylist.profilePicture)} 
                       alt={similarStylist.name}
                       className="similar-item-picture"
                     />
@@ -1863,13 +1874,98 @@ function App() {
           conversationPreference: finalConversationPreference
         };
         
-        const response = await fetch('${API_BASE_URL}/api/appointments', {
+        const headers = getAuthHeaders();
+        console.log('Booking request:', {
+          url: `${API_BASE_URL}/api/appointments`,
+          hasAuthToken: !!authToken,
+          userId: loggedInUser?.id,
+          bookingData
+        });
+        
+        const response = await fetch(`${API_BASE_URL}/api/appointments`, {
           method: 'POST',
-          headers: getAuthHeaders(),
+          headers: headers,
           body: JSON.stringify(bookingData)
         });
         
-        const result = await response.json();
+        // Try to parse JSON response
+        let result;
+        try {
+          const text = await response.text();
+          result = text ? JSON.parse(text) : {};
+        } catch (parseError) {
+          console.error('Failed to parse response:', parseError);
+          alert(`Server error (${response.status}): ${response.statusText}. Please try again.`);
+          return;
+        }
+        
+        // Log full response for debugging
+        console.log('Booking response:', {
+          status: response.status,
+          statusText: response.statusText,
+          ok: response.ok,
+          result: result
+        });
+        
+        if (!response.ok) {
+          // Handle HTTP error status codes
+          let errorMessage = 'Failed to book appointment. Please try again.';
+          
+          // Try to get error message from various possible locations
+          if (result.message) {
+            errorMessage = result.message;
+          } else if (result.error) {
+            errorMessage = result.error;
+          } else if (result.msg) {
+            errorMessage = result.msg;
+          }
+          
+          // Check for validation errors
+          if (result.errors && Array.isArray(result.errors) && result.errors.length > 0) {
+            const errorMessages = result.errors.map(err => {
+              if (typeof err === 'string') return err;
+              return err.message || err.msg || JSON.stringify(err);
+            }).filter(Boolean).join(', ');
+            if (errorMessages) {
+              errorMessage = errorMessages;
+            }
+          }
+          
+          // Check for field errors
+          if (result.fieldErrors && typeof result.fieldErrors === 'object') {
+            const fieldErrorMessages = Object.values(result.fieldErrors)
+              .filter(Boolean)
+              .join(', ');
+            if (fieldErrorMessages) {
+              errorMessage = fieldErrorMessages;
+            }
+          }
+          
+          // If we still don't have a specific message, use status-based message
+          if (errorMessage === 'Failed to book appointment. Please try again.') {
+            if (response.status === 401) {
+              errorMessage = 'Authentication failed. Please log in again.';
+            } else if (response.status === 403) {
+              errorMessage = 'Access denied. You do not have permission to perform this action.';
+            } else if (response.status === 400) {
+              errorMessage = 'Invalid request. Please check all fields and try again.';
+            } else if (response.status === 404) {
+              errorMessage = 'Stylist not found. Please try selecting a different stylist.';
+            } else if (response.status >= 500) {
+              errorMessage = 'Server error. Please try again later.';
+            }
+          }
+          
+          console.error('Booking error details:', {
+            status: response.status,
+            statusText: response.statusText,
+            result: result,
+            errorMessage: errorMessage
+          });
+          
+          alert(errorMessage);
+          return;
+        }
         
         if (result.success) {
           setShowBookingPage(false);
@@ -1881,11 +1977,14 @@ function App() {
           setSelectedServices([]);
           setConversationPreference('no-preference');
         } else {
-          alert(result.message || 'Failed to book appointment. Please try again.');
+          const errorMsg = result.message || 'Failed to book appointment. Please try again.';
+          console.error('Booking failed:', result);
+          alert(errorMsg);
         }
       } catch (error) {
         console.error('Error booking appointment:', error);
-        alert('Failed to book appointment. Please check your connection and try again.');
+        const errorMsg = error.message || 'Unknown error occurred';
+        alert(`Failed to book appointment: ${errorMsg}. Please check your connection and try again.`);
       }
     };
     
@@ -1918,7 +2017,7 @@ function App() {
             {bookingStylist && (
               <div className="booking-stylist-info">
                 <img 
-                  src={bookingStylist.profilePicture} 
+                  src={fixImageUrl(bookingStylist.profilePicture)} 
                   alt={bookingStylist.name}
                   className="booking-stylist-photo"
                 />
@@ -2809,7 +2908,7 @@ function App() {
                           }}
                         >
                           <img 
-                            src={stylist.profilePicture} 
+                            src={fixImageUrl(stylist.profilePicture)} 
                             alt={stylist.name}
                             className="recently-viewed-picture"
                           />
@@ -2851,7 +2950,7 @@ function App() {
                                 <div className="appointment-stylist-info">
                                   {stylist && (
                                     <img 
-                                      src={stylist.profilePicture} 
+                                      src={fixImageUrl(stylist.profilePicture)} 
                                       alt={stylist.name}
                                       className="appointment-stylist-photo"
                                     />
@@ -3005,7 +3104,7 @@ function App() {
                           }}
                         >
                           <img 
-                            src={stylist.profilePicture} 
+                            src={fixImageUrl(stylist.profilePicture)} 
                             alt={stylist.name}
                             className="favorite-stylist-picture"
                           />
@@ -3263,7 +3362,7 @@ function App() {
                 {isEditingProfile ? (
                   <div className="edit-image-container">
                     <img 
-                      src={editedProfile?.profilePicture || currentStylist.profilePicture} 
+                      src={fixImageUrl(editedProfile?.profilePicture || currentStylist.profilePicture)} 
                       alt={currentStylist.name}
                       className="detail-profile-picture"
                     />
@@ -3277,7 +3376,7 @@ function App() {
                   </div>
                 ) : (
                   <img 
-                    src={currentStylist.profilePicture} 
+                    src={fixImageUrl(currentStylist.profilePicture)} 
                     alt={currentStylist.name}
                     className="detail-profile-picture"
                   />
@@ -3703,7 +3802,7 @@ function App() {
                   {(editedProfile?.editedPortfolio || editedProfile?.portfolio || []).map((imageUrl, index) => (
                     <div key={index} className="edit-portfolio-item">
                       <img 
-                        src={imageUrl} 
+                        src={fixImageUrl(imageUrl)} 
                         alt={`Previous work ${index + 1}`}
                         className="portfolio-preview-small"
                         loading="lazy"
@@ -3771,7 +3870,7 @@ function App() {
                     {currentStylist.portfolio.map((imageUrl, index) => (
                       <div key={index} className="portfolio-item">
                         <img 
-                          src={imageUrl} 
+                          src={fixImageUrl(imageUrl)} 
                           alt={`Previous work ${index + 1}`}
                           className="portfolio-image"
                           loading="lazy"
@@ -3790,7 +3889,7 @@ function App() {
                   {(editedProfile?.editedProducts || editedProfile?.products || []).map((product, index) => (
                     <div key={index} className="edit-product-item">
                       <img 
-                        src={product.image || 'https://via.placeholder.com/200'} 
+                        src={fixImageUrl(product.image) || 'https://via.placeholder.com/200'} 
                         alt={product.title || 'Product'}
                         className="product-preview-small"
                         loading="lazy"
@@ -3882,7 +3981,7 @@ function App() {
                     {currentStylist.products.map((product, index) => (
                       <div key={index} className="product-item">
                         <img 
-                          src={product.image || 'https://via.placeholder.com/200'} 
+                          src={fixImageUrl(product.image) || 'https://via.placeholder.com/200'} 
                           alt={product.title || 'Product'}
                           className="product-image"
                           loading="lazy"
@@ -4247,7 +4346,7 @@ function App() {
                     }}
                   >
                     <img 
-                      src={similarStylist.profilePicture} 
+                      src={fixImageUrl(similarStylist.profilePicture)} 
                       alt={similarStylist.name}
                       className="similar-item-picture"
                     />
@@ -4894,11 +4993,105 @@ function App() {
                   body: formData
                 });
                 
-                const result = await response.json();
+                // Try to parse JSON response
+                let result;
+                try {
+                  const text = await response.text();
+                  result = text ? JSON.parse(text) : {};
+                } catch (parseError) {
+                  console.error('Failed to parse response:', parseError);
+                  setStylistRegistrationErrors({ 
+                    general: `Server error (${response.status}): ${response.statusText}. Please try again.` 
+                  });
+                  return;
+                }
+                
+                console.log('Stylist registration response:', {
+                  status: response.status,
+                  statusText: response.statusText,
+                  ok: response.ok,
+                  result: result
+                });
+                
+                if (!response.ok || !result.success) {
+                  // Parse backend errors
+                  const backendErrors = {};
+                  const errorMessage = result.message || 'Registration failed. Please try again.';
+                  
+                  // Check if there's a specific field mentioned in the error
+                  if (result.field) {
+                    backendErrors[result.field] = errorMessage;
+                  } else if (result.missingFields && Array.isArray(result.missingFields)) {
+                    // Handle missing fields array
+                    backendErrors.general = errorMessage;
+                    result.missingFields.forEach(field => {
+                      const fieldKey = field.toLowerCase().replace(/\s+/g, '');
+                      if (fieldKey.includes('name')) backendErrors.name = `${field} is required.`;
+                      else if (fieldKey.includes('email')) backendErrors.email = `${field} is required.`;
+                      else if (fieldKey.includes('password')) backendErrors.password = `${field} is required.`;
+                      else if (fieldKey.includes('phone')) backendErrors.phone = `${field} is required.`;
+                      else if (fieldKey.includes('address')) backendErrors.address = `${field} is required.`;
+                      else if (fieldKey.includes('specialty')) backendErrors.specialty = `${field} is required.`;
+                    });
+                  } else {
+                    // Try to identify which field the error relates to
+                    const errorLower = errorMessage.toLowerCase();
+                    if (errorLower.includes('email') || errorLower.includes('already registered')) {
+                      backendErrors.email = errorMessage;
+                    } else if (errorLower.includes('phone')) {
+                      backendErrors.phone = errorMessage;
+                    } else if (errorLower.includes('password')) {
+                      backendErrors.password = errorMessage;
+                    } else if (errorLower.includes('name') && (errorLower.includes('letter') || errorLower.includes('pattern'))) {
+                      backendErrors.name = errorMessage;
+                    } else if (errorLower.includes('address')) {
+                      backendErrors.address = errorMessage;
+                    } else if (errorLower.includes('specialty')) {
+                      backendErrors.specialty = errorMessage;
+                    } else {
+                      // If we can't identify the field, show general error
+                      backendErrors.general = errorMessage;
+                    }
+                  }
+                  
+                  // Also check for validation errors array from express-validator
+                  if (result.errors && Array.isArray(result.errors)) {
+                    result.errors.forEach(err => {
+                      const field = err.field || err.path || err.param;
+                      if (field) {
+                        backendErrors[field] = err.message || err.msg || errorMessage;
+                      }
+                    });
+                  }
+                  
+                  // Check for fieldErrors object from improved validation handler
+                  if (result.fieldErrors && typeof result.fieldErrors === 'object') {
+                    Object.assign(backendErrors, result.fieldErrors);
+                  }
+                  
+                  // If we have field-specific errors, don't show general error
+                  const hasFieldErrors = Object.keys(backendErrors).some(key => key !== 'general');
+                  if (hasFieldErrors && !backendErrors.general) {
+                    // Set general error to guide user
+                    backendErrors.general = 'Please fix the errors in the form fields below.';
+                  } else if (!hasFieldErrors) {
+                    backendErrors.general = errorMessage;
+                  }
+                  
+                  console.error('Stylist registration error details:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    result: result,
+                    backendErrors: backendErrors
+                  });
+                  
+                  setStylistRegistrationErrors(backendErrors);
+                  return;
+                }
                 
                 if (result.success) {
                   // Refetch stylists to get the updated list
-                  const stylistsResponse = await fetch('${API_BASE_URL}/api/stylists');
+                  const stylistsResponse = await fetch(`${API_BASE_URL}/api/stylists`);
                   const stylistsResult = await stylistsResponse.json();
                   if (stylistsResult.success && stylistsResult.data) {
                     setStylists(stylistsResult.data);
@@ -4906,6 +5099,7 @@ function App() {
                   
                   alert('Registration successful! Your profile has been added.');
                   setShowRegistration(false);
+                  setStylistRegistrationErrors({});
                   // Reset form state
                   setProfilePhoto(null);
                   setPortfolioPhotos([]);
@@ -4923,12 +5117,12 @@ function App() {
                     Sunday: { enabled: false, startTime: '09:00', endTime: '17:00' }
                   });
                   e.target.reset();
-                } else {
-                  alert(`Registration failed: ${result.message || 'Unknown error'}`);
                 }
               } catch (error) {
                 console.error('Error registering stylist:', error);
-                alert(`Registration failed: ${error.message}`);
+                setStylistRegistrationErrors({ 
+                  general: `Registration failed: ${error.message}. Please check your connection and try again.` 
+                });
               }
             }}>
               {stylistRegistrationErrors.general && (
@@ -6080,7 +6274,7 @@ function App() {
                         <div className="appointment-stylist-info">
                           {stylist && (
                             <img 
-                              src={stylist.profilePicture} 
+                              src={fixImageUrl(stylist.profilePicture)} 
                               alt={stylist.name}
                               className="appointment-stylist-photo"
                             />
@@ -6238,7 +6432,7 @@ function App() {
                       ...product,
                       stylistId: stylist.id,
                       stylistName: stylist.name,
-                      stylistProfilePicture: stylist.profilePicture
+                      stylistProfilePicture: fixImageUrl(stylist.profilePicture)
                     });
                   });
                 }
@@ -6285,14 +6479,14 @@ function App() {
                       >
                         <div className="product-card-image-container">
                           <img
-                            src={product.image || 'https://via.placeholder.com/300'}
+                              src={fixImageUrl(product.image) || 'https://via.placeholder.com/300'}
                             alt={product.title || 'Product'}
                             className="product-card-image"
                             loading="lazy"
                           />
                           <div className="product-card-stylist-info">
                             <img
-                              src={product.stylistProfilePicture || 'https://i.pravatar.cc/50'}
+                              src={fixImageUrl(product.stylistProfilePicture) || 'https://i.pravatar.cc/50'}
                               alt={product.stylistName}
                               className="product-card-stylist-avatar"
                             />
@@ -6351,7 +6545,7 @@ function App() {
               >
                 <div className="stylist-header">
                   <img 
-                    src={stylist.profilePicture} 
+                    src={fixImageUrl(stylist.profilePicture)} 
                     alt={stylist.name}
                     className="stylist-profile-picture"
                   />
