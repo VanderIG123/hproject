@@ -4213,7 +4213,9 @@ function App() {
                                         if (result.success) {
                                           alert('Date/time suggestion sent to customer');
                                           // Refresh appointments
-                                          const refreshResponse = await fetch(`${API_BASE_URL}/api/appointments?stylistId=${loggedInStylist.id}`);
+                                          const refreshResponse = await fetch(`${API_BASE_URL}/api/appointments?stylistId=${loggedInStylist.id}`, {
+                                            headers: getAuthHeaders()
+                                          });
                                           const refreshResult = await refreshResponse.json();
                                           if (refreshResult.success && refreshResult.data) {
                                             setStylistAppointments(refreshResult.data);
@@ -4253,15 +4255,15 @@ function App() {
                                     try {
                                       const response = await fetch(`${API_BASE_URL}/api/appointments/${appointment.id}/accept`, {
                                         method: 'PUT',
-                                        headers: {
-                                          'Content-Type': 'application/json',
-                                        }
+                                        headers: getAuthHeaders()
                                       });
                                       const result = await response.json();
                                       if (result.success) {
                                         alert('Appointment accepted!');
                                         // Refresh appointments
-                                        const refreshResponse = await fetch(`${API_BASE_URL}/api/appointments?stylistId=${loggedInStylist.id}`);
+                                        const refreshResponse = await fetch(`${API_BASE_URL}/api/appointments?stylistId=${loggedInStylist.id}`, {
+                                          headers: getAuthHeaders()
+                                        });
                                         const refreshResult = await refreshResponse.json();
                                         if (refreshResult.success && refreshResult.data) {
                                           setStylistAppointments(refreshResult.data);
@@ -4284,15 +4286,15 @@ function App() {
                                     try {
                                       const response = await fetch(`${API_BASE_URL}/api/appointments/${appointment.id}/reject`, {
                                         method: 'PUT',
-                                        headers: {
-                                          'Content-Type': 'application/json',
-                                        }
+                                        headers: getAuthHeaders()
                                       });
                                       const result = await response.json();
                                       if (result.success) {
                                         alert('Appointment rejected');
                                         // Refresh appointments
-                                        const refreshResponse = await fetch(`${API_BASE_URL}/api/appointments?stylistId=${loggedInStylist.id}`);
+                                        const refreshResponse = await fetch(`${API_BASE_URL}/api/appointments?stylistId=${loggedInStylist.id}`, {
+                                          headers: getAuthHeaders()
+                                        });
                                         const refreshResult = await refreshResponse.json();
                                         if (refreshResult.success && refreshResult.data) {
                                           setStylistAppointments(refreshResult.data);
