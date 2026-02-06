@@ -5973,7 +5973,7 @@ function App() {
               <line x1="3" y1="6" x2="21" y2="6"></line>
               <path d="M16 10a4 4 0 0 1-8 0"></path>
             </svg>
-            Products
+            Marketplace
           </button>
           {loggedInUser && (
             <button
@@ -5998,7 +5998,7 @@ function App() {
         </div>
         <h1>
           {viewMode === 'stylists' ? 'Grwmglow' : 
-           viewMode === 'products' ? 'Products' : 
+           viewMode === 'products' ? 'Marketplace' : 
            'My Bookings'}
         </h1>
         <p className="subtitle">
